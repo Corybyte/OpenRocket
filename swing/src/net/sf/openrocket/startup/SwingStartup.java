@@ -52,19 +52,22 @@ public class SwingStartup {
 	private final static Logger log = LoggerFactory.getLogger(SwingStartup.class);
 	
 	/**
-	 * OpenRocket startup main method.
+	 * OpenRocket 启动主方法。
 	 */
 	public static void main(final String[] args) throws Exception {
 
 		//在执行其他任何操作之前检查“openrocket.debug”属性
 		checkDebugStatus();
 
+
+
 		if (System.getProperty("openrocket.debug.layout") != null) {
+			//全局调试 millis>0 ? true or false
 			LayoutUtil.setGlobalDebugMillis(100);
 		}
-		
-		// Initialize logging first so we can use it
-		//initializeLogging();
+
+		//初始化日志记录
+		initializeLogging();
 		log.info("Starting up OpenRocket version {}", BuildProperties.getVersion());
 
 		// Check JRE version
@@ -154,9 +157,10 @@ public class SwingStartup {
 	}
 	
 	/**
-	 * Initializes the logging system.
+	 * 初始化日志记录系统
 	 */
 	public static void initializeLogging() {
+
 		LoggingSystemSetup.setupLoggingAppender();
 		
 		if (System.getProperty("openrocket.debug") != null) {
