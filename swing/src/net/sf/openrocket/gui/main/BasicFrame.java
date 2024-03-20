@@ -1139,7 +1139,7 @@ public class BasicFrame extends JFrame {
 	}
 
 	/**
-	 * Set the frame that is created at the application's startup.
+	 * 设置在应用程序启动时创建的框架
 	 */
 	public static void setStartupFrame(BasicFrame startupFrame) {
 		BasicFrame.startupFrame = startupFrame;

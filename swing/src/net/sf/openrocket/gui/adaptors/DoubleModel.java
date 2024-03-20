@@ -109,6 +109,7 @@ public class DoubleModel implements StateChangeListener, ChangeSource, Invalidat
 				
 				log.info(Markers.USER_MARKER, "SpinnerModel setValue called for " + DoubleModel.this.toString() + " newValue=" + newValue +
 						" converted=" + converted);
+
 				DoubleModel.this.setValue(converted);
 			}
 			

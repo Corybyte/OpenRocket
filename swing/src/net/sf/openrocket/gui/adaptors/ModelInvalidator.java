@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.EventListener;
 import java.util.EventObject;
 import java.util.List;
-
 /**
  * A helper model for invalidating value models.
  * This class has nothing to do with the actual setting/getting of the value, it's just here to avoid duplicate code

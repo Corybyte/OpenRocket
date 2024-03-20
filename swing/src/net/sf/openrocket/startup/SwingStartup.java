@@ -56,7 +56,7 @@ public class SwingStartup {
 	 */
 	public static void main(final String[] args) throws Exception {
 
-		// Check for "openrocket.debug" property before anything else
+		//在执行其他任何操作之前检查“openrocket.debug”属性
 		checkDebugStatus();
 
 		if (System.getProperty("openrocket.debug.layout") != null) {
@@ -64,7 +64,7 @@ public class SwingStartup {
 		}
 		
 		// Initialize logging first so we can use it
-		initializeLogging();
+		//initializeLogging();
 		log.info("Starting up OpenRocket version {}", BuildProperties.getVersion());
 
 		// Check JRE version
@@ -136,7 +136,7 @@ public class SwingStartup {
 	}
 
 	/**
-	 * Set proper system properties if openrocket.debug is defined.
+	 * 如果定义了 openrocket.debug，请设置正确的系统属性。
 	 */
 	private static void checkDebugStatus() {
 		if (System.getProperty("openrocket.debug") != null) {
@@ -170,14 +170,13 @@ public class SwingStartup {
 	}
 	
 	/**
-	 * Run in the EDT when starting up OpenRocket.
 	 *
+	 * 启动 OpenRocket 时在 EDT 中运行。
 	 * @param args	command line arguments
 	 */
 	private void runInEDT(String[] args) {
-		
-		// Initialize the splash screen with version info
-		log.info("Initializing the splash screen");
+		//使用版本信息初始化初始化初始屏幕
+		log.info("使用版本信息初始化初始化初始屏幕");
 		Splash.init();
 		
 		// Setup the uncaught exception handler
@@ -208,7 +207,7 @@ public class SwingStartup {
 			prefs.setUITheme(UITheme.Themes.valueOf(cmdLAF));
 		}
 		GUIUtil.applyLAF();
-		
+
 		// Set tooltip delay time.  Tooltips are used in MotorChooserDialog extensively.
 		ToolTipManager.sharedInstance().setDismissDelay(30000);
 		
@@ -227,6 +226,7 @@ public class SwingStartup {
 		log.info("Opening main application window");
 		if (!handleCommandLine(args)) {
 			BasicFrame startupFrame = BasicFrame.reopen();
+
 			BasicFrame.setStartupFrame(startupFrame);
 			showWelcomeDialog();
 		}
