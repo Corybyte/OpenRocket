@@ -1,18 +1,13 @@
 package net.sf.openrocket.gui.configdialog;
 
 
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSlider;
-import javax.swing.JSpinner;
+import javax.swing.*;
 
 import net.miginfocom.swing.MigLayout;
 import net.sf.openrocket.document.OpenRocketDocument;
@@ -158,6 +153,28 @@ public class NoseConeConfig extends RocketComponentConfig {
 			order.add(filledCheckbox);
 		}
 
+
+		{////  重心按钮
+			panel.add(new JLabel("重心演算过程"));
+			JButton button = new JButton("点此进入");
+			button.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					// 当按钮被点击时创建并显示新的悬浮窗口
+					JDialog dialog = new JDialog();
+					dialog.setModalityType(Dialog.ModalityType.MODELESS); // 设置为非模态
+					dialog.setTitle("Floating Window");
+					dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+					dialog.setSize(100, 150);
+					dialog.setVisible(true);
+				}
+			});
+			panel.add(button);
+
+
+		}
+
+
 		{//// Flip to tail cone:
 			BooleanModel bm = new BooleanModel(component, "Flipped");
 			register(bm);
@@ -173,6 +190,8 @@ public class NoseConeConfig extends RocketComponentConfig {
 				}
 			});
 		}
+
+
 
 		panel.add(new JLabel(""), "growy");
 

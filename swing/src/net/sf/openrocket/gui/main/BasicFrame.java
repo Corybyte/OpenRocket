@@ -1865,8 +1865,8 @@ public class BasicFrame extends JFrame {
 	}
 
 	/**
-	 * Opens a new design file or the last design file, if set in the preferences.
-	 * Can be used for reopening the application or opening it the first time.
+	 * 打开新的设计文件或上一个设计文件（如果在首选项中设置）。
+	 * 可用于重新打开应用程序或首次打开应用程序。
 	 * @return the BasicFrame that was created
 	 */
 	public static BasicFrame reopen() {

@@ -224,8 +224,7 @@ public class SwingExceptionHandler implements Thread.UncaughtExceptionHandler, E
 
 
 	/**
-	 * Registers the uncaught exception handler.  This should be used to ensure that
-	 * all necessary registrations are performed.
+	 * 注册未捕获的异常处理程序,这应该用于确保执行所必要的.
 	 */
 	public void registerExceptionHandler() {
 

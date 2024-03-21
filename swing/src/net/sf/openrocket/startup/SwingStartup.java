@@ -43,9 +43,8 @@ import com.google.inject.Injector;
 import com.google.inject.Module;
 
 /**
- * Start the OpenRocket swing application.
- *
- * @author Sampo Niskanen <sampo.niskanen@iki.fi>
+ * 启动 OpenRocket swing 应用程序
+ * @author Corybyte <rzd200213@gmail.com>
  */
 public class SwingStartup {
 	
@@ -62,32 +61,31 @@ public class SwingStartup {
 
 
 		if (System.getProperty("openrocket.debug.layout") != null) {
-			//全局调试 millis>0 ? true or false
+			//是否全局调试 millis>0 ? true or false
 			LayoutUtil.setGlobalDebugMillis(100);
 		}
 
-		//初始化日志记录
-		initializeLogging();
+		//initializeLogging();
 		log.info("Starting up OpenRocket version {}", BuildProperties.getVersion());
 
-		// Check JRE version
+		// 检查 JRE 版本
 		boolean ignoreJRE = System.getProperty("openrocket.ignore-jre") != null;
 		if (!ignoreJRE && !checkJREVersion()) {
 			return;
 		}
-		
-		// Check that we're not running headless
+
+		//测试该环境是否支持显示器、键盘和鼠标。
 		log.info("Checking for graphics head");
 		checkHead();
-		
-		// If running on a MAC set up OSX UI Elements.
+
+		//如果在 MAC 上运行，请设置 OSX UI Elements。
 		if (SystemInfo.getPlatform() == Platform.MAC_OS) {
 			OSXSetup.setupOSX();
 		}
-		
+
 		final SwingStartup runner = new SwingStartup();
-		
-		// Run the actual startup method in the EDT since it can use progress dialogs etc.
+
+		//在 EDT 中运行实际的启动方法，因为它可以使用进度对话框等。
 		log.info("Moving startup to EDT");
 		SwingUtilities.invokeAndWait(new Runnable() {
 			@Override
@@ -162,7 +160,7 @@ public class SwingStartup {
 	public static void initializeLogging() {
 
 		LoggingSystemSetup.setupLoggingAppender();
-		
+
 		if (System.getProperty("openrocket.debug") != null) {
 			LoggingSystemSetup.addConsoleAppender();
 		}
@@ -179,30 +177,30 @@ public class SwingStartup {
 	 * @param args	command line arguments
 	 */
 	private void runInEDT(String[] args) {
+
 		//使用版本信息初始化初始化初始屏幕
 		log.info("使用版本信息初始化初始化初始屏幕");
 		Splash.init();
 		
-		// Setup the uncaught exception handler
-		log.info("Registering exception handler");
+		// 设置未捕获的异常处理程序
+		log.info("设置未捕获的异常处理程序");
 		SwingExceptionHandler exceptionHandler = new SwingExceptionHandler();
 		Application.setExceptionHandler(exceptionHandler);
 		exceptionHandler.registerExceptionHandler();
 		
 		// Load motors etc.
 		log.info("Loading databases");
-		
 		GuiModule guiModule = new GuiModule();
 		Module pluginModule = new PluginModule();
 		Injector injector = Guice.createInjector(guiModule, pluginModule);
 		Application.setInjector(injector);
-		
 		guiModule.startLoader();
 		
-		// Start update info fetching
+		//开始获取更新信息
 		final UpdateInfoRetriever updateRetriever = startUpdateChecker();
-		
-		// Set the look-and-feel
+
+
+		// 设置外观
 		log.info("Setting LAF");
 		String cmdLAF = System.getProperty("openrocket.laf");
 		if (cmdLAF != null) {
@@ -213,7 +211,7 @@ public class SwingStartup {
 		GUIUtil.applyLAF();
 
 		// Set tooltip delay time.  Tooltips are used in MotorChooserDialog extensively.
-		ToolTipManager.sharedInstance().setDismissDelay(30000);
+		//ToolTipManager.sharedInstance().setDismissDelay(30000);
 		
 		// Load defaults
 		((SwingPreferences) Application.getPreferences()).loadDefaultUnits();
@@ -227,10 +225,9 @@ public class SwingStartup {
 		}
 		
 		// Starting action (load files or open new document)
-		log.info("Opening main application window");
+		log.info("打开应用程序主窗口");
 		if (!handleCommandLine(args)) {
 			BasicFrame startupFrame = BasicFrame.reopen();
-
 			BasicFrame.setStartupFrame(startupFrame);
 			showWelcomeDialog();
 		}
@@ -242,7 +239,7 @@ public class SwingStartup {
 	}
 	
 	/**
-	 * Check that the JRE is not running headless.
+	 * 测试该环境是否支持显示器、键盘和鼠标。
 	 */
 	private static void checkHead() {
 		
@@ -308,10 +305,10 @@ public class SwingStartup {
 	}
 
 	/**
-	 * Shows a welcome dialog displaying the release notes for this build version.
-	 */
+	 * 显示一个欢迎对话框，显示此内部版本的发行说明。
+	 * */
 	public static void showWelcomeDialog() {
-		// Don't show if this build version is ignored
+		// 如果忽略此内部版本，则不显示
 		if (Application.getPreferences().getIgnoreWelcome(BuildProperties.getVersion())) {
 			log.debug("Welcome dialog ignored");
 			return;
