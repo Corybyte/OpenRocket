@@ -20,23 +20,45 @@ import static net.sf.openrocket.util.MathUtil.pow2;
  */
 
 public abstract class SymmetricComponent extends BodyComponent implements BoxBounded, RadialParent {
+
+	//默认半径
 	public static final double DEFAULT_RADIUS = 0.025;
+
+	//默认厚度
 	public static final double DEFAULT_THICKNESS = 0.002;
-	
+
+	//形状分成的部分数量
 	private static final int DIVISIONS = 128; // No. of divisions when integrating
-	
+
+	//几何形状是否被填充
 	protected boolean filled = false;
+
+	//厚度
 	protected double thickness = DEFAULT_THICKNESS;
 
-	// Cached data, default values signify not calculated
+	//湿面积
 	private double wetArea = Double.NaN;
+
+	//平面面积
 	private double planArea = Double.NaN;
+
+	//平面中心矩
 	private double planCenter = Double.NaN;
+
+	// 形状的有效体积
 	protected double volume = Double.NaN;
+
+	//完整体积
 	private double fullVolume = Double.NaN;
+
+	//纵向单位惯量
 	protected double longitudinalUnitInertia = Double.NaN;
+
+	//旋转单位惯量
 	protected double rotationalUnitInertia = Double.NaN;
+
 	protected Coordinate cg = null;
+
 
 	public SymmetricComponent() {
 		super();
@@ -418,6 +440,7 @@ public abstract class SymmetricComponent extends BodyComponent implements BoxBou
 	
 	/**
 	 * Performs integration over the length of the component and updates the cached variables.
+	 * 用于对组件的长度进行积分运算，计算形状的各种属性，并更新相关的缓存变量
 	 */
 	protected void calculateProperties() {
 		wetArea = 0;
@@ -427,15 +450,17 @@ public abstract class SymmetricComponent extends BodyComponent implements BoxBou
 		volume = 0;
 		longitudinalUnitInertia = 0;
 		rotationalUnitInertia = 0;
-		
+
+		//临时存储重心坐标
 		double cgx = 0;
 
-		// Check length > 0
+		//判断组件长度 < = 0
 		if (getLength() <= 0) {
 			return;
 		}
 
 		// Integrate for volume, CG, wetted area, planform area, and moments of inertia
+		//对组件长度进行分段处理，计算重心,湿面积，平面面积，旋转惯量
 		for (int n = 0; n < DIVISIONS; n++) {
 			/*
 			 * x1 and x2 are the bounds on this division
@@ -444,79 +469,120 @@ public abstract class SymmetricComponent extends BodyComponent implements BoxBou
 			 * r1o and r2o are the outer radii
 			 * r1i and r2i are the inner radii
 			 */
+			/**
+			 *
+			 * x1 和 x2 是分割区间的边界。在代码中，这些变量用于确定每个分割部分的长度。
+			 * hyp 是从 r1 到 r2 的斜边长度，通常是通过两点之间的欧几里得距离计算得到的。
+			 * height 是组件在未填充的情况下沿着 y 轴的高度。具体来说，它代表了未填充部分的高度。
+			 * r1o 和 r2o 是外部半径。在代码中，这些变量用于表示每个分割部分的外部半径。
+			 * r1i 和 r2i 是内部半径。在代码中，这些变量用于表示每个分割部分的内部半径。
+			 */
 
-			// get x bounds and length for this division
+			//分割区间的左边界
 			final double x1 = n * getLength() / DIVISIONS;
+
+		    //分割区间的右边界
 			final double x2 = (n + 1) * getLength() / DIVISIONS;
+
+			//计算了每个分割区间的长度
 			final double l = x2 - x1;
 
-			// get outer and inner radii
+
+			//分割区间的外部边界半径
 			final double r1o = getRadius(x1);
+
+			//分割区间的内部边界半径
 			final double r2o = getRadius(x2);
 
-			// use thickness and angle of outer wall to get height of ring
+			//斜边的长度
 			final double hyp = MathUtil.hypot(r2o - r1o, l);
+
+			//环的高度
 			final double height = thickness * hyp / l;
 
 			// get inner radii.
+			//获取内半径
 			final double r1i;
 			final double r2i;
+
+			//判断当前分割区间是否被填充
 			if (filled) {
 				r1i = 0;
 				r2i = 0;
 			} else {
 				// Tiny inaccuracy is introduced on a division where one end is closed and other is open.
+				//计算每个分割区间中环的内部半径
 				r1i = MathUtil.max(r1o - height, 0);
 				r2i = MathUtil.max(r2o - height, 0);
 			}
 
-			// find volume and CG of (possibly hollow) frustum
+			//计算了外部半径的梯形台体的重心
 			final Coordinate fullCG = calculateCG(l, r1o, r2o);
+
+			//计算了内部半径的梯形台体的重心
 			final Coordinate innerCG = calculateCG(l, r1i, r2i);
-			
+
+			//存储了梯形台体的总体积，它的值等于外部半径梯形台体的重心的权重
 			final double dFullV = fullCG.weight;
+
+			//存储了梯形台体内部的体积，它的值等于外部半径梯形台体的体积减去内部半径梯形台体的体积，
+			// 即 dV = fullCG.weight - innerCG.weight。
 			final double dV = fullCG.weight - innerCG.weight;
+
+			//存储了梯形台体的重心在 x 轴上的位置，它的值通过计算外部半径梯形台体重心在 x 轴上的位置与内部半径梯形台体重心在 x 轴上的位置的加权平均值得到。
 			final double dCG = (fullCG.x*fullCG.weight - innerCG.x*innerCG.weight)/dV;
-			
-			// First moment, used later for CG calculation
+
+			//存储了第一矩的值。
+			// 它的计算方式是将体积差值 dV 乘以外部半径梯形台体的重心在 x 轴上的位置与内部半径梯形台体的重心在 x 轴上的位置的加权平均值，即 (x1 + dCG)。
 			final double dCGx = dV * (x1 + dCG);
-			
-			// rotational moment of inertia
+
+			//表示外部半径梯形台体相对于 x 轴的单位旋转惯性矩。
 			final double Ixxo = calculateUnitRotMOI(r1o, r2o);
+
+			//表示内部半径梯形台体相对于 x 轴的单位旋转惯性矩。
 			final double Ixxi = calculateUnitRotMOI(r1i, r2i);
+
+			//整个梯形台体相对于 x 轴的总旋转惯性矩
 			final double Ixx = Ixxo * fullCG.weight - Ixxi * innerCG.weight;
 
 			// longitudinal moment of inertia -- axis through CG of division
+			//计算了沿着分割区间的重心轴（通过分割区间的重心）的纵向惯性矩
 			double Iyy = calculateLongMOI(l, r1o, r2o, fullCG) - calculateLongMOI(l, r1i, r2i, innerCG);
 
 			// move to axis through forward end of component
+			//将惯性矩移动到通过组件前端的轴上的操作
 			Iyy += dV * pow2(x1 + dCG);
 			
 			// Add to the volume-related components
+			//计算得到的各个部分贡献的体积相关组件
 			volume += dV;
 			fullVolume += dFullV;
 			cgx += dCGx;
 			rotationalUnitInertia += Ixx;
 			longitudinalUnitInertia += Iyy;
 
-			// Wetted area ( * PI at the end)
+			//算了分割区间的潮湿面积
 			wetArea += (r1o + r2o) * Math.sqrt(pow2(r1o - r2o) + pow2(l));
-			
-			// Planform area & moment
+
+			//计算平面面积和矩
 			final double dA = l*(r1o + r2o);
 			planArea += dA;
 			final double planMoment = dA*x1 + 2.0*pow2(l)*(r1o/6.0 + r2o/3.0);
 			planCenter += planMoment;
 		}
-		
+
+		//将平面矩归一化，即将其除以平面面积，以得到平面矩的平均值或中心位置
 		if (planArea > 0)
 			planCenter /= planArea;
 
+
 		// get unit moments of inertia
+		//计算单位惯性矩
 		rotationalUnitInertia /= volume;
 		longitudinalUnitInertia /= volume;
 
 		// Correct for deferred constant factors
+		//考虑到之前推迟处理的常数因子,对一些常数值进行修正
 		volume *= Math.PI / 3.0;
 		fullVolume *= Math.PI / 3.0;
 		cgx *= Math.PI / 3.0;
@@ -542,7 +608,7 @@ public abstract class SymmetricComponent extends BodyComponent implements BoxBou
 		
 		// Shift longitudinal inertia to CG
 		longitudinalUnitInertia = longitudinalUnitInertia - pow2(cg.x);
-		
+		System.out.println(fullVolume);
 	}
 
 	/**
