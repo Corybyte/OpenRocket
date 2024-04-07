@@ -27,6 +27,7 @@ import net.sf.openrocket.rocketcomponent.SymmetricComponent;
 import net.sf.openrocket.rocketcomponent.Transition;
 import net.sf.openrocket.startup.Application;
 import net.sf.openrocket.unit.UnitGroup;
+import net.sf.openrocket.util.Coordinate;
 
 @SuppressWarnings("serial")
 public class NoseConeConfig extends RocketComponentConfig {
@@ -129,7 +130,6 @@ public class NoseConeConfig extends RocketComponentConfig {
 
 		{////  Wall thickness:
 			panel.add(new JLabel(trans.get("NoseConeCfg.lbl.Wallthickness")));
-
 			final DoubleModel thicknessModel = new DoubleModel(component, "Thickness", UnitGroup.UNITS_LENGTH, 0);
 			register(thicknessModel);
 			final JSpinner thicknessSpinner = new JSpinner(thicknessModel.getSpinnerModel());
@@ -154,24 +154,74 @@ public class NoseConeConfig extends RocketComponentConfig {
 		}
 
 
-		{////  重心按钮
-			panel.add(new JLabel("重心演算过程"));
+		{// 重心位置演算过程
+			JLabel  jLabel_componentCG = new JLabel("重心位置计算");
 			JButton button = new JButton("点此进入");
 			button.addActionListener(new ActionListener() {
-				@Override
 				public void actionPerformed(ActionEvent e) {
-					// 当按钮被点击时创建并显示新的悬浮窗口
-					JDialog dialog = new JDialog();
-					dialog.setModalityType(Dialog.ModalityType.MODELESS); // 设置为非模态
-					dialog.setTitle("Floating Window");
-					dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-					dialog.setSize(100, 150);
-					dialog.setVisible(true);
+					JFrame frame = new JFrame("重心位置计算");
+
+					frame.setResizable(false);
+					frame.setUndecorated(false);
+					frame.setBounds(0, 0, 800, 800);
+					frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+					JPanel panel = new JPanel(new GridBagLayout());
+					JLabel label_componentLength = new JLabel("组件长度" + SymmetricComponent.componentLength);
+					JLabel label_planCenter = new JLabel("平面中心矩" + SymmetricComponent.componentLength);
+					JLabel label_pllanArea = new JLabel("平面面积" + SymmetricComponent.planArea);
+
+
+
+					label_componentLength.setHorizontalAlignment(SwingConstants.NORTH_EAST);
+					label_componentLength.setFont(new Font("Arial", Font.BOLD, 16));
+					label_planCenter.setFont(new Font("Arial", Font.BOLD, 16));
+					label_pllanArea.setFont(new Font("Arial", Font.BOLD, 16));
+
+
+
+
+					GridBagConstraints constraints01 = new GridBagConstraints();
+					constraints01.anchor = GridBagConstraints.NORTHWEST; // 设置组件对齐方式为左上角
+					constraints01.gridx = 0; // 设置组件的网格X坐标
+					constraints01.gridy = 0; // 设置组件的网格Y坐标
+					constraints01.weightx = 0; // 设置组件在水平方向上的拉伸权重
+					constraints01.weighty = 0; // 设置组件在垂直方向上的拉伸权重
+					constraints01.fill = GridBagConstraints.HORIZONTAL;  // 设置组件填充整个可用空间
+
+					GridBagConstraints constraints02 = new GridBagConstraints();
+					constraints02.anchor = GridBagConstraints.NORTHWEST; // 设置组件对齐方式为左上角
+					constraints02.gridx = 0; // 设置组件的网格X坐标
+					constraints02.gridy = 1; // 设置组件的网格Y坐标
+					constraints02.weightx = 0; // 设置组件在水平方向上的拉伸权重
+					constraints02.weighty = 0; // 设置组件在垂直方向上的拉伸权重
+					constraints02.fill = GridBagConstraints.HORIZONTAL;  // 设置组件填充整个可用空间
+
+
+					GridBagConstraints constraints03 = new GridBagConstraints();
+					constraints03.anchor = GridBagConstraints.NORTHWEST; // 设置组件对齐方式为左上角
+					constraints03.gridx = 0; // 设置组件的网格X坐标
+					constraints03.gridy = 2; // 设置组件的网格Y坐标
+					constraints03.weightx = 1; // 设置组件在水平方向上的拉伸权重
+					constraints03.weighty = 1; // 设置组件在垂直方向上的拉伸权重
+					constraints03.fill = GridBagConstraints.HORIZONTAL;  // 设置组件填充整个可用空间
+
+
+
+
+
+					panel.add(label_componentLength, constraints01); // 将标签添加到面板
+					panel.add(label_planCenter,constraints02);
+					panel.add(label_pllanArea,constraints03);
+
+					frame.add(panel);
+					frame.setVisible(true);
+
 				}
 			});
+
+			panel.add(jLabel_componentCG);
 			panel.add(button);
-
-
 		}
 
 

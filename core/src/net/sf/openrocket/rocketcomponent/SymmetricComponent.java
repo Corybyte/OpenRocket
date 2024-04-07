@@ -28,36 +28,40 @@ public abstract class SymmetricComponent extends BodyComponent implements BoxBou
 	public static final double DEFAULT_THICKNESS = 0.002;
 
 	//形状分成的部分数量
-	private static final int DIVISIONS = 128; // No. of divisions when integrating
+	public static final int DIVISIONS = 128; // No. of divisions when integrating
 
 	//几何形状是否被填充
-	protected boolean filled = false;
+	public static boolean filled = false;
 
 	//厚度
-	protected double thickness = DEFAULT_THICKNESS;
+	public static double thickness = DEFAULT_THICKNESS;
 
 	//湿面积
-	private double wetArea = Double.NaN;
+	public static double wetArea = Double.NaN;
 
 	//平面面积
-	private double planArea = Double.NaN;
+	public static double planArea = Double.NaN;
 
 	//平面中心矩
-	private double planCenter = Double.NaN;
+	public static double planCenter = Double.NaN;
 
 	// 形状的有效体积
-	protected double volume = Double.NaN;
+	public static double volume = Double.NaN;
 
 	//完整体积
-	private double fullVolume = Double.NaN;
+	public static double fullVolume = Double.NaN;
 
 	//纵向单位惯量
-	protected double longitudinalUnitInertia = Double.NaN;
+	public static double longitudinalUnitInertia = Double.NaN;
 
 	//旋转单位惯量
-	protected double rotationalUnitInertia = Double.NaN;
+	public static double rotationalUnitInertia = Double.NaN;
 
-	protected Coordinate cg = null;
+	//组件长度
+	public static  double componentLength=0;
+
+	//protected Coordinate cg = null;
+	public static Coordinate cg= null;
 
 
 	public SymmetricComponent() {
@@ -82,7 +86,7 @@ public abstract class SymmetricComponent extends BodyComponent implements BoxBou
 	 * @return  Radius of the component at the given position, or 0 if outside
 	 *          the component.
 	 */
-	public abstract double getRadius(double x);
+	public  abstract double getRadius(double x);
 	
 	@Override
 	public abstract double getInnerRadius(double x);
@@ -443,6 +447,7 @@ public abstract class SymmetricComponent extends BodyComponent implements BoxBou
 	 * 用于对组件的长度进行积分运算，计算形状的各种属性，并更新相关的缓存变量
 	 */
 	protected void calculateProperties() {
+
 		wetArea = 0;
 		planArea = 0;
 		planCenter = 0;
@@ -450,6 +455,7 @@ public abstract class SymmetricComponent extends BodyComponent implements BoxBou
 		volume = 0;
 		longitudinalUnitInertia = 0;
 		rotationalUnitInertia = 0;
+		componentLength=getLength();
 
 		//临时存储重心坐标
 		double cgx = 0;
@@ -458,6 +464,7 @@ public abstract class SymmetricComponent extends BodyComponent implements BoxBou
 		if (getLength() <= 0) {
 			return;
 		}
+
 
 		// Integrate for volume, CG, wetted area, planform area, and moments of inertia
 		//对组件长度进行分段处理，计算重心,湿面积，平面面积，旋转惯量
@@ -605,10 +612,9 @@ public abstract class SymmetricComponent extends BodyComponent implements BoxBou
 			longitudinalUnitInertia = 0;
 			return;
 		}
-		
+
 		// Shift longitudinal inertia to CG
 		longitudinalUnitInertia = longitudinalUnitInertia - pow2(cg.x);
-		System.out.println(fullVolume);
 	}
 
 	/**
