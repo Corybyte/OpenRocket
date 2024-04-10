@@ -6,10 +6,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 import javax.swing.*;
 
 import net.miginfocom.swing.MigLayout;
+import net.sf.openrocket.aerodynamics.FlightConditions;
+import net.sf.openrocket.aerodynamics.barrowman.SymmetricComponentCalc;
 import net.sf.openrocket.document.OpenRocketDocument;
 import net.sf.openrocket.gui.SpinnerEditor;
 import net.sf.openrocket.gui.adaptors.BooleanModel;
@@ -25,6 +29,7 @@ import net.sf.openrocket.rocketcomponent.NoseCone;
 import net.sf.openrocket.rocketcomponent.RocketComponent;
 import net.sf.openrocket.rocketcomponent.SymmetricComponent;
 import net.sf.openrocket.rocketcomponent.Transition;
+import net.sf.openrocket.rocketcomponent.FlightConfiguration;
 import net.sf.openrocket.startup.Application;
 import net.sf.openrocket.unit.UnitGroup;
 import net.sf.openrocket.util.Coordinate;
@@ -151,6 +156,45 @@ public class NoseConeConfig extends RocketComponentConfig {
 			filledCheckbox.setToolTipText(trans.get("NoseConeCfg.checkbox.Filled.ttip"));
 			panel.add(filledCheckbox, "skip, span 2, wrap para");
 			order.add(filledCheckbox);
+		}
+
+		{//// CP calculation demonstration
+			panel.add(new JLabel(trans.get("NoseConeCfg.lbl.CpCalc") + ":"));
+			JButton button = new JButton(trans.get("NoseConeCfg.lbl.CpEnter"));
+			panel.add(button, "spanx, wrap");
+			button.addActionListener(e -> {
+				JDialog dialog = new JDialog(this.parent, trans.get("NoseConeCfg.lbl.CpCalc"));
+				dialog.setSize(this.parent.getSize());
+				dialog.setLocationRelativeTo(null);
+				dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[growprio 5]5![fill, grow, growprio 500]5![growprio 5]"));
+
+				FlightConfiguration curConfig = document.getSelectedConfiguration();
+				FlightConditions conditions = new FlightConditions(curConfig);
+				String[] methodNames = {"getSincAOA", "getSinAOA", "getRefArea", "getMach", "getAOA"};
+
+				SymmetricComponentCalc componentCalc = new SymmetricComponentCalc(component);
+				String[] fieldNames = {"foreRadius", "aftRadius", "length", "fullVolume", "planformCenter", "planformArea"};
+
+				try {
+					for (String fieldName : fieldNames) {
+						Field field = SymmetricComponentCalc.class.getDeclaredField(fieldName);
+						field.setAccessible(true);
+						Double value = (Double) field.get(componentCalc); // All values are double type
+						String labelText = trans.get("NoseConeCfg.lbl." + fieldName) + ": " + value;
+						String constraints = (fieldName.equals(fieldNames[0])) ? "spanx, height 30!" : "newline, height 30!";
+						dialog.add(new JLabel(labelText), constraints);
+					}
+					for (String methodName : methodNames) {
+						Method method = FlightConditions.class.getDeclaredMethod(methodName);
+						Double value = (Double) method.invoke(conditions); // All values are double type
+						String labelText = trans.get("NoseConeCfg.lbl." + methodName.replaceFirst("get", "")) + ": " + value;
+						dialog.add(new JLabel(labelText), "newline, height 30!");
+					}
+				} catch (Exception ex) {
+					// ignored
+				}
+				dialog.setVisible(true);
+            });
 		}
 
 
