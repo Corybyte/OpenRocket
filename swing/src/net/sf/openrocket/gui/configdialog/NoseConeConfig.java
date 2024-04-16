@@ -12,6 +12,7 @@ import java.lang.reflect.Method;
 import javax.swing.*;
 
 import net.miginfocom.swing.MigLayout;
+import net.sf.openrocket.aerodynamics.AerodynamicForces;
 import net.sf.openrocket.aerodynamics.FlightConditions;
 import net.sf.openrocket.aerodynamics.barrowman.SymmetricComponentCalc;
 import net.sf.openrocket.document.OpenRocketDocument;
@@ -24,15 +25,21 @@ import net.sf.openrocket.gui.components.BasicSlider;
 import net.sf.openrocket.gui.components.DescriptionArea;
 import net.sf.openrocket.gui.components.UnitSelector;
 import net.sf.openrocket.l10n.Translator;
+import net.sf.openrocket.logging.WarningSet;
 import net.sf.openrocket.material.Material;
-import net.sf.openrocket.rocketcomponent.NoseCone;
-import net.sf.openrocket.rocketcomponent.RocketComponent;
-import net.sf.openrocket.rocketcomponent.SymmetricComponent;
-import net.sf.openrocket.rocketcomponent.Transition;
-import net.sf.openrocket.rocketcomponent.FlightConfiguration;
+import net.sf.openrocket.rocketcomponent.*;
 import net.sf.openrocket.startup.Application;
+import net.sf.openrocket.startup.OpenRocket;
 import net.sf.openrocket.unit.UnitGroup;
 import net.sf.openrocket.util.Coordinate;
+import net.sf.openrocket.util.Transformation;
+import net.sf.openrocket.utils.educoder.NoseConeCgRequest;
+import net.sf.openrocket.utils.educoder.NoseConeCpRequest;
+import net.sf.openrocket.utils.educoder.Result;
+import org.jetbrains.annotations.NotNull;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 @SuppressWarnings("serial")
 public class NoseConeConfig extends RocketComponentConfig {
@@ -158,6 +165,102 @@ public class NoseConeConfig extends RocketComponentConfig {
 			order.add(filledCheckbox);
 		}
 
+		{//// CG calculation demonstration
+			panel.add(new JLabel(trans.get("NoseConeCfg.lbl.CgCalc") + ":"));
+			JButton button = new JButton(trans.get("NoseConeCfg.lbl.CgEnter"));
+			panel.add(button, "spanx, wrap");
+			button.addActionListener(e -> {
+				JDialog dialog = new JDialog(this.parent, trans.get("NoseConeCfg.lbl.CgCalc"));
+				dialog.setSize(this.parent.getSize());
+				dialog.setLocationRelativeTo(null);
+				dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
+
+				final NoseConeCgRequest request = new NoseConeCgRequest();
+
+				String[] transitionMethodNames = {"getForeRadius", "getAftRadius"};
+				String[] transitionFieldNames = {"shapeParameter", "type"};
+
+				String[] fieldNames = {"filled", "thickness", "DIVISIONS"};
+
+				try {
+					for (String fieldName : fieldNames) {
+						Field field = SymmetricComponent.class.getDeclaredField(fieldName);
+						Field reqField = NoseConeCgRequest.class.getDeclaredField(fieldName);
+						field.setAccessible(true);
+						reqField.setAccessible(true);
+						Object value = field.get(component);
+						reqField.set(request, value);
+						String labelText = trans.get("NoseConeCfg.lbl." + fieldName) + ": " + value;
+						String constraints = (fieldName.equals(fieldNames[0])) ? "spanx, height 30!" : "newline, height 30!";
+						dialog.add(new JLabel(labelText), constraints);
+					}
+					// Component Length
+					double length = component.getLength();
+					request.setLength(length);
+					String lengthLabelText = trans.get("NoseConeCfg.lbl.length") + ": " + length;
+					dialog.add(new JLabel(lengthLabelText), "newline, height 30!");
+					// Material Density
+					double density = ((NoseCone) component).getMaterial().getDensity();
+					request.setDensity(density);
+					lengthLabelText = trans.get("NoseConeCfg.lbl.density") + ": " + density;
+					dialog.add(new JLabel(lengthLabelText), "newline, height 30!");
+
+					for (String fieldName : transitionFieldNames) {
+						Field field = Transition.class.getDeclaredField(fieldName);
+						String reqFieldName = "transition" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
+						Field reqField = NoseConeCgRequest.class.getDeclaredField(reqFieldName);
+						field.setAccessible(true);
+						reqField.setAccessible(true);
+						Object value = field.get(component);
+						reqField.set(request, value);
+						String labelText = trans.get("NoseConeCfg.lbl." + reqFieldName) + ": " + value;
+						if (value instanceof Transition.Shape)
+							labelText = trans.get("NoseConeCfg.lbl." + reqFieldName) + ": " + ((Transition.Shape) value).name();
+						dialog.add(new JLabel(labelText), "newline, height 30!");
+					}
+					for (String methodName : transitionMethodNames) {
+						Method method = Transition.class.getDeclaredMethod(methodName);
+						Method reqMethod = NoseConeCgRequest.class
+								.getDeclaredMethod(methodName.replaceFirst("get", "setTransition"), Double.class);
+						Double value = (Double) method.invoke(component); // All values are double type
+						reqMethod.invoke(request, value);
+						String labelText = trans.get("NoseConeCfg.lbl." + methodName.replaceFirst("get", "transition")) + ": " + value;
+						dialog.add(new JLabel(labelText), "newline, height 30!");
+					}
+
+					JButton checkButton = new JButton(trans.get("NoseConeCfg.lbl.check"));
+					JLabel checkResult = new JLabel(trans.get("NoseConeCfg.lbl.checkResult") + ": ");
+					JLabel answerLabel = new JLabel(trans.get("NoseConeCfg.lbl.answer") + ": ");
+					dialog.add(checkButton, "newline, height 30!");
+					dialog.add(checkResult, "height 30!");
+					dialog.add(answerLabel, "height 30!");
+					// Do not use UI thread to get the answer
+					checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateCG(request).enqueue(new Callback<>() {
+						@Override
+						public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
+							Result result = response.body();
+							if (result == null) return;
+							SwingUtilities.invokeLater(() -> {
+								checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult());
+								answerLabel.setText(trans.get("NoseConeCfg.lbl.answer") + ": " + component.getComponentCG().x);
+							});
+						}
+
+						@Override
+						public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
+							SwingUtilities.invokeLater(() -> {
+								checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + throwable.getMessage());
+								answerLabel.setText(trans.get("NoseConeCfg.lbl.answer") + ": " + component.getComponentCG().x);
+							});
+						}
+					}));
+				} catch (Exception ex) {
+					// ignored
+				}
+				dialog.setVisible(true);
+			});
+		}
+
 		{//// CP calculation demonstration
 			panel.add(new JLabel(trans.get("NoseConeCfg.lbl.CpCalc") + ":"));
 			JButton button = new JButton(trans.get("NoseConeCfg.lbl.CpEnter"));
@@ -166,7 +269,9 @@ public class NoseConeConfig extends RocketComponentConfig {
 				JDialog dialog = new JDialog(this.parent, trans.get("NoseConeCfg.lbl.CpCalc"));
 				dialog.setSize(this.parent.getSize());
 				dialog.setLocationRelativeTo(null);
-				dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[growprio 5]5![fill, grow, growprio 500]5![growprio 5]"));
+				dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
+
+				final NoseConeCpRequest request = new NoseConeCpRequest();
 
 				FlightConfiguration curConfig = document.getSelectedConfiguration();
 				FlightConditions conditions = new FlightConditions(curConfig);
@@ -178,96 +283,60 @@ public class NoseConeConfig extends RocketComponentConfig {
 				try {
 					for (String fieldName : fieldNames) {
 						Field field = SymmetricComponentCalc.class.getDeclaredField(fieldName);
+						Field reqField = NoseConeCpRequest.class.getDeclaredField(fieldName);
 						field.setAccessible(true);
+						reqField.setAccessible(true);
 						Double value = (Double) field.get(componentCalc); // All values are double type
+						reqField.set(request, value);
 						String labelText = trans.get("NoseConeCfg.lbl." + fieldName) + ": " + value;
 						String constraints = (fieldName.equals(fieldNames[0])) ? "spanx, height 30!" : "newline, height 30!";
 						dialog.add(new JLabel(labelText), constraints);
 					}
 					for (String methodName : methodNames) {
 						Method method = FlightConditions.class.getDeclaredMethod(methodName);
+						Method reqMethod = NoseConeCpRequest.class.getDeclaredMethod(methodName.replaceFirst("get", "set"), Double.class);
 						Double value = (Double) method.invoke(conditions); // All values are double type
+						reqMethod.invoke(request, value);
 						String labelText = trans.get("NoseConeCfg.lbl." + methodName.replaceFirst("get", "")) + ": " + value;
 						dialog.add(new JLabel(labelText), "newline, height 30!");
 					}
+
+					JButton checkButton = new JButton(trans.get("NoseConeCfg.lbl.check"));
+					JLabel checkResult = new JLabel(trans.get("NoseConeCfg.lbl.checkResult") + ": ");
+					JLabel answerLabel = new JLabel(trans.get("NoseConeCfg.lbl.answer") + ": ");
+					dialog.add(checkButton, "newline, height 30!");
+					dialog.add(checkResult, "height 30!");
+					dialog.add(answerLabel, "height 30!");
+					// Do not use UI thread to get the answer
+					checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateCP(request).enqueue(new Callback<>() {
+						@Override
+						public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
+							Result result = response.body();
+							if (result == null) return;
+							AerodynamicForces forces = new AerodynamicForces().zero();
+							componentCalc.calculateNonaxialForces(conditions, new Transformation(0, 0, 0), forces,new WarningSet());
+							SwingUtilities.invokeLater(() -> {
+								checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult());
+								answerLabel.setText(trans.get("NoseConeCfg.lbl.answer") + ": " + forces.getCP().x);
+							});
+						}
+
+						@Override
+						public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
+							AerodynamicForces forces = new AerodynamicForces().zero();
+							componentCalc.calculateNonaxialForces(conditions, new Transformation(0, 0, 0), forces,new WarningSet());
+							SwingUtilities.invokeLater(() -> {
+								checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + throwable.getMessage());
+								answerLabel.setText(trans.get("NoseConeCfg.lbl.answer") + ": " + forces.getCP().x);
+							});
+						}
+					}));
 				} catch (Exception ex) {
 					// ignored
 				}
 				dialog.setVisible(true);
-            });
-		}
-
-
-		{// 重心位置演算过程
-			JLabel  jLabel_componentCG = new JLabel("重心位置计算");
-			JButton button = new JButton("点此进入");
-			button.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					JFrame frame = new JFrame("重心位置计算");
-
-					frame.setResizable(false);
-					frame.setUndecorated(false);
-					frame.setBounds(0, 0, 800, 800);
-					frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-					JPanel panel = new JPanel(new GridBagLayout());
-					JLabel label_componentLength = new JLabel("组件长度" + SymmetricComponent.componentLength);
-					JLabel label_planCenter = new JLabel("平面中心矩" + SymmetricComponent.componentLength);
-					JLabel label_pllanArea = new JLabel("平面面积" + SymmetricComponent.planArea);
-
-
-
-					label_componentLength.setHorizontalAlignment(SwingConstants.NORTH_EAST);
-					label_componentLength.setFont(new Font("Arial", Font.BOLD, 16));
-					label_planCenter.setFont(new Font("Arial", Font.BOLD, 16));
-					label_pllanArea.setFont(new Font("Arial", Font.BOLD, 16));
-
-
-
-
-					GridBagConstraints constraints01 = new GridBagConstraints();
-					constraints01.anchor = GridBagConstraints.NORTHWEST; // 设置组件对齐方式为左上角
-					constraints01.gridx = 0; // 设置组件的网格X坐标
-					constraints01.gridy = 0; // 设置组件的网格Y坐标
-					constraints01.weightx = 0; // 设置组件在水平方向上的拉伸权重
-					constraints01.weighty = 0; // 设置组件在垂直方向上的拉伸权重
-					constraints01.fill = GridBagConstraints.HORIZONTAL;  // 设置组件填充整个可用空间
-
-					GridBagConstraints constraints02 = new GridBagConstraints();
-					constraints02.anchor = GridBagConstraints.NORTHWEST; // 设置组件对齐方式为左上角
-					constraints02.gridx = 0; // 设置组件的网格X坐标
-					constraints02.gridy = 1; // 设置组件的网格Y坐标
-					constraints02.weightx = 0; // 设置组件在水平方向上的拉伸权重
-					constraints02.weighty = 0; // 设置组件在垂直方向上的拉伸权重
-					constraints02.fill = GridBagConstraints.HORIZONTAL;  // 设置组件填充整个可用空间
-
-
-					GridBagConstraints constraints03 = new GridBagConstraints();
-					constraints03.anchor = GridBagConstraints.NORTHWEST; // 设置组件对齐方式为左上角
-					constraints03.gridx = 0; // 设置组件的网格X坐标
-					constraints03.gridy = 2; // 设置组件的网格Y坐标
-					constraints03.weightx = 1; // 设置组件在水平方向上的拉伸权重
-					constraints03.weighty = 1; // 设置组件在垂直方向上的拉伸权重
-					constraints03.fill = GridBagConstraints.HORIZONTAL;  // 设置组件填充整个可用空间
-
-
-
-
-
-					panel.add(label_componentLength, constraints01); // 将标签添加到面板
-					panel.add(label_planCenter,constraints02);
-					panel.add(label_pllanArea,constraints03);
-
-					frame.add(panel);
-					frame.setVisible(true);
-
-				}
 			});
-
-			panel.add(jLabel_componentCG);
-			panel.add(button);
 		}
-
 
 		{//// Flip to tail cone:
 			BooleanModel bm = new BooleanModel(component, "Flipped");

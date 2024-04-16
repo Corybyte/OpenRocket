@@ -8,6 +8,9 @@ import net.sf.openrocket.startup.jij.CurrentClasspathProvider;
 import net.sf.openrocket.startup.jij.JarInJarStarter;
 import net.sf.openrocket.startup.jij.ManifestClasspathProvider;
 import net.sf.openrocket.startup.jij.PluginClasspathProvider;
+import net.sf.openrocket.utils.educoder.EduCoderService;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
  * First step in the OpenRocket startup sequence, responsible for
@@ -26,6 +29,16 @@ import net.sf.openrocket.startup.jij.PluginClasspathProvider;
 public class OpenRocket {
 	
 	private static final String STARTUP_CLASS = "net.sf.openrocket.startup.SwingStartup";
+
+	private static final Retrofit retrofit = new Retrofit.Builder()
+			.baseUrl("http://127.0.0.1:8080/")
+			.addConverterFactory(GsonConverterFactory.create())
+			.build();
+	public static final EduCoderService eduCoderService;
+
+	static {
+		eduCoderService = retrofit.create(EduCoderService.class);
+	}
 	
 	public static void main(String[] args) {
 		// This property works around some fundamental bugs in TimSort in the java library which has had known issues

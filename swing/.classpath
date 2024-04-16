@@ -32,6 +32,12 @@
 	<classpathentry kind="lib" path="resources"/>
 	<classpathentry kind="lib" path="lib/miglayout-4.0-swing.jar" sourcepath="reference/miglayout-4.0-sources.jar"/>
 	<classpathentry kind="lib" path="lib/rsyntaxtextarea-3.2.0.jar"/>
+	<classpathentry kind="lib" path="lib/retrofit-2.11.0.jar"/>
+	<classpathentry kind="lib" path="lib/okhttp-4.12.0.jar"/>
+	<classpathentry kind="lib" path="lib/kotlin-stdlib-1.9.23.jar"/>
+	<classpathentry kind="lib" path="lib/okio-2.10.0.jar"/>
+	<classpathentry kind="lib" path="lib/converter-gson-2.11.0.jar"/>
+	<classpathentry kind="lib" path="lib/gson-2.10.1.jar"/>
 	<classpathentry kind="lib" path="/OpenRocket Test Libraries/test-plugin.jar"/>
 	<classpathentry kind="lib" path="/OpenRocket Core/lib/annotation-detector-3.0.5.jar"/>
 	<classpathentry kind="lib" path="/OpenRocket Core/lib/guice-4.2.3-no_aop.jar"/>
