@@ -6,6 +6,8 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
+import javax.swing.JButton;
+import javax.swing.SwingUtilities;
 
 import net.miginfocom.swing.MigLayout;
 import net.sf.openrocket.document.OpenRocketDocument;
@@ -22,7 +24,14 @@ import net.sf.openrocket.rocketcomponent.MotorMount;
 import net.sf.openrocket.rocketcomponent.RocketComponent;
 import net.sf.openrocket.rocketcomponent.SymmetricComponent;
 import net.sf.openrocket.startup.Application;
+import net.sf.openrocket.startup.OpenRocket;
 import net.sf.openrocket.unit.UnitGroup;
+import net.sf.openrocket.utils.educoder.BodyTubeCgRequest;
+import net.sf.openrocket.utils.educoder.Result;
+import org.jetbrains.annotations.NotNull;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 @SuppressWarnings("serial")
 public class BodyTubeConfig extends RocketComponentConfig {
@@ -110,6 +119,51 @@ public class BodyTubeConfig extends RocketComponentConfig {
 		check.setToolTipText(trans.get("BodyTubecfg.checkbox.Filled.ttip"));
 		panel.add(check, "skip, span 2, wrap");
 		order.add(check);
+
+		{//// CG calculation demonstration
+			panel.add(new JLabel(trans.get("BodyTube.lbl.CgCalc") + ":"));
+			JButton button = new JButton(trans.get("BodyTube.lbl.CgEnter"));
+			panel.add(button, "spanx, wrap");
+			button.addActionListener(e -> {
+				JDialog dialog = new JDialog(this.parent, trans.get("BodyTube.lbl.CgCalc"));
+				dialog.setSize(this.parent.getSize());
+				dialog.setLocationRelativeTo(null);
+				dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
+
+				final BodyTubeCgRequest request = new BodyTubeCgRequest(component.getLength());
+				String labelText = trans.get("BodyTube.lbl.length") + ": " + request.getLength();
+				String constraints = "newline, height 30!";
+				dialog.add(new JLabel(labelText), constraints);
+
+				JButton checkButton = new JButton(trans.get("BodyTube.lbl.check"));
+				JLabel checkResult = new JLabel(trans.get("BodyTube.lbl.checkResult") + ": ");
+				JLabel answerLabel = new JLabel(trans.get("BodyTube.lbl.answer") + ": ");
+				dialog.add(checkButton, "newline, height 30!");
+				dialog.add(checkResult, "height 30!");
+				dialog.add(answerLabel, "height 30!");
+				// Do not use UI thread to get the answer
+				checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateCG(request).enqueue(new Callback<>() {
+					@Override
+					public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
+						Result result = response.body();
+						if (result == null) return;
+						SwingUtilities.invokeLater(() -> {
+							checkResult.setText(trans.get("BodyTube.lbl.checkResult") + ": " + result.getResult());
+							answerLabel.setText(trans.get("BodyTube.lbl.answer") + ": " + component.getComponentCG().x);
+						});
+					}
+
+					@Override
+					public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
+						SwingUtilities.invokeLater(() -> {
+							checkResult.setText(trans.get("BodyTube.lbl.checkResult") + ": " + throwable.getMessage());
+							answerLabel.setText(trans.get("BodyTube.lbl.answer") + ": " + component.getComponentCG().x);
+						});
+					}
+				}));
+				dialog.setVisible(true);
+			});
+		}
 
 		//// Material
 		MaterialPanel materialPanel = new MaterialPanel(component, document, Material.Type.BULK, order);

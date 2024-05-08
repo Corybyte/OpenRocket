@@ -24,6 +24,15 @@ public interface EduCoderService {
     Call<Result> calculateCG(@Body FinSetCgRequest request);
 
     /**
+     * 计算箭体组件重心位置
+     *
+     * @param request request
+     * @return result
+     */
+    @POST("BodyTube/calculateCG")
+    Call<Result> calculateCG(@Body BodyTubeCgRequest request);
+
+    /**
      * 计算头锥组件压心位置
      *
      * @param request request
