@@ -31,4 +31,13 @@ public interface EduCoderService {
      */
     @POST("NoseCone/calculateCP")
     Call<Result> calculateCP(@Body NoseConeCpRequest request);
+
+    /**
+     * 计算尾翼组件压心位置
+     *
+     * @param request request
+     * @return result
+     */
+    @POST("FinSet/calculateCP")
+    Call<Result> calculateCP(@Body FinSetCpRequest request);
 }
