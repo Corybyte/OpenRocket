@@ -3,6 +3,8 @@ package net.sf.openrocket.gui.configdialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -44,16 +46,24 @@ import net.sf.openrocket.rocketcomponent.FreeformFinSet;
 import net.sf.openrocket.rocketcomponent.InnerTube;
 import net.sf.openrocket.rocketcomponent.RocketComponent;
 import net.sf.openrocket.rocketcomponent.SymmetricComponent;
+import net.sf.openrocket.rocketcomponent.ExternalComponent;
 import net.sf.openrocket.rocketcomponent.position.AxialMethod;
 import net.sf.openrocket.startup.Application;
+import net.sf.openrocket.startup.OpenRocket;
 import net.sf.openrocket.startup.Preferences;
 import net.sf.openrocket.unit.UnitGroup;
 import net.sf.openrocket.util.Coordinate;
 import net.sf.openrocket.util.MathUtil;
 import net.sf.openrocket.gui.widgets.SelectColorButton;
 
+import net.sf.openrocket.utils.educoder.FinSetCgRequest;
+import net.sf.openrocket.utils.educoder.Result;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 
 @SuppressWarnings("serial")
@@ -66,7 +76,7 @@ public abstract class FinSetConfig extends RocketComponentConfig {
 	
 	public FinSetConfig(OpenRocketDocument d, RocketComponent component, JDialog parent) {
 		super(d, component, parent);
-		
+
 		//// Fin tabs and Through-the-wall fin tabs
 		tabbedPane.insertTab(trans.get("FinSetConfig.tab.Fintabs"), null, finTabPanel(),
 				trans.get("FinSetConfig.tab.Through-the-wall"), 0);
@@ -296,6 +306,84 @@ public abstract class FinSetConfig extends RocketComponentConfig {
 		});
 		panel.add(autoCalc, "skip 1, spanx");
     	order.add(autoCalc);
+
+		{//// CG calculation demonstration
+			panel.add(new JLabel(trans.get("FinSet.lbl.CgCalc") + ":"));
+			JButton button = new JButton(trans.get("FinSet.lbl.CgEnter"));
+			panel.add(button, "spanx, wrap");
+			button.addActionListener(e -> {
+				JDialog dialog = new JDialog(this.parent, trans.get("FinSet.lbl.CgCalc"));
+				dialog.setSize(this.parent.getSize());
+				dialog.setLocationRelativeTo(null);
+				dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
+
+				String[] methodNames = {"calculateSinglePlanformCentroid", "calculateTabCentroid", "calculateFilletVolumeCentroid"};
+				List<Coordinate> centroids = new ArrayList<>();
+				try {
+					for (String methodName : methodNames) {
+						Method method = FinSet.class.getDeclaredMethod(methodName);
+						method.setAccessible(true);
+						centroids.add((Coordinate) method.invoke(component));
+					}
+					Field field = FinSet.class.getDeclaredField("thickness");
+					field.setAccessible(true);
+					Double thickness = (Double) field.get(component);
+					field = FinSet.class.getDeclaredField("crossSection");
+					field.setAccessible(true);
+					FinSet.CrossSection crossSection = (FinSet.CrossSection) field.get(component);
+					field = ExternalComponent.class.getDeclaredField("material");
+					field.setAccessible(true);
+					Material material = (Material) field.get(component);
+					field = FinSet.class.getDeclaredField("filletMaterial");
+					field.setAccessible(true);
+					Material filletMaterial = (Material) field.get(component);
+					field = FinSet.class.getDeclaredField("finCount");
+					field.setAccessible(true);
+					Integer finCount = (Integer) field.get(component);
+
+					final FinSetCgRequest request = new FinSetCgRequest(centroids.get(0), centroids.get(1),
+							centroids.get(2), thickness, crossSection, material.getDensity(),
+							filletMaterial.getDensity(), finCount);
+					Field[] fields = FinSetCgRequest.class.getDeclaredFields();
+					for (Field f : fields) {
+						f.setAccessible(true);
+						String labelText = trans.get("FinSet.lbl." + f.getName()) + ": " + f.get(request);
+						String constraints = "newline, height 30!";
+						dialog.add(new JLabel(labelText), constraints);
+					}
+
+					JButton checkButton = new JButton(trans.get("FinSet.lbl.check"));
+					JLabel checkResult = new JLabel(trans.get("FinSet.lbl.checkResult") + ": ");
+					JLabel answerLabel = new JLabel(trans.get("FinSet.lbl.answer") + ": ");
+					dialog.add(checkButton, "newline, height 30!");
+					dialog.add(checkResult, "height 30!");
+					dialog.add(answerLabel, "height 30!");
+					// Do not use UI thread to get the answer
+					checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateCG(request).enqueue(new Callback<>() {
+						@Override
+						public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
+							Result result = response.body();
+							if (result == null) return;
+							SwingUtilities.invokeLater(() -> {
+								checkResult.setText(trans.get("FinSet.lbl.checkResult") + ": " + result.getResult());
+								answerLabel.setText(trans.get("FinSet.lbl.answer") + ": " + component.getComponentCG().x);
+							});
+						}
+
+						@Override
+						public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
+							SwingUtilities.invokeLater(() -> {
+								checkResult.setText(trans.get("FinSet.lbl.checkResult") + ": " + throwable.getMessage());
+								answerLabel.setText(trans.get("FinSet.lbl.answer") + ": " + component.getComponentCG().x);
+							});
+						}
+					}));
+				} catch (Exception ex) {
+					// ignored
+				}
+				dialog.setVisible(true);
+			});
+		}
 		
 		return panel;
 	}
