@@ -49,4 +49,13 @@ public interface EduCoderService {
      */
     @POST("FinSet/calculateCP")
     Call<Result> calculateCP(@Body FinSetCpRequest request);
+
+    /**
+     * 计算箭体组件压心位置
+     *
+     * @param request request
+     * @return result
+     */
+    @POST("BodyTube/calculateCP")
+    Call<Result> calculateCP(@Body BodyTubeCpRequest request);
 }

@@ -1,22 +1,6 @@
 package net.sf.openrocket.utils.educoder;
 
-public class NoseConeCpRequest {
-    /**
-     * 前半径
-     */
-    private Double foreRadius;
-    /**
-     * 后半径
-     */
-    private Double aftRadius;
-    /**
-     * 长度
-     */
-    private Double length;
-    /**
-     * 总体积
-     */
-    private Double fullVolume;
+public class BodyTubeCpRequest {
     /**
      * 机翼中心
      */
@@ -45,38 +29,6 @@ public class NoseConeCpRequest {
      * 迎角
      */
     private Double AOA;
-
-    public Double getForeRadius() {
-        return foreRadius;
-    }
-
-    public void setForeRadius(Double foreRadius) {
-        this.foreRadius = foreRadius;
-    }
-
-    public Double getAftRadius() {
-        return aftRadius;
-    }
-
-    public void setAftRadius(Double aftRadius) {
-        this.aftRadius = aftRadius;
-    }
-
-    public Double getLength() {
-        return length;
-    }
-
-    public void setLength(Double length) {
-        this.length = length;
-    }
-
-    public Double getFullVolume() {
-        return fullVolume;
-    }
-
-    public void setFullVolume(Double fullVolume) {
-        this.fullVolume = fullVolume;
-    }
 
     public Double getPlanformCenter() {
         return planformCenter;
@@ -136,12 +88,8 @@ public class NoseConeCpRequest {
 
     @Override
     public String toString() {
-        return "NoseConeCpRequest{" +
-                "foreRadius=" + foreRadius +
-                ", aftRadius=" + aftRadius +
-                ", length=" + length +
-                ", fullVolume=" + fullVolume +
-                ", planformCenter=" + planformCenter +
+        return "BodyTubeCpRequest{" +
+                "planformCenter=" + planformCenter +
                 ", planformArea=" + planformArea +
                 ", sincAOA=" + sincAOA +
                 ", sinAOA=" + sinAOA +
