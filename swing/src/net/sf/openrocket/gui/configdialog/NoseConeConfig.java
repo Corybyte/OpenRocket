@@ -176,6 +176,7 @@ public class NoseConeConfig extends RocketComponentConfig {
 				dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
 
 				final NoseConeCgRequest request = new NoseConeCgRequest();
+				request.setAnswer(component.getComponentCG().x);
 
 				String[] transitionMethodNames = {"getForeRadius", "getAftRadius"};
 				String[] transitionFieldNames = {"shapeParameter", "type"};
@@ -280,6 +281,10 @@ public class NoseConeConfig extends RocketComponentConfig {
 				SymmetricComponentCalc componentCalc = new SymmetricComponentCalc(component);
 				String[] fieldNames = {"foreRadius", "aftRadius", "length", "fullVolume", "planformCenter", "planformArea"};
 
+				AerodynamicForces forces = new AerodynamicForces().zero();
+				componentCalc.calculateNonaxialForces(conditions, new Transformation(0, 0, 0), forces,new WarningSet());
+				request.setAnswer(forces.getCP().x);
+
 				try {
 					for (String fieldName : fieldNames) {
 						Field field = SymmetricComponentCalc.class.getDeclaredField(fieldName);
@@ -313,8 +318,6 @@ public class NoseConeConfig extends RocketComponentConfig {
 						public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
 							Result result = response.body();
 							if (result == null) return;
-							AerodynamicForces forces = new AerodynamicForces().zero();
-							componentCalc.calculateNonaxialForces(conditions, new Transformation(0, 0, 0), forces,new WarningSet());
 							SwingUtilities.invokeLater(() -> {
 								checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult());
 								answerLabel.setText(trans.get("NoseConeCfg.lbl.answer") + ": " + forces.getCP().x);
@@ -323,8 +326,6 @@ public class NoseConeConfig extends RocketComponentConfig {
 
 						@Override
 						public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
-							AerodynamicForces forces = new AerodynamicForces().zero();
-							componentCalc.calculateNonaxialForces(conditions, new Transformation(0, 0, 0), forces,new WarningSet());
 							SwingUtilities.invokeLater(() -> {
 								checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + throwable.getMessage());
 								answerLabel.setText(trans.get("NoseConeCfg.lbl.answer") + ": " + forces.getCP().x);

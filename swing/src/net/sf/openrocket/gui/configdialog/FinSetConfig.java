@@ -345,7 +345,7 @@ public abstract class FinSetConfig extends RocketComponentConfig {
 
 					final FinSetCgRequest request = new FinSetCgRequest(centroids.get(0), centroids.get(1),
 							centroids.get(2), thickness, crossSection, material.getDensity(),
-							filletMaterial.getDensity(), finCount);
+							filletMaterial.getDensity(), finCount, component.getComponentCG().x);
 					Field[] fields = FinSetCgRequest.class.getDeclaredFields();
 					for (Field f : fields) {
 						f.setAccessible(true);
@@ -406,6 +406,10 @@ public abstract class FinSetConfig extends RocketComponentConfig {
 				FinSetCalc componentCalc = new FinSetCalc((FinSet) component);
 				String[] fieldNames = {"macLead", "macLength", "ar"};
 
+				AerodynamicForces forces = new AerodynamicForces().zero();
+				componentCalc.calculateNonaxialForces(conditions, new Transformation(0, 0, 0), forces, new WarningSet());
+				request.setAnswer(forces.getCP().x);
+
 				try {
 					for (String fieldName : fieldNames) {
 						Field field = FinSetCalc.class.getDeclaredField(fieldName);
@@ -439,8 +443,6 @@ public abstract class FinSetConfig extends RocketComponentConfig {
 						public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
 							Result result = response.body();
 							if (result == null) return;
-							AerodynamicForces forces = new AerodynamicForces().zero();
-							componentCalc.calculateNonaxialForces(conditions, new Transformation(0, 0, 0), forces, new WarningSet());
 							SwingUtilities.invokeLater(() -> {
 								checkResult.setText(trans.get("FinSet.lbl.checkResult") + ": " + result.getResult());
 								answerLabel.setText(trans.get("FinSet.lbl.answer") + ": " + forces.getCP().x);
@@ -449,8 +451,6 @@ public abstract class FinSetConfig extends RocketComponentConfig {
 
 						@Override
 						public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
-							AerodynamicForces forces = new AerodynamicForces().zero();
-							componentCalc.calculateNonaxialForces(conditions, new Transformation(0, 0, 0), forces, new WarningSet());
 							SwingUtilities.invokeLater(() -> {
 								checkResult.setText(trans.get("FinSet.lbl.checkResult") + ": " + throwable.getMessage());
 								answerLabel.setText(trans.get("FinSet.lbl.answer") + ": " + forces.getCP().x);

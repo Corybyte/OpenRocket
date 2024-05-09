@@ -17,6 +17,10 @@ public class FinSetCpRequest {
      * 翅片长宽比
      */
     private Double ar;
+    /**
+     * 正确结果
+     */
+    private Double answer;
 
     public Double getMacLead() {
         return macLead;
@@ -50,6 +54,14 @@ public class FinSetCpRequest {
         this.ar = ar;
     }
 
+    public Double getAnswer() {
+        return answer;
+    }
+
+    public void setAnswer(Double answer) {
+        this.answer = answer;
+    }
+
     @Override
     public String toString() {
         return "FinSetCpRequest{" +
@@ -57,6 +69,7 @@ public class FinSetCpRequest {
                 ", macLength=" + macLength +
                 ", mach=" + mach +
                 ", ar=" + ar +
+                ", answer=" + answer +
                 '}';
     }
 }

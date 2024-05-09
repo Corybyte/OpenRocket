@@ -45,6 +45,10 @@ public class NoseConeCpRequest {
      * 迎角
      */
     private Double AOA;
+    /**
+     * 正确结果
+     */
+    private Double answer;
 
     public Double getForeRadius() {
         return foreRadius;
@@ -134,6 +138,14 @@ public class NoseConeCpRequest {
         this.AOA = AOA;
     }
 
+    public Double getAnswer() {
+        return answer;
+    }
+
+    public void setAnswer(Double answer) {
+        this.answer = answer;
+    }
+
     @Override
     public String toString() {
         return "NoseConeCpRequest{" +
@@ -148,6 +160,7 @@ public class NoseConeCpRequest {
                 ", refArea=" + refArea +
                 ", mach=" + mach +
                 ", AOA=" + AOA +
+                ", answer=" + answer +
                 '}';
     }
 }

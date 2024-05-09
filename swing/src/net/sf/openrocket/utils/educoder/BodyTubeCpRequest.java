@@ -29,6 +29,10 @@ public class BodyTubeCpRequest {
      * 迎角
      */
     private Double AOA;
+    /**
+     * 正确结果
+     */
+    private Double answer;
 
     public Double getPlanformCenter() {
         return planformCenter;
@@ -86,6 +90,14 @@ public class BodyTubeCpRequest {
         this.AOA = AOA;
     }
 
+    public Double getAnswer() {
+        return answer;
+    }
+
+    public void setAnswer(Double answer) {
+        this.answer = answer;
+    }
+
     @Override
     public String toString() {
         return "BodyTubeCpRequest{" +
@@ -96,6 +108,7 @@ public class BodyTubeCpRequest {
                 ", refArea=" + refArea +
                 ", mach=" + mach +
                 ", AOA=" + AOA +
+                ", answer=" + answer +
                 '}';
     }
 }

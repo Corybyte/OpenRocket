@@ -141,6 +141,7 @@ public class BodyTubeConfig extends RocketComponentConfig {
 				dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
 
 				final BodyTubeCgRequest request = new BodyTubeCgRequest(component.getLength());
+				request.setAnswer(component.getComponentCG().x);
 				String labelText = trans.get("BodyTube.lbl.length") + ": " + request.getLength();
 				String constraints = "newline, height 30!";
 				dialog.add(new JLabel(labelText), constraints);
@@ -194,6 +195,10 @@ public class BodyTubeConfig extends RocketComponentConfig {
 				SymmetricComponentCalc componentCalc = new SymmetricComponentCalc(component);
 				String[] fieldNames = {"planformCenter", "planformArea"};
 
+				AerodynamicForces forces = new AerodynamicForces().zero();
+				componentCalc.calculateNonaxialForces(conditions, new Transformation(0, 0, 0), forces,new WarningSet());
+				request.setAnswer(forces.getCP().x);
+
 				try {
 					for (String fieldName : fieldNames) {
 						Field field = SymmetricComponentCalc.class.getDeclaredField(fieldName);
@@ -227,8 +232,6 @@ public class BodyTubeConfig extends RocketComponentConfig {
 						public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
 							Result result = response.body();
 							if (result == null) return;
-							AerodynamicForces forces = new AerodynamicForces().zero();
-							componentCalc.calculateNonaxialForces(conditions, new Transformation(0, 0, 0), forces,new WarningSet());
 							SwingUtilities.invokeLater(() -> {
 								checkResult.setText(trans.get("BodyTube.lbl.checkResult") + ": " + result.getResult());
 								answerLabel.setText(trans.get("BodyTube.lbl.answer") + ": " + forces.getCP().x);
@@ -237,8 +240,6 @@ public class BodyTubeConfig extends RocketComponentConfig {
 
 						@Override
 						public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
-							AerodynamicForces forces = new AerodynamicForces().zero();
-							componentCalc.calculateNonaxialForces(conditions, new Transformation(0, 0, 0), forces,new WarningSet());
 							SwingUtilities.invokeLater(() -> {
 								checkResult.setText(trans.get("BodyTube.lbl.checkResult") + ": " + throwable.getMessage());
 								answerLabel.setText(trans.get("BodyTube.lbl.answer") + ": " + forces.getCP().x);

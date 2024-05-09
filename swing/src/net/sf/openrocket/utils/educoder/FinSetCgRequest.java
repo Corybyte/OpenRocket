@@ -72,10 +72,14 @@ public class FinSetCgRequest {
      * 翅片数量
      */
     private Integer finCount;
+    /**
+     * 正确结果
+     */
+    private Double answer;
 
     public FinSetCgRequest(Coordinate wettedCentroid, Coordinate tabCentroid, Coordinate filletCentroid,
                            Double thickness, FinSet.CrossSection crossSection, Double materialDensity,
-                           Double filletMaterialDensity, Integer finCount) {
+                           Double filletMaterialDensity, Integer finCount, Double answer) {
         this.singlePlanformX = wettedCentroid.x;
         this.singlePlanformY = wettedCentroid.y;
         this.singlePlanformZ = wettedCentroid.z;
@@ -93,6 +97,7 @@ public class FinSetCgRequest {
         this.materialDensity = materialDensity;
         this.filletMaterialDensity = filletMaterialDensity;
         this.finCount = finCount;
+        this.answer = answer;
     }
 
     public Double getSinglePlanformX() {
@@ -231,6 +236,14 @@ public class FinSetCgRequest {
         this.finCount = finCount;
     }
 
+    public Double getAnswer() {
+        return answer;
+    }
+
+    public void setAnswer(Double answer) {
+        this.answer = answer;
+    }
+
     @Override
     public String toString() {
         return "FinSetCgRequest{" +
@@ -251,6 +264,7 @@ public class FinSetCgRequest {
                 ", materialDensity=" + materialDensity +
                 ", filletMaterialDensity=" + filletMaterialDensity +
                 ", finCount=" + finCount +
+                ", answer=" + answer +
                 '}';
     }
 }

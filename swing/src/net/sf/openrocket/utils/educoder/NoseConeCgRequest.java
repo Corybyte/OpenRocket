@@ -36,6 +36,11 @@ public class NoseConeCgRequest {
 
     private Double transitionAftRadius;
 
+    /**
+     * 正确结果
+     */
+    private Double answer;
+
     public Double getLength() {
         return length;
     }
@@ -116,6 +121,14 @@ public class NoseConeCgRequest {
         this.transitionAftRadius = transitionAftRadius;
     }
 
+    public Double getAnswer() {
+        return answer;
+    }
+
+    public void setAnswer(Double answer) {
+        this.answer = answer;
+    }
+
     @Override
     public String toString() {
         return "NoseConeCgRequest{" +
@@ -128,6 +141,7 @@ public class NoseConeCgRequest {
                 ", transitionType='" + transitionType + '\'' +
                 ", transitionForeRadius=" + transitionForeRadius +
                 ", transitionAftRadius=" + transitionAftRadius +
+                ", answer=" + answer +
                 '}';
     }
 }
