@@ -374,10 +374,8 @@ public abstract class FinSetConfig extends RocketComponentConfig {
 
 						@Override
 						public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
-							SwingUtilities.invokeLater(() -> {
-								checkResult.setText(trans.get("FinSet.lbl.checkResult") + ": " + throwable.getMessage());
-								answerLabel.setText(trans.get("FinSet.lbl.answer") + ": " + component.getComponentCG().x);
-							});
+							SwingUtilities.invokeLater(() ->
+									JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
 						}
 					}));
 				} catch (Exception ex) {
@@ -451,10 +449,8 @@ public abstract class FinSetConfig extends RocketComponentConfig {
 
 						@Override
 						public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
-							SwingUtilities.invokeLater(() -> {
-								checkResult.setText(trans.get("FinSet.lbl.checkResult") + ": " + throwable.getMessage());
-								answerLabel.setText(trans.get("FinSet.lbl.answer") + ": " + forces.getCP().x);
-							});
+							SwingUtilities.invokeLater(() ->
+									JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
 						}
 					}));
 				} catch (Exception ex) {

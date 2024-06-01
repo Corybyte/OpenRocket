@@ -1,13 +1,7 @@
 package net.sf.openrocket.gui.configdialog;
 
 
-import javax.swing.JCheckBox;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSpinner;
-import javax.swing.JButton;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
 import net.miginfocom.swing.MigLayout;
 import net.sf.openrocket.aerodynamics.AerodynamicForces;
@@ -166,10 +160,8 @@ public class BodyTubeConfig extends RocketComponentConfig {
 
 					@Override
 					public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
-						SwingUtilities.invokeLater(() -> {
-							checkResult.setText(trans.get("BodyTube.lbl.checkResult") + ": " + throwable.getMessage());
-							answerLabel.setText(trans.get("BodyTube.lbl.answer") + ": " + component.getComponentCG().x);
-						});
+						SwingUtilities.invokeLater(() ->
+								JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
 					}
 				}));
 				dialog.setVisible(true);
@@ -240,10 +232,8 @@ public class BodyTubeConfig extends RocketComponentConfig {
 
 						@Override
 						public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
-							SwingUtilities.invokeLater(() -> {
-								checkResult.setText(trans.get("BodyTube.lbl.checkResult") + ": " + throwable.getMessage());
-								answerLabel.setText(trans.get("BodyTube.lbl.answer") + ": " + forces.getCP().x);
-							});
+							SwingUtilities.invokeLater(() ->
+									JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
 						}
 					}));
 				} catch (Exception ex) {
