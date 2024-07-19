@@ -14,6 +14,14 @@ public interface EduCoderService {
     @POST("NoseCone/calculateCG")
     Call<Result> calculateCG(@Body NoseConeCgRequest request);
 
+    /***
+     * 计算头锥组件转动惯量
+     * @param request request
+     * @return result
+     */
+    @POST("NoseCone/calculateMOI")
+    Call<Result> calculateMOI(@Body NoseConeMOIRequest request);
+
     /**
      * 计算尾翼组件重心位置
      *

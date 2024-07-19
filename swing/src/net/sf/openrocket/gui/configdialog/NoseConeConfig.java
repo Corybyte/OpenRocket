@@ -35,6 +35,7 @@ import net.sf.openrocket.util.Coordinate;
 import net.sf.openrocket.util.Transformation;
 import net.sf.openrocket.utils.educoder.NoseConeCgRequest;
 import net.sf.openrocket.utils.educoder.NoseConeCpRequest;
+import net.sf.openrocket.utils.educoder.NoseConeMOIRequest;
 import net.sf.openrocket.utils.educoder.Result;
 import org.jetbrains.annotations.NotNull;
 import retrofit2.Call;
@@ -228,7 +229,6 @@ public class NoseConeConfig extends RocketComponentConfig {
 						String labelText = trans.get("NoseConeCfg.lbl." + methodName.replaceFirst("get", "transition")) + ": " + value;
 						dialog.add(new JLabel(labelText), "newline, height 30!");
 					}
-
 					JButton checkButton = new JButton(trans.get("NoseConeCfg.lbl.check"));
 					JLabel checkResult = new JLabel(trans.get("NoseConeCfg.lbl.checkResult") + ": ");
 					JLabel answerLabel = new JLabel(trans.get("NoseConeCfg.lbl.answer") + ": ");
@@ -310,6 +310,7 @@ public class NoseConeConfig extends RocketComponentConfig {
 					dialog.add(checkButton, "newline, height 30!");
 					dialog.add(checkResult, "height 30!");
 					dialog.add(answerLabel, "height 30!");
+
 					// Do not use UI thread to get the answer
 					checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateCP(request).enqueue(new Callback<>() {
 						@Override
@@ -335,6 +336,99 @@ public class NoseConeConfig extends RocketComponentConfig {
 			});
 		}
 
+		{ // MOI calculate:
+			panel.add(new JLabel(trans.get("NoseConeCfg.lbl.MOICalc") + ":"));
+			JButton button = new JButton(trans.get("NoseConeCfg.lbl.MOIEnter"));
+			panel.add(button, "spanx, wrap");
+			button.addActionListener(e -> {
+				JDialog dialog = new JDialog(this.parent, trans.get("NoseConeCfg.lbl.MOICalc"));
+				dialog.setSize(this.parent.getSize());
+				dialog.setLocationRelativeTo(null);
+				dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
+
+				final NoseConeMOIRequest request = new NoseConeMOIRequest();
+				// answer = rotationalUnitInertia
+				request.setAnswer(component.getRotationalInertia());
+
+				String[] transitionMethodNames = {"getForeRadius", "getAftRadius"};
+				String[] transitionFieldNames = {"shapeParameter", "type"};
+
+				String[] fieldNames = {"filled", "thickness", "DIVISIONS"};
+
+				try{
+					//get and set  properties
+					for (String fieldName:fieldNames){
+						Field field = SymmetricComponent.class.getDeclaredField(fieldName);
+						Field reqField = NoseConeMOIRequest.class.getDeclaredField(fieldName);
+						field.setAccessible(true);
+						reqField.setAccessible(true);
+						Object value = field.get(component);
+						reqField.set(request, value);
+						String labelText = trans.get("NoseConeCfg.lbl." + fieldName) + ": " + value;
+						String constraints = (fieldName.equals(fieldNames[0])) ? "spanx, height 30!" : "newline, height 30!";
+						dialog.add(new JLabel(labelText), constraints);
+					}
+					//set len
+					double length = component.getLength();
+					request.setLength(length);
+					String lengthLabelText = trans.get("NoseConeCfg.lbl.length") + ": " + length;
+					dialog.add(new JLabel(lengthLabelText), "newline, height 30!");
+
+					//set transitionMethodNames
+					for (String fieldName : transitionFieldNames) {
+						Field field = Transition.class.getDeclaredField(fieldName);
+						String reqFieldName = "transition" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
+						Field reqField = NoseConeMOIRequest.class.getDeclaredField(reqFieldName);
+						field.setAccessible(true);
+						reqField.setAccessible(true);
+						Object value = field.get(component);
+						reqField.set(request, value);
+						String labelText = trans.get("NoseConeCfg.lbl." + reqFieldName) + ": " + value;
+						if (value instanceof Transition.Shape)
+							labelText = trans.get("NoseConeCfg.lbl." + reqFieldName) + ": " + ((Transition.Shape) value).name();
+						dialog.add(new JLabel(labelText), "newline, height 30!");
+					}
+					// AftRadius
+					for (String methodName : transitionMethodNames) {
+						Method method = Transition.class.getDeclaredMethod(methodName);
+						Method reqMethod = NoseConeMOIRequest.class
+								.getDeclaredMethod(methodName.replaceFirst("get", "setTransition"), Double.class);
+						Double value = (Double) method.invoke(component); // All values are double type
+						reqMethod.invoke(request, value);
+						String labelText = trans.get("NoseConeCfg.lbl." + methodName.replaceFirst("get", "transition")) + ": " + value;
+						dialog.add(new JLabel(labelText), "newline, height 30!");
+					}
+					JButton checkButton = new JButton(trans.get("NoseConeCfg.lbl.check"));
+					JLabel checkResult = new JLabel(trans.get("NoseConeCfg.lbl.checkResult") + ": ");
+					JLabel answerLabel = new JLabel(trans.get("NoseConeCfg.lbl.answer") + ": ");
+					dialog.add(checkButton, "newline, height 30!");
+					dialog.add(checkResult, "height 30!");
+					dialog.add(answerLabel, "height 30!");
+					// Do not use UI thread to get the answer
+					checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateMOI(request).enqueue(new Callback<>() {
+						@Override
+						public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
+							Result result = response.body();
+							if (result == null) return;
+							SwingUtilities.invokeLater(() -> {
+								checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult());
+								answerLabel.setText(trans.get("NoseConeCfg.lbl.answer") + ": " + component.getRotationalInertia());
+							});
+						}
+
+						@Override
+						public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
+							SwingUtilities.invokeLater(() ->
+									JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
+						}
+					}));
+
+				}catch (Exception ex){
+					//ignored
+				}
+				dialog.setVisible(true);
+			});
+		}
 		{//// Flip to tail cone:
 			BooleanModel bm = new BooleanModel(component, "Flipped");
 			register(bm);
