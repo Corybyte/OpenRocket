@@ -3,6 +3,7 @@ from common_helper import equals
 import os
 import nose_cone_cg_helper
 import nose_cone_cp_helper
+import nose_cone_moi_helper
 import finset_cg_helper
 import finset_cp_helper
 import body_tube_cg_helper
@@ -19,6 +20,15 @@ def check(result, answer, dir):
         with open(os.path.join(dir, "result.txt"), 'w') as f:
             f.write("No")
 
+@app.route('/NoseCone/calculateMOI', methods=['POST'])
+def calculateNoseConeMOI():
+    app.logger.info(f"{request.json}")
+    try:
+        moi = nose_cone_moi_helper.calculateMOI(request.json)
+        check(moi, request.json['answer'], os.path.join(os.getcwd(), "step1"))
+        return {"code": 200, "msg": "ok", "result": moi}
+    except Exception:
+        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 @app.route('/NoseCone/calculateCG', methods=['POST'])
 def calculateNoseConeCG():
     app.logger.info(f"{request.json}")
@@ -28,7 +38,6 @@ def calculateNoseConeCG():
         return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
-
 
 @app.route('/FinSet/calculateCG', methods=['POST'])
 def calculateFinSetCG():
@@ -79,6 +88,8 @@ def calculateBodyTubeCP():
         return {"code": 200, "msg": "ok", "result": cp}
     except Exception:
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
+
 
 if __name__ == '__main__':
     app.run(port=8080, debug=True)
