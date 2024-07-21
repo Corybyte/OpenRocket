@@ -364,6 +364,7 @@ public abstract class SymmetricComponent extends BodyComponent implements BoxBou
 	 * @param r1 radius of fore end of frustum
 	 * @param r2 radius of aft end of frustum
 	 * @return rotational moment of inertia
+	 * 计算转动惯量
 	 */
 	private double calculateUnitRotMOI(double r1, double r2) {
 		// check for cylinder special case
@@ -450,6 +451,7 @@ public abstract class SymmetricComponent extends BodyComponent implements BoxBou
 		longitudinalUnitInertia = 0;
 		rotationalUnitInertia = 0;
 
+
 		//临时存储重心坐标
 		double cgx = 0;
 
@@ -482,7 +484,6 @@ public abstract class SymmetricComponent extends BodyComponent implements BoxBou
 
 		    //分割区间的右边界
 			final double x2 = (n + 1) * getLength() / DIVISIONS;
-
 			//计算了每个分割区间的长度
 			final double l = x2 - x1;
 
@@ -493,13 +494,15 @@ public abstract class SymmetricComponent extends BodyComponent implements BoxBou
 			//分割区间的内部边界半径
 			final double r2o = getRadius(x2);
 
+
+
 			//斜边的长度
 			final double hyp = MathUtil.hypot(r2o - r1o, l);
 
 			//环的高度
 			final double height = thickness * hyp / l;
 
-			// get inner radii.
+			// get inr1o = getRadius(x1);ner radii.
 			//获取内半径
 			final double r1i;
 			final double r2i;
@@ -540,6 +543,8 @@ public abstract class SymmetricComponent extends BodyComponent implements BoxBou
 
 			//表示内部半径梯形台体相对于 x 轴的单位旋转惯性矩。
 			final double Ixxi = calculateUnitRotMOI(r1i, r2i);
+
+
 
 			//整个梯形台体相对于 x 轴的总旋转惯性矩
 			final double Ixx = Ixxo * fullCG.weight - Ixxi * innerCG.weight;
@@ -587,10 +592,11 @@ public abstract class SymmetricComponent extends BodyComponent implements BoxBou
 		cgx *= Math.PI / 3.0;
 		wetArea *= Math.PI;
 		rotationalUnitInertia *= 3.0 / 10.0;
-		
+
 		if (volume < 0.0000000001) { // 0.1 mm^3
 			volume = 0;
 			cg = new Coordinate(getLength() / 2, 0, 0, 0);
+			//length;
 		} else {
 			// the mass of this shape is the material density * volume.
 			// it cannot come from super.getComponentMass() since that 
