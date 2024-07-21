@@ -44,24 +44,24 @@ import retrofit2.Response;
 
 @SuppressWarnings("serial")
 public class NoseConeConfig extends RocketComponentConfig {
-	
-	
+
+
 	private DescriptionArea description;
-	
+
 	private JLabel shapeLabel;
 	private JSpinner shapeSpinner;
 	private JSlider shapeSlider;
 	private final JCheckBox checkAutoBaseRadius;
 	private static final Translator trans = Application.getTranslator();
-	
+
 	// Prepended to the description from NoseCone.DESCRIPTIONS
 	private static final String PREDESC = "<html>";
-	
+
 	public NoseConeConfig(OpenRocketDocument d, RocketComponent c, JDialog parent) {
 		super(d, c, parent);
-		
+
 		final JPanel panel = new JPanel(new MigLayout("", "[][65lp::][30lp::]"));
-		
+
 		////  Shape selection
 		{//// Nose cone shape:
 			panel.add(new JLabel(trans.get("NoseConeCfg.lbl.Noseconeshape")));
@@ -412,7 +412,7 @@ public class NoseConeConfig extends RocketComponentConfig {
 							if (result == null) return;
 							SwingUtilities.invokeLater(() -> {
 								checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult());
-								answerLabel.setText(trans.get("NoseConeCfg.lbl.answer") + ": " + component.getRotationalInertia());
+								answerLabel.setText(trans.get("NoseConeCfg.lbl.answer") + ": " + component.getRotationalUnitInertia());
 							});
 						}
 
@@ -450,20 +450,20 @@ public class NoseConeConfig extends RocketComponentConfig {
 		panel.add(new JLabel(""), "growy");
 
 		////  Description
-		
+
 		JPanel panel2 = new JPanel(new MigLayout("ins 0"));
-		
+
 		description = new DescriptionArea(5);
 		description.setText(PREDESC + ((NoseCone) component).getShapeType().getNoseConeDescription());
 		panel2.add(description, "wmin 250lp, spanx, growx, wrap para");
-		
+
 
 		//// Material
 		MaterialPanel materialPanel = new MaterialPanel(component, document, Material.Type.BULK, order);
 		register(materialPanel);
 		panel2.add(materialPanel, "span, wrap");
 		panel.add(panel2, "cell 4 0, gapleft 40lp, aligny 0%, spany");
-		
+
 
 		//// General and General properties
 		tabbedPane.insertTab(trans.get("NoseConeCfg.tab.General"), null, panel,
@@ -480,8 +480,8 @@ public class NoseConeConfig extends RocketComponentConfig {
 		CustomFocusTraversalPolicy policy = new CustomFocusTraversalPolicy(order);
 		parent.setFocusTraversalPolicy(policy);
 	}
-	
-	
+
+
 	private void updateEnabled() {
 		boolean e = ((NoseCone) component).getShapeType().usesParameter();
 		shapeLabel.setEnabled(e);
