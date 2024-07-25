@@ -298,11 +298,11 @@ public class TransitionConfig extends RocketComponentConfig {
 		}
 
 		{//// CP calculation demonstration
-			panel.add(new JLabel(trans.get("BodyTube.lbl.CpCalc") + ":"));
-			JButton button = new JButton(trans.get("BodyTube.lbl.CpEnter"));
+			panel.add(new JLabel(trans.get("NoseConeCfg.lbl.CpCalc") + ":"));
+			JButton button = new JButton(trans.get("NoseConeCfg.lbl.CpEnter"));
 			panel.add(button, "spanx, wrap");
 			button.addActionListener(e -> {
-				JDialog dialog = new JDialog(this.parent, trans.get("BodyTube.lbl.CpCalc"));
+				JDialog dialog = new JDialog(this.parent, trans.get("NoseConeCfg.lbl.CpCalc"));
 				dialog.setSize(this.parent.getSize());
 				dialog.setLocationRelativeTo(null);
 				dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
@@ -314,7 +314,7 @@ public class TransitionConfig extends RocketComponentConfig {
 				String[] methodNames = {"getSincAOA", "getSinAOA", "getRefArea", "getMach", "getAOA"};
 
 				SymmetricComponentCalc componentCalc = new SymmetricComponentCalc(component);
-				String[] fieldNames = {"planformCenter", "planformArea"};
+				String[] fieldNames = {"foreRadius", "aftRadius", "length", "fullVolume", "planformCenter", "planformArea"};
 
 				AerodynamicForces forces = new AerodynamicForces().zero();
 				componentCalc.calculateNonaxialForces(conditions, new Transformation(0, 0, 0), forces,new WarningSet());
@@ -323,30 +323,31 @@ public class TransitionConfig extends RocketComponentConfig {
 				try {
 					for (String fieldName : fieldNames) {
 						Field field = SymmetricComponentCalc.class.getDeclaredField(fieldName);
-						Field reqField = BodyTubeCpRequest.class.getDeclaredField(fieldName);
+						Field reqField = TransitionCpRequest.class.getDeclaredField(fieldName);
 						field.setAccessible(true);
 						reqField.setAccessible(true);
 						Double value = (Double) field.get(componentCalc); // All values are double type
 						reqField.set(request, value);
-						String labelText = trans.get("BodyTube.lbl." + fieldName) + ": " + value;
+						String labelText = trans.get("NoseConeCfg.lbl." + fieldName) + ": " + value;
 						String constraints = (fieldName.equals(fieldNames[0])) ? "spanx, height 30!" : "newline, height 30!";
 						dialog.add(new JLabel(labelText), constraints);
 					}
 					for (String methodName : methodNames) {
 						Method method = FlightConditions.class.getDeclaredMethod(methodName);
-						Method reqMethod = BodyTubeCpRequest.class.getDeclaredMethod(methodName.replaceFirst("get", "set"), Double.class);
+						Method reqMethod = TransitionCpRequest.class.getDeclaredMethod(methodName.replaceFirst("get", "set"), Double.class);
 						Double value = (Double) method.invoke(conditions); // All values are double type
 						reqMethod.invoke(request, value);
-						String labelText = trans.get("BodyTube.lbl." + methodName.replaceFirst("get", "")) + ": " + value;
+						String labelText = trans.get("NoseConeCfg.lbl." + methodName.replaceFirst("get", "")) + ": " + value;
 						dialog.add(new JLabel(labelText), "newline, height 30!");
 					}
 
-					JButton checkButton = new JButton(trans.get("BodyTube.lbl.check"));
-					JLabel checkResult = new JLabel(trans.get("BodyTube.lbl.checkResult") + ": ");
-					JLabel answerLabel = new JLabel(trans.get("BodyTube.lbl.answer") + ": ");
+					JButton checkButton = new JButton(trans.get("NoseConeCfg.lbl.check"));
+					JLabel checkResult = new JLabel(trans.get("NoseConeCfg.lbl.checkResult") + ": ");
+					JLabel answerLabel = new JLabel(trans.get("NoseConeCfg.lbl.answer") + ": ");
 					dialog.add(checkButton, "newline, height 30!");
 					dialog.add(checkResult, "height 30!");
 					dialog.add(answerLabel, "height 30!");
+
 					// Do not use UI thread to get the answer
 					checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateCP(request).enqueue(new Callback<>() {
 						@Override
@@ -354,8 +355,8 @@ public class TransitionConfig extends RocketComponentConfig {
 							Result result = response.body();
 							if (result == null) return;
 							SwingUtilities.invokeLater(() -> {
-								checkResult.setText(trans.get("BodyTube.lbl.checkResult") + ": " + result.getResult());
-								answerLabel.setText(trans.get("BodyTube.lbl.answer") + ": " + forces.getCP().x);
+								checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult());
+								answerLabel.setText(trans.get("NoseConeCfg.lbl.answer") + ": " + forces.getCP().x);
 							});
 						}
 

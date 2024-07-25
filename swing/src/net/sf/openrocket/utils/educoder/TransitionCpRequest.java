@@ -2,6 +2,22 @@ package net.sf.openrocket.utils.educoder;
 
 public class TransitionCpRequest {
     /**
+     * 前半径
+     */
+    private Double foreRadius;
+    /**
+     * 后半径
+     */
+    private Double aftRadius;
+    /**
+     * 长度
+     */
+    private Double length;
+    /**
+     * 总体积
+     */
+    private Double fullVolume;
+    /**
      * 机翼中心
      */
     private Double planformCenter;
@@ -98,10 +114,46 @@ public class TransitionCpRequest {
         this.answer = answer;
     }
 
+    public Double getForeRadius() {
+        return foreRadius;
+    }
+
+    public void setForeRadius(Double foreRadius) {
+        this.foreRadius = foreRadius;
+    }
+
+    public Double getAftRadius() {
+        return aftRadius;
+    }
+
+    public void setAftRadius(Double aftRadius) {
+        this.aftRadius = aftRadius;
+    }
+
+    public Double getLength() {
+        return length;
+    }
+
+    public void setLength(Double length) {
+        this.length = length;
+    }
+
+    public Double getFullVolume() {
+        return fullVolume;
+    }
+
+    public void setFullVolume(Double fullVolume) {
+        this.fullVolume = fullVolume;
+    }
+
     @Override
     public String toString() {
-        return "BodyTubeCpRequest{" +
-                "planformCenter=" + planformCenter +
+        return "TransitionCpRequest{" +
+                "foreRadius=" + foreRadius +
+                ", aftRadius=" + aftRadius +
+                ", length=" + length +
+                ", fullVolume=" + fullVolume +
+                ", planformCenter=" + planformCenter +
                 ", planformArea=" + planformArea +
                 ", sincAOA=" + sincAOA +
                 ", sinAOA=" + sinAOA +

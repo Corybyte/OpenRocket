@@ -78,6 +78,15 @@ public interface EduCoderService {
     Call<Result> calculateCP(@Body FinSetCpRequest request);
 
     /**
+     * 计算尾翼组件转动惯量
+     *
+     * @param request request
+     * @return result
+     */
+    @POST("FinSet/calculateMOI")
+    Call<Result> calculateMOI(@Body FinSetMOIRequest request);
+
+    /**
      * 计算级间段组件压心位置
      *
      * @param request request
@@ -89,9 +98,6 @@ public interface EduCoderService {
     Call<Result> calculateCP(@Body TransitionCpRequest request);
     @POST("Transition/calculateMOI")
     Call<Result> calculateMOI(@Body TransitionMOIRequest request);
-
-    @POST("TrapezoidFinSet/calculateCG")
-    Call<Result> calculateCG(@Body TrapezoidFinSetCgRequest request);
 
 
 
