@@ -17,18 +17,13 @@ import net.sf.openrocket.gui.components.UnitSelector;
 import net.sf.openrocket.l10n.Translator;
 import net.sf.openrocket.logging.WarningSet;
 import net.sf.openrocket.material.Material;
-import net.sf.openrocket.rocketcomponent.BodyTube;
-import net.sf.openrocket.rocketcomponent.MotorMount;
-import net.sf.openrocket.rocketcomponent.RocketComponent;
-import net.sf.openrocket.rocketcomponent.SymmetricComponent;
-import net.sf.openrocket.rocketcomponent.FlightConfiguration;
+import net.sf.openrocket.rocketcomponent.*;
 import net.sf.openrocket.startup.Application;
 import net.sf.openrocket.startup.OpenRocket;
 import net.sf.openrocket.unit.UnitGroup;
+import net.sf.openrocket.util.MathUtil;
 import net.sf.openrocket.util.Transformation;
-import net.sf.openrocket.utils.educoder.BodyTubeCgRequest;
-import net.sf.openrocket.utils.educoder.BodyTubeCpRequest;
-import net.sf.openrocket.utils.educoder.Result;
+import net.sf.openrocket.utils.educoder.*;
 import org.jetbrains.annotations.NotNull;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -243,6 +238,76 @@ public class BodyTubeConfig extends RocketComponentConfig {
 			});
 		}
 
+		{ // MOI calculate:
+			panel.add(new JLabel(trans.get("NoseConeCfg.lbl.MOICalc") + ":"));
+			JButton button = new JButton(trans.get("NoseConeCfg.lbl.MOIEnter"));
+			panel.add(button, "spanx, wrap");
+			button.addActionListener(e -> {
+				JDialog dialog = new JDialog(this.parent, trans.get("NoseConeCfg.lbl.MOICalc"));
+				dialog.setSize(this.parent.getSize());
+				dialog.setLocationRelativeTo(null);
+				dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
+
+				final BodyTubeMOIRequest request = new BodyTubeMOIRequest();
+				// answer = rotationalUnitInertia
+				request.setAnswer(component.getRotationalUnitInertia());
+
+				String[] MethodNames = {"getOuterRadius"};
+				String[] fieldNames = {"thickness","filled"};
+
+				try{
+					//get and set  properties
+					for (String fieldName:fieldNames){
+						Field field = SymmetricComponent.class.getDeclaredField(fieldName);
+						Field reqField = BodyTubeMOIRequest.class.getDeclaredField(fieldName);
+						field.setAccessible(true);
+						reqField.setAccessible(true);
+						Object value = field.get(component);
+						reqField.set(request, value);
+						String labelText = trans.get("NoseConeCfg.lbl." + fieldName) + ": " + value;
+						String constraints = (fieldName.equals(fieldNames[0])) ? "spanx, height 30!" : "newline, height 30!";
+						dialog.add(new JLabel(labelText), constraints);
+					}
+					// AftRadius
+					for (String methodName : MethodNames) {
+						Method method = BodyTube.class.getDeclaredMethod(methodName);
+						Method reqMethod = BodyTubeMOIRequest.class.getDeclaredMethod(methodName.replaceFirst("get","set"), Double.class);
+						Double value = (Double) method.invoke(component); // All values are double type
+						reqMethod.invoke(request, value);
+						String labelText = "OuterRadius" + ": " + value;
+						dialog.add(new JLabel(labelText), "newline, height 30!");
+					}
+					JButton checkButton = new JButton(trans.get("NoseConeCfg.lbl.check"));
+					JLabel checkResult = new JLabel(trans.get("NoseConeCfg.lbl.checkResult") + ": ");
+					JLabel answerLabel = new JLabel(trans.get("NoseConeCfg.lbl.answer") + ": ");
+					dialog.add(checkButton, "newline, height 30!");
+					dialog.add(checkResult, "height 30!");
+					dialog.add(answerLabel, "height 30!");
+					// Do not use UI thread to get the answer
+					checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateMOI(request).enqueue(new Callback<>() {
+						@Override
+						public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
+							Result result = response.body();
+							if (result == null) return;
+							SwingUtilities.invokeLater(() -> {
+								checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult());
+								answerLabel.setText(trans.get("NoseConeCfg.lbl.answer") + ": " + component.getRotationalUnitInertia());
+							});
+						}
+
+						@Override
+						public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
+							SwingUtilities.invokeLater(() ->
+									JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
+						}
+					}));
+
+				}catch (Exception ex){
+					//ignored
+				}
+				dialog.setVisible(true);
+			});
+		}
 		//// Material
 		MaterialPanel materialPanel = new MaterialPanel(component, document, Material.Type.BULK, order);
 		register(materialPanel);
