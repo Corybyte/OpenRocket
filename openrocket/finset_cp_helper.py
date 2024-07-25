@@ -1,5 +1,5 @@
 import math
-import step4.solution
+import step8.solution
 
 def calculateCP(param):
     ar = param['ar']
@@ -11,5 +11,5 @@ def calculateCP(param):
     poly[2] = (55.3086 * (-0.711482 + ar) * (-0.196772 + ar)) / denom
     poly[1] = (-31.6049 * (-0.705375 + ar) * (-0.198476 + ar)) / denom
     poly[0] = (9.16049 * (-0.588838 + ar) * (-0.20624 + ar)) / denom
-    return step4.solution.calculateCP(param['macLead'], param['macLength'], param['mach'],
+    return step8.solution.calculateCP(param['macLead'], param['macLength'], param['mach'],
                                       ar, poly)

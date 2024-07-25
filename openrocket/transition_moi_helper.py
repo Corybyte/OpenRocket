@@ -1,5 +1,5 @@
 import math
-import step3.solution
+import step12.solution
 from nose_cone_cg_helper import get_radius
 from common_helper import safe_sqrt, equals
 
@@ -33,8 +33,8 @@ def calculate_moi(length: float, divisions: int, filled: bool, thickness: float,
         else:
             r1i = max(r1o - height, 0)
             r2i = max(r2o - height, 0)
-        Ixxo = step3.solution.calculate_unit_rot_moi(r1o, r2o)
-        Ixxi = step3.solution.calculate_unit_rot_moi(r1i, r2i)
+        Ixxo = step12.solution.calculate_unit_rot_moi(r1o, r2o)
+        Ixxi = step12.solution.calculate_unit_rot_moi(r1i, r2i)
         fullCG = calculateCG(l, r1o, r2o)
         innerCG = calculateCG(l, r1i, r2i)
         dV = fullCG[1] - innerCG[1]
@@ -73,5 +73,3 @@ def calculateCG(l: float, r1: float, r2: float) -> tuple[float, float]:
     return (cg, volume)
 
 
-if __name__ == '__main__':
-    print(calculate_moi(0.15000000000000002, 128, False, 0.002, "OGIVE", 0.0, 0.025, 1.0))

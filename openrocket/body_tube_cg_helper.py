@@ -1,4 +1,4 @@
-import step5.solution
+import step4.solution
 
 def calculateCG(param):
-    return step5.solution.calculateCG(param['length'])
+    return step4.solution.calculateCG(param['length'])
