@@ -4,6 +4,9 @@ import Transition_cp_helper
 import body_tube_moi_helper
 import transition_cg_helper
 import transition_moi_helper
+import tube_fine_set_cg_helper
+import tube_fine_set_cp_helper
+import tube_fine_set_moi_helper
 from common_helper import equals
 import os
 import nose_cone_cg_helper
@@ -144,6 +147,38 @@ def calculateTransitionMOI():
     try:
         moi = transition_moi_helper.calculateMOI(request.json)
         check(moi, request.json['answer'], os.path.join(os.getcwd(), "step12"))
+        return {"code": 200, "msg": "ok", "result": moi}
+    except Exception:
+        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
+
+@app.route('/TubeFinSet/calculateCG', methods=['POST'])
+def calculateTubeFinSetCG():
+    app.logger.info(f"{request.json}")
+    try:
+        cg = tube_fine_set_cg_helper.calculateCG(request.json)
+        check(cg, request.json['answer'], os.path.join(os.getcwd(), "step13"))
+        return {"code": 200, "msg": "ok", "result": cg}
+    except Exception:
+        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
+@app.route('/TubeFinSet/calculateCP', methods=['POST'])
+def calculateTubeFinSetCP():
+    app.logger.info(f"{request.json}")
+    try:
+        cp = tube_fine_set_cp_helper.calculateCP(request.json)
+        check(cp, request.json['answer'], os.path.join(os.getcwd(), "step14"))
+        return {"code": 200, "msg": "ok", "result": cp}
+    except Exception:
+        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
+
+@app.route('/TubeFinSet/calculateMOI', methods=['POST'])
+def calculateTubeFinSetMOI():
+    app.logger.info(f"{request.json}")
+    try:
+        moi = tube_fine_set_moi_helper.calculateMOI(request.json)
+        check(moi, request.json['answer'], os.path.join(os.getcwd(), "step15"))
         return {"code": 200, "msg": "ok", "result": moi}
     except Exception:
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}

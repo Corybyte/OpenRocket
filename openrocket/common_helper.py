@@ -31,3 +31,14 @@ def average(a, b):
         y1 = (a[1] * a[3] + b[1] * b[3]) / w1
         z1 = (a[2] * a[3] + b[2] * b[3]) / w1
     return (x1, y1, z1, w1)
+
+def transform(orig):
+    matrix = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+    matrix[0][0] =1
+    matrix[1][2] =1
+    matrix[1][2] =1
+
+    x = matrix[0][0] * orig[0] + matrix[0][1] * orig[0] + matrix[2][2] * orig[0]
+    y = matrix[1][0] * orig[0] + matrix[1][1] * orig[0] + matrix[2][2] * orig[0]
+    z = matrix[2][0] * orig[0] + matrix[2][1] * orig[0] + matrix[2][2] * orig[0]
+    return [x,y,z]
