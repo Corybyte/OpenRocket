@@ -25,5 +25,4 @@ def calculateCP(foreRadius: float, aftRadius: float, length: float, fullVolume: 
     else:
         cp = (cpCache, 0, 0, cnaCache * sincAOA / refArea)
         cp = average(cp,LiftCP)
-    print(cp)
     return cp[0]

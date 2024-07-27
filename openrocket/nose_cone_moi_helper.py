@@ -72,6 +72,3 @@ def calculateCG(l: float, r1: float, r2: float) -> tuple[float, float]:
                 4.0 * (math.pow(r1, 2) + r1 * r2 + math.pow(r2, 2)))
     return (cg, volume)
 
-
-if __name__ == '__main__':
-    print(calculate_moi(0.15000000000000002, 128, False, 0.002, "OGIVE", 0.0, 0.025, 1.0))

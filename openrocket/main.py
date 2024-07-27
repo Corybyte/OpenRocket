@@ -2,6 +2,12 @@ from flask import Flask, request
 
 import Transition_cp_helper
 import body_tube_moi_helper
+import launchlug_cg_helper
+import launchlug_cp_helper
+import launchlug_moi_helper
+import rail_button_cg_helper
+import rail_button_cp_helper
+import rail_button_moi_helper
 import transition_cg_helper
 import transition_moi_helper
 import tube_fine_set_cg_helper
@@ -135,8 +141,6 @@ def calculateTransitionCP():
     app.logger.info(f"{request.json}")
     try:
         cp = Transition_cp_helper.calculateCP(request.json)
-        print(type(cp))
-        print(cp)
         check(cp, request.json['answer'], os.path.join(os.getcwd(), "step11"))
         return {"code": 200, "msg": "ok", "result": cp}
     except Exception:
@@ -182,6 +186,70 @@ def calculateTubeFinSetMOI():
         return {"code": 200, "msg": "ok", "result": moi}
     except Exception:
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
+
+@app.route('/LaunchLug/calculateCG', methods=['POST'])
+def calculateLaunchLugCG():
+    app.logger.info(f"{request.json}")
+    try:
+        cg = launchlug_cg_helper.calculateCG(request.json)
+        check(cg, request.json['answer'], os.path.join(os.getcwd(), "step16"))
+        return {"code": 200, "msg": "ok", "result": cg}
+    except Exception:
+        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
+@app.route('/LaunchLug/calculateCP', methods=['POST'])
+def calculateLaunchLugCP():
+    app.logger.info(f"{request.json}")
+    try:
+        cp = launchlug_cp_helper.calculateCP(request.json)
+        check(cp, request.json['answer'], os.path.join(os.getcwd(), "step17"))
+        return {"code": 200, "msg": "ok", "result": cp}
+    except Exception:
+        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
+
+@app.route('/LaunchLug/calculateMOI', methods=['POST'])
+def calculateLaunchLugMOI():
+    app.logger.info(f"{request.json}")
+    try:
+        moi = launchlug_moi_helper.calculateMOI(request.json)
+        check(moi, request.json['answer'], os.path.join(os.getcwd(), "step18"))
+        return {"code": 200, "msg": "ok", "result": moi}
+    except Exception:
+        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
+@app.route('/RailButton/calculateCG', methods=['POST'])
+def calculateRailButtonCG():
+    app.logger.info(f"{request.json}")
+    try:
+        cg = rail_button_cg_helper.calculateCG(request.json)
+        check(cg, request.json['answer'], os.path.join(os.getcwd(), "step19"))
+        return {"code": 200, "msg": "ok", "result": cg}
+    except Exception:
+        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
+@app.route('/RailButton/calculateCP', methods=['POST'])
+def calculateRailButtonCP():
+    app.logger.info(f"{request.json}")
+    try:
+        cp = rail_button_cp_helper.calculateCP(request.json)
+        check(cp, request.json['answer'], os.path.join(os.getcwd(), "step20"))
+        return {"code": 200, "msg": "ok", "result": cp}
+    except Exception:
+        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
+
+@app.route('/RailButton/calculateMOI', methods=['POST'])
+def calculateRailButtonMOI():
+    app.logger.info(f"{request.json}")
+    try:
+        moi = rail_button_moi_helper.calculateMOI(request.json)
+        check(moi, request.json['answer'], os.path.join(os.getcwd(), "step21"))
+        return {"code": 200, "msg": "ok", "result": moi}
+    except Exception:
+        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
 
 
 if __name__ == '__main__':
