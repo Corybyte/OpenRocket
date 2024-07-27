@@ -1,12 +1,13 @@
 package net.sf.openrocket.gui.configdialog;
 
 
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSpinner;
+import javax.swing.*;
 
 import net.miginfocom.swing.MigLayout;
+import net.sf.openrocket.aerodynamics.AerodynamicForces;
+import net.sf.openrocket.aerodynamics.FlightConditions;
+import net.sf.openrocket.aerodynamics.barrowman.LaunchLugCalc;
+import net.sf.openrocket.aerodynamics.barrowman.SymmetricComponentCalc;
 import net.sf.openrocket.document.OpenRocketDocument;
 import net.sf.openrocket.gui.SpinnerEditor;
 import net.sf.openrocket.gui.adaptors.CustomFocusTraversalPolicy;
@@ -14,10 +15,24 @@ import net.sf.openrocket.gui.adaptors.DoubleModel;
 import net.sf.openrocket.gui.components.BasicSlider;
 import net.sf.openrocket.gui.components.UnitSelector;
 import net.sf.openrocket.l10n.Translator;
+import net.sf.openrocket.logging.WarningSet;
 import net.sf.openrocket.material.Material;
+import net.sf.openrocket.rocketcomponent.FlightConfiguration;
+import net.sf.openrocket.rocketcomponent.LaunchLug;
 import net.sf.openrocket.rocketcomponent.RocketComponent;
 import net.sf.openrocket.startup.Application;
+import net.sf.openrocket.startup.OpenRocket;
 import net.sf.openrocket.unit.UnitGroup;
+
+import net.sf.openrocket.util.Transformation;
+import net.sf.openrocket.utils.educoder.*;
+import org.jetbrains.annotations.NotNull;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 @SuppressWarnings("serial")
 public class LaunchLugConfig extends RocketComponentConfig {
@@ -35,7 +50,7 @@ public class LaunchLugConfig extends RocketComponentConfig {
 		////  Body tube length
 		//// Length:
 		panel.add(new JLabel(trans.get("LaunchLugCfg.lbl.Length")));
-		
+
 		DoubleModel m = new DoubleModel(component, "Length", UnitGroup.UNITS_LENGTH, 0);
 		register(m);
 		
@@ -105,6 +120,173 @@ public class LaunchLugConfig extends RocketComponentConfig {
 		
 		primary.add(panel, "grow, gapright 40lp");
 
+
+		{//// CG calculation demonstration
+			panel.add(new JLabel(trans.get("LaunchLug.lbl.CgCalc") + ":"));
+			JButton button = new JButton(trans.get("LaunchLug.lbl.CgEnter"));
+			panel.add(button, "spanx, wrap");
+			button.addActionListener(e -> {
+				JDialog dialog = new JDialog(this.parent, trans.get("LaunchLug.lbl.CgCalc"));
+				dialog.setSize(this.parent.getSize());
+				dialog.setLocationRelativeTo(null);
+				dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
+
+
+				LaunchLugCgRequest request = new LaunchLugCgRequest();
+				request.setLength(component.getLength());
+				request.setAnswer(component.getComponentCG().x);
+
+				try {
+					Field field = LaunchLug.class.getDeclaredField("instanceSeparation");
+					field.setAccessible(true);
+					Double o = (Double) field.get(component);
+					request.setInstanceSeparation(o);
+					Field field2 = LaunchLug.class.getDeclaredField("instanceCount");
+					field2.setAccessible(true);
+
+					Integer o2 = (Integer) field2.get(component);
+					request.setInstanceCount(o2);
+
+					String labelText =  "长度: " + request.getLength();
+					String constraints = "newline, height 30!";
+					dialog.add(new JLabel(labelText), constraints);
+					String labelText2 = trans.get("InstancesPanel.lbl.InstanceCount") + request.getInstanceCount();
+					dialog.add(new JLabel(labelText2), constraints);
+					String labelText3 = trans.get("InstancesPanel.lbl.InstanceSeparation") + request.getInstanceSeparation();
+					dialog.add(new JLabel(labelText3), constraints);
+				} catch (Exception ex) {
+					//ignore
+				}
+				JButton checkButton = new JButton(trans.get("LaunchLug.lbl.check"));
+				JLabel checkResult = new JLabel(trans.get("LaunchLug.lbl.checkResult") + ": ");
+				JLabel answerLabel = new JLabel(trans.get("LaunchLug.lbl.answer") + ": ");
+				dialog.add(checkButton, "newline, height 30!");
+				dialog.add(checkResult, "height 30!");
+				dialog.add(answerLabel, "height 30!");
+				// Do not use UI thread to get the answer
+				checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateCG(request).enqueue(new Callback<>() {
+					@Override
+					public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
+						Result result = response.body();
+						if (result == null) return;
+						SwingUtilities.invokeLater(() -> {
+							checkResult.setText(trans.get("LaunchLug.lbl.checkResult") + ": " + result.getResult());
+							answerLabel.setText(trans.get("LaunchLug.lbl.answer") + ": " + component.getComponentCG().x);
+						});
+					}
+
+					@Override
+					public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
+						SwingUtilities.invokeLater(() ->
+								JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
+					}
+				}));
+				dialog.setVisible(true);
+			});
+		}
+
+		{//// CP calculation demonstration
+			panel.add(new JLabel(trans.get("LaunchLug.lbl.CpCalc") + ":"));
+			JButton button = new JButton(trans.get("LaunchLug.lbl.CpEnter"));
+			panel.add(button, "spanx, wrap");
+			button.addActionListener(e -> {
+				JDialog dialog = new JDialog(this.parent, trans.get("LaunchLug.lbl.CpCalc"));
+				dialog.setSize(this.parent.getSize());
+				dialog.setLocationRelativeTo(null);
+				dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
+
+				LaunchLugCpRequest request = new LaunchLugCpRequest();
+				FlightConfiguration curConfig = document.getSelectedConfiguration();
+				FlightConditions conditions = new FlightConditions(curConfig);
+				LaunchLugCalc componentCalc = new LaunchLugCalc(component);
+
+				AerodynamicForces forces = new AerodynamicForces().zero();
+				componentCalc.calculateNonaxialForces(conditions, new Transformation(0, 0, 0), forces,new WarningSet());
+				request.setAnswer(forces.getCP().x);
+
+				JButton checkButton = new JButton(trans.get("LaunchLug.lbl.check"));
+				JLabel checkResult = new JLabel(trans.get("LaunchLug.lbl.checkResult") + ": ");
+				JLabel answerLabel = new JLabel(trans.get("LaunchLug.lbl.answer") + ": ");
+				dialog.add(checkButton, "newline, height 30!");
+				dialog.add(checkResult, "height 30!");
+				dialog.add(answerLabel, "height 30!");
+				// Do not use UI thread to get the answer
+				checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateCP(request).enqueue(new Callback<>() {
+					@Override
+					public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
+						Result result = response.body();
+						if (result == null) return;
+						SwingUtilities.invokeLater(() -> {
+							checkResult.setText(trans.get("LaunchLug.lbl.checkResult") + ": " + result.getResult());
+							answerLabel.setText(trans.get("LaunchLug.lbl.answer") + ": " + forces.getCP().x);
+						});
+					}
+
+					@Override
+					public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
+						SwingUtilities.invokeLater(() ->
+								JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
+					}
+				}));
+				dialog.setVisible(true);
+			});
+		}
+		{//// MOI calculation demonstration
+			panel.add(new JLabel(trans.get("LaunchLug.lbl.MOICal") + ":"));
+			JButton button = new JButton(trans.get("LaunchLug.lbl.MOIEnter"));
+			panel.add(button, "spanx, wrap");
+			button.addActionListener(e -> {
+				JDialog dialog = new JDialog(this.parent, trans.get("LaunchLug.lbl.MOICal"));
+				dialog.setSize(this.parent.getSize());
+				dialog.setLocationRelativeTo(null);
+				dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
+
+
+				LaunchLugMOIRequest request = new LaunchLugMOIRequest();
+				request.setAnswer(component.getRotationalUnitInertia());
+				String[] methodNames = {"getOuterRadius","getInnerRadius"};
+				try {
+					for (String methodName:methodNames){
+						Method declaredMethod = LaunchLug.class.getDeclaredMethod(methodName);
+						Method reqMethod = LaunchLugMOIRequest.class.getDeclaredMethod(
+								methodName.replaceFirst("get", "set"), Double.class);
+						declaredMethod.setAccessible(true);
+						reqMethod.setAccessible(true);
+						Double value = (Double) declaredMethod.invoke(component);
+						reqMethod.invoke(request,value);
+						String labelText = trans.get("LaunchLug.lbl." + methodName.replaceFirst("get", "")) + ": " + value;
+						dialog.add(new JLabel(labelText), "newline, height 30!");
+					}
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+				JButton checkButton = new JButton(trans.get("LaunchLug.lbl.check"));
+				JLabel checkResult = new JLabel(trans.get("LaunchLug.lbl.checkResult") + ": ");
+				JLabel answerLabel = new JLabel(trans.get("LaunchLug.lbl.answer") + ": ");
+				dialog.add(checkButton, "newline, height 30!");
+				dialog.add(checkResult, "height 30!");
+				dialog.add(answerLabel, "height 30!");
+				// Do not use UI thread to get the answer
+				checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateMOI(request).enqueue(new Callback<>() {
+					@Override
+					public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
+						Result result = response.body();
+						if (result == null) return;
+						SwingUtilities.invokeLater(() -> {
+							checkResult.setText(trans.get("LaunchLug.lbl.checkResult") + ": " + result.getResult());
+							answerLabel.setText(trans.get("LaunchLug.lbl.answer") + ": " + component.getRotationalUnitInertia());
+						});
+					}
+
+					@Override
+					public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
+						SwingUtilities.invokeLater(() ->
+								JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
+					}
+				}));
+				dialog.setVisible(true);
+			});
+		}
 		// Right panel
 		panel = new JPanel(new MigLayout("gap rel unrel, ins 0", "[][65lp::][30lp::][]", ""));
 
@@ -128,6 +310,7 @@ public class LaunchLugConfig extends RocketComponentConfig {
 			placementPanel.add(new UnitSelector(m), "growx");
 			placementPanel.add(new BasicSlider(m.getSliderModel()), "w 100lp, wrap");
 		}
+
 
 		//// Material
 		MaterialPanel materialPanel = new MaterialPanel(component, document, Material.Type.BULK, order);

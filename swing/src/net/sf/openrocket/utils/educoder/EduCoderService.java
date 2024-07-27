@@ -101,4 +101,88 @@ public interface EduCoderService {
 
 
 
+    /**
+     * 计算管状翼组件重心位置
+     *
+     * @param request request
+     * @return result
+     */
+    @POST("TubeFinSet/calculateCG")
+    Call<Result> calculateCG(@Body TubeFinsetCGRequest request);
+    /**
+     * 计算管状翼组件压心位置
+     *
+     * @param request request
+     * @return result
+     */
+    @POST("TubeFinSet/calculateCP")
+    Call<Result> calculateCP(@Body TubeFinSetCpRequest request);
+
+    /**
+     * 计算管状翼组件转动惯量
+     *
+     * @param request request
+     * @return result
+     */
+    @POST("TubeFinSet/calculateMOI")
+    Call<Result> calculateMOI(@Body TubeFinSetMOIRequest request);
+
+    /**
+     * 计算发射套柄组件重心位置
+     *
+     * @param request request
+     * @return result
+     */
+    @POST("LaunchLug/calculateCG")
+    Call<Result> calculateCG(@Body LaunchLugCgRequest request);
+
+
+    /**
+     * 计算发射套柄组件重心位置
+     *
+     * @param request request
+     * @return result
+     */
+    @POST("LaunchLug/calculateCP")
+    Call<Result> calculateCP(@Body LaunchLugCpRequest request);
+
+
+    /**
+     * 计算发射套柄组件转动惯量
+     *
+     * @param request request
+     * @return result
+     */
+    @POST("LaunchLug/calculateMOI")
+    Call<Result> calculateMOI(@Body LaunchLugMOIRequest request);
+
+
+    /**
+     * 计算RailButton组件重心位置
+     *
+     * @param request request
+     * @return result
+     */
+    @POST("RailButton/calculateCG")
+    Call<Result> calculateCG(@Body RailButtonCgRequest request);
+
+    /**
+     * 计算RailButton组件压心位置
+     *
+     * @param request request
+     * @return result
+     */
+    @POST("RailButton/calculateCP")
+    Call<Result> calculateCP(@Body RailButtonCpRequest request);
+
+
+
+    /**
+     * 计算RailButton组件转动惯量
+     *
+     * @param request request
+     * @return result
+     */
+    @POST("RailButton/calculateMOI")
+    Call<Result> calculateMOI(@Body RailButtonMOIRequest request);
 }

@@ -1,11 +1,12 @@
 package net.sf.openrocket.gui.configdialog;
 
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSpinner;
+import javax.swing.*;
 
 import net.miginfocom.swing.MigLayout;
+import net.sf.openrocket.aerodynamics.AerodynamicForces;
+import net.sf.openrocket.aerodynamics.FlightConditions;
+import net.sf.openrocket.aerodynamics.barrowman.LaunchLugCalc;
+import net.sf.openrocket.aerodynamics.barrowman.RailButtonCalc;
 import net.sf.openrocket.document.OpenRocketDocument;
 import net.sf.openrocket.gui.SpinnerEditor;
 import net.sf.openrocket.gui.adaptors.CustomFocusTraversalPolicy;
@@ -14,11 +15,23 @@ import net.sf.openrocket.gui.adaptors.IntegerModel;
 import net.sf.openrocket.gui.components.BasicSlider;
 import net.sf.openrocket.gui.components.UnitSelector;
 import net.sf.openrocket.l10n.Translator;
+import net.sf.openrocket.logging.WarningSet;
 import net.sf.openrocket.material.Material;
+import net.sf.openrocket.rocketcomponent.FlightConfiguration;
+import net.sf.openrocket.rocketcomponent.LaunchLug;
 import net.sf.openrocket.rocketcomponent.RailButton;
 import net.sf.openrocket.rocketcomponent.RocketComponent;
 import net.sf.openrocket.startup.Application;
+import net.sf.openrocket.startup.OpenRocket;
 import net.sf.openrocket.unit.UnitGroup;
+import net.sf.openrocket.util.Transformation;
+import net.sf.openrocket.utils.educoder.*;
+import org.jetbrains.annotations.NotNull;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+import java.lang.reflect.Field;
 
 @SuppressWarnings("serial")
 public class RailButtonConfig extends RocketComponentConfig {
@@ -152,7 +165,161 @@ public class RailButtonConfig extends RocketComponentConfig {
 		register(materialPanel);
 		panel.add(materialPanel,"span, grow, wrap");
 
+
 		primary.add(panel, "grow");
+
+		{//// CG calculation demonstration
+			panel.add(new JLabel(trans.get("RailButton.lbl.CgCalc") + ":"));
+			JButton button = new JButton(trans.get("RailButton.lbl.CgEnter"));
+			panel.add(button, "spanx, wrap");
+			button.addActionListener(e -> {
+				JDialog dialog = new JDialog(this.parent, trans.get("RailButton.lbl.CgCalc"));
+				dialog.setSize(this.parent.getSize());
+				dialog.setLocationRelativeTo(null);
+				dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
+
+
+				RailButtonCgRequest request = new RailButtonCgRequest();
+				request.setAnswer(component.getComponentCG().x);
+
+				try {
+					Field field = RailButton.class.getDeclaredField("instanceSeparation");
+					field.setAccessible(true);
+					Double o = (Double) field.get(component);
+					request.setInstanceSeparation(o);
+					Field field2 = RailButton.class.getDeclaredField("instanceCount");
+					field2.setAccessible(true);
+
+					Integer o2 = (Integer) field2.get(component);
+					request.setInstanceCount(o2);
+
+					String constraints = "newline, height 30!";
+					String labelText2 = trans.get("InstancesPanel.lbl.InstanceCount") + request.getInstanceCount();
+					dialog.add(new JLabel(labelText2), constraints);
+					String labelText3 = trans.get("InstancesPanel.lbl.InstanceSeparation") + request.getInstanceSeparation();
+					dialog.add(new JLabel(labelText3), constraints);
+
+				} catch (Exception ex) {
+					//ignore
+				}
+				JButton checkButton = new JButton(trans.get("RailButton.lbl.check"));
+				JLabel checkResult = new JLabel(trans.get("RailButton.lbl.checkResult") + ": ");
+				JLabel answerLabel = new JLabel(trans.get("RailButton.lbl.answer") + ": ");
+				dialog.add(checkButton, "newline, height 30!");
+				dialog.add(checkResult, "height 30!");
+				dialog.add(answerLabel, "height 30!");
+				// Do not use UI thread to get the answer
+				checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateCG(request).enqueue(new Callback<>() {
+					@Override
+					public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
+						Result result = response.body();
+						if (result == null) return;
+						SwingUtilities.invokeLater(() -> {
+							checkResult.setText(trans.get("RailButton.lbl.checkResult") + ": " + result.getResult());
+							answerLabel.setText(trans.get("RailButton.lbl.answer") + ": " + component.getComponentCG().x);
+						});
+					}
+
+					@Override
+					public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
+						SwingUtilities.invokeLater(() ->
+								JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
+					}
+				}));
+				dialog.setVisible(true);
+			});
+		}
+
+		{//// CP calculation demonstration
+			panel.add(new JLabel(trans.get("RailButton.lbl.CpCalc") + ":"));
+			JButton button = new JButton(trans.get("RailButton.lbl.CpEnter"));
+			panel.add(button, "spanx, wrap");
+			button.addActionListener(e -> {
+				JDialog dialog = new JDialog(this.parent, trans.get("RailButton.lbl.CpCalc"));
+				dialog.setSize(this.parent.getSize());
+				dialog.setLocationRelativeTo(null);
+				dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
+
+				final RailButtonCpRequest request = new RailButtonCpRequest();
+
+
+				FlightConfiguration curConfig = document.getSelectedConfiguration();
+				FlightConditions conditions = new FlightConditions(curConfig);
+				RailButtonCalc componentCalc = new RailButtonCalc(component);
+
+
+				AerodynamicForces forces = new AerodynamicForces().zero();
+				componentCalc.calculateNonaxialForces(conditions, new Transformation(0, 0, 0), forces,new WarningSet());
+				request.setAnswer(forces.getCP().x);
+
+
+				JButton checkButton = new JButton(trans.get("RailButton.lbl.check"));
+				JLabel checkResult = new JLabel(trans.get("RailButton.lbl.checkResult") + ": ");
+				JLabel answerLabel = new JLabel(trans.get("RailButton.lbl.answer") + ": ");
+				dialog.add(checkButton, "newline, height 30!");
+				dialog.add(checkResult, "height 30!");
+				dialog.add(answerLabel, "height 30!");
+				// Do not use UI thread to get the answer
+				checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateCP(request).enqueue(new Callback<>() {
+					@Override
+					public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
+						Result result = response.body();
+						if (result == null) return;
+						SwingUtilities.invokeLater(() -> {
+							checkResult.setText(trans.get("RailButton.lbl.checkResult") + ": " + result.getResult());
+							answerLabel.setText(trans.get("RailButton.lbl.answer") + ": " + forces.getCP().x);
+						});
+					}
+
+					@Override
+					public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
+						SwingUtilities.invokeLater(() ->
+								JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
+					}
+				}));
+				dialog.setVisible(true);
+			});
+		}
+
+		{//// MOI calculation demonstration
+			panel.add(new JLabel(trans.get("RailButton.lbl.MOICal") + ":"));
+			JButton button = new JButton(trans.get("RailButton.lbl.MOIEnter"));
+			panel.add(button, "spanx, wrap");
+			button.addActionListener(e -> {
+				JDialog dialog = new JDialog(this.parent, trans.get("RailButton.lbl.MOICal"));
+				dialog.setSize(this.parent.getSize());
+				dialog.setLocationRelativeTo(null);
+				dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
+
+				final RailButtonMOIRequest request = new RailButtonMOIRequest();
+				request.setAnswer(component.getRotationalUnitInertia());
+				JButton checkButton = new JButton(trans.get("RailButton.lbl.check"));
+				JLabel checkResult = new JLabel(trans.get("RailButton.lbl.checkResult") + ": ");
+				JLabel answerLabel = new JLabel(trans.get("RailButton.lbl.answer") + ": ");
+				dialog.add(checkButton, "newline, height 30!");
+				dialog.add(checkResult, "height 30!");
+				dialog.add(answerLabel, "height 30!");
+				// Do not use UI thread to get the answer
+				checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateMOI(request).enqueue(new Callback<>() {
+					@Override
+					public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
+						Result result = response.body();
+						if (result == null) return;
+						SwingUtilities.invokeLater(() -> {
+							checkResult.setText(trans.get("RailButton.lbl.checkResult") + ": " + result.getResult());
+							answerLabel.setText(trans.get("RailButton.lbl.answer") + ": " + component.getRotationalUnitInertia());
+						});
+					}
+
+					@Override
+					public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
+						SwingUtilities.invokeLater(() ->
+								JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
+					}
+				}));
+				dialog.setVisible(true);
+			});
+		}
 
 		return primary;
 	}
@@ -161,5 +328,5 @@ public class RailButtonConfig extends RocketComponentConfig {
 	public void updateFields() {
 		super.updateFields();
 	}
-	
+
 }
