@@ -1,12 +1,6 @@
 package net.sf.openrocket.gui.configdialog;
 
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSpinner;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
 import net.miginfocom.swing.MigLayout;
 import net.sf.openrocket.document.OpenRocketDocument;
@@ -25,9 +19,15 @@ import net.sf.openrocket.rocketcomponent.PodSet;
 import net.sf.openrocket.rocketcomponent.RocketComponent;
 import net.sf.openrocket.rocketcomponent.position.RadiusMethod;
 import net.sf.openrocket.startup.Application;
+import net.sf.openrocket.startup.OpenRocket;
 import net.sf.openrocket.unit.UnitGroup;
+import net.sf.openrocket.utils.educoder.*;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -121,11 +121,144 @@ public class ComponentAssemblyConfig extends RocketComponentConfig {
 		countSpinner.setEditor(new SpinnerEditor(countSpinner));
 		motherPanel.add(countSpinner, "wmin 65lp, growx 1, wrap 30lp");
 		order.add(((SpinnerEditor) countSpinner.getEditor()).getTextField());
+
+
 		
 		// Position relative to
 		PlacementPanel pp = new PlacementPanel(component, order);
 		register(pp);
 		motherPanel.add(pp, "span, grow, wrap");
+
+		{//// CG calculation demonstration
+			motherPanel.add(new JLabel(trans.get("common.lbl.CgCalc") + ":"), "alignx left");
+			JButton button2 = new JButton(trans.get("common.lbl.CgEnter"));
+			motherPanel.add(button2, "spanx, wrap");
+			button2.addActionListener(e -> {
+				JDialog dialog = new JDialog(this.parent, trans.get("common.lbl.CgCalc"));
+				dialog.setSize(this.parent.getSize());
+				dialog.setLocationRelativeTo(null);
+				dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
+
+				final PodsCgRequest request = new PodsCgRequest();
+				request.setAnswer(component.getComponentCG().x);
+
+				JButton checkButton = new JButton(trans.get("common.lbl.check"));
+				JLabel checkResult = new JLabel(trans.get("common.lbl.checkResult") + ": ");
+				JLabel answerLabel = new JLabel(trans.get("common.lbl.answer") + ": ");
+				dialog.add(checkButton, "newline, height 30!");
+				dialog.add(checkResult, "height 30!");
+				dialog.add(answerLabel, "height 30!");
+				// Do not use UI thread to get the answer
+				checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateCG(request).enqueue(new Callback<>() {
+					@Override
+					public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
+						Result result = response.body();
+						if (result == null) return;
+						SwingUtilities.invokeLater(() -> {
+							checkResult.setText(trans.get("common.lbl.checkResult") + ": " + result.getResult());
+							answerLabel.setText(trans.get("common.lbl.answer") + ": " + component.getComponentCG().x);
+						});
+					}
+
+					@Override
+					public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
+						SwingUtilities.invokeLater(() ->
+								JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
+					}
+				}));
+				dialog.setVisible(true);
+			});
+		}
+
+		{//// CP calculation demonstration
+			motherPanel.add(new JLabel(trans.get("common.lbl.CpCalc") + ":"));
+			JButton button2 = new JButton(trans.get("common.lbl.CpEnter"));
+			motherPanel.add(button2, "spanx, wrap");
+			button2.addActionListener(e -> {
+				JDialog dialog = new JDialog(this.parent, trans.get("common.lbl.CpCalc"));
+				dialog.setSize(this.parent.getSize());
+				dialog.setLocationRelativeTo(null);
+				dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
+
+				final PodsCpRequest request = new PodsCpRequest();
+
+				request.setAnswer(0.0);
+
+				try {
+
+					JButton checkButton = new JButton(trans.get("common.lbl.check"));
+					JLabel checkResult = new JLabel(trans.get("common.lbl.checkResult") + ": ");
+					JLabel answerLabel = new JLabel(trans.get("common.lbl.answer") + ": ");
+					dialog.add(checkButton, "newline, height 30!");
+					dialog.add(checkResult, "height 30!");
+					dialog.add(answerLabel, "height 30!");
+
+					// Do not use UI thread to get the answer
+					checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateCP(request).enqueue(new Callback<>() {
+						@Override
+						public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
+							Result result = response.body();
+							if (result == null) return;
+							SwingUtilities.invokeLater(() -> {
+								checkResult.setText(trans.get("common.lbl.checkResult") + ": " + result.getResult());
+								answerLabel.setText(trans.get("common.lbl.answer") + ": " + "0.0");
+							});
+						}
+
+						@Override
+						public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
+							SwingUtilities.invokeLater(() ->
+									JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
+						}
+					}));
+				} catch (Exception ex) {
+					// ignored
+				}
+				dialog.setVisible(true);
+			});
+		}
+
+		{//// MOI calculation demonstration
+			motherPanel.add(new JLabel(trans.get("common.lbl.MOICal") + ":"), "alignx left");
+			JButton button2 = new JButton(trans.get("common.lbl.MOIEnter"));
+			motherPanel.add(button2, "spanx, wrap");
+			button2.addActionListener(e -> {
+				JDialog dialog = new JDialog(this.parent, trans.get("common.lbl.MOICal"));
+				dialog.setSize(this.parent.getSize());
+				dialog.setLocationRelativeTo(null);
+				dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
+
+				final PodsMOIRequest request = new PodsMOIRequest();
+				request.setAnswer(component.getRotationalUnitInertia());
+
+
+				JButton checkButton = new JButton(trans.get("common.lbl.check"));
+				JLabel checkResult = new JLabel(trans.get("common.lbl.checkResult") + ": ");
+				JLabel answerLabel = new JLabel(trans.get("common.lbl.answer") + ": ");
+				dialog.add(checkButton, "newline, height 30!");
+				dialog.add(checkResult, "height 30!");
+				dialog.add(answerLabel, "height 30!");
+				// Do not use UI thread to get the answer
+				checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateMOI(request).enqueue(new Callback<>() {
+					@Override
+					public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
+						Result result = response.body();
+						if (result == null) return;
+						SwingUtilities.invokeLater(() -> {
+							checkResult.setText(trans.get("common.lbl.checkResult") + ": " + result.getResult());
+							answerLabel.setText(trans.get("common.lbl.answer") + ": " + component.getRotationalUnitInertia());
+						});
+					}
+
+					@Override
+					public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
+						SwingUtilities.invokeLater(() ->
+								JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
+					}
+				}));
+				dialog.setVisible(true);
+			});
+		}
 		
 		return motherPanel;
 	}

@@ -1,13 +1,31 @@
 from flask import Flask, request
 
+import Pods_cg_helper
+import Pods_cp_helper
+import Pods_moi_helper
 import Transition_cp_helper
 import body_tube_moi_helper
+import inner_component_cg_helper
+import inner_component_moi_helper
+import inner_tube_cg_helper
+import inner_tube_moi_helper
 import launchlug_cg_helper
 import launchlug_cp_helper
 import launchlug_moi_helper
+import massComponent_cg_helper
+import massComponent_moi_helper
+import parachute_cg_helper
+import parachute_moi_helper
 import rail_button_cg_helper
 import rail_button_cp_helper
 import rail_button_moi_helper
+import shockCord_cg_helper
+import shockCord_moi_helper
+import stage_cg_helper
+import stage_cp_helper
+import stage_moi_helper
+import streamer_cg_helper
+import streamer_moi_helper
 import transition_cg_helper
 import transition_moi_helper
 import tube_fine_set_cg_helper
@@ -250,7 +268,199 @@ def calculateRailButtonMOI():
     except Exception:
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
+@app.route('/InnerTube/calculateCG', methods=['POST'])
+def calculateInnerTubeCG():
+    app.logger.info(f"{request.json}")
+    try:
+        cg = inner_tube_cg_helper.calculateCG(request.json)
+        check(cg, request.json['answer'], os.path.join(os.getcwd(), "step22"))
+        return {"code": 200, "msg": "ok", "result": cg}
+    except Exception:
+        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
+
+@app.route('/InnerTube/calculateMOI', methods=['POST'])
+def calculateInnerTubeMOI():
+    app.logger.info(f"{request.json}")
+    try:
+        moi = inner_tube_moi_helper.calculateMOI(request.json)
+        check(moi, request.json['answer'], os.path.join(os.getcwd(), "step24"))
+        return {"code": 200, "msg": "ok", "result": moi}
+    except Exception:
+        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
+
+
+@app.route('/InnerComponent/calculateCG', methods=['POST'])
+def calculateInnerComponentCG():
+    app.logger.info(f"{request.json}")
+    try:
+        cg = inner_component_cg_helper.calculateCG(request.json)
+        check(cg, request.json['answer'], os.path.join(os.getcwd(), "step25"))
+        return {"code": 200, "msg": "ok", "result": cg}
+    except Exception:
+        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
+
+@app.route('/InnerComponent/calculateMOI', methods=['POST'])
+def calculateInnerComponentMOI():
+    app.logger.info(f"{request.json}")
+    try:
+        moi = inner_component_moi_helper.calculateMOI(request.json)
+        check(moi, request.json['answer'], os.path.join(os.getcwd(), "step27"))
+        return {"code": 200, "msg": "ok", "result": moi}
+    except Exception:
+        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
+
+
+@app.route('/Parachute/calculateCG', methods=['POST'])
+def calculateParachuteCG():
+    app.logger.info(f"{request.json}")
+    try:
+        cg = parachute_cg_helper.calculateCG(request.json)
+        check(cg, request.json['answer'], os.path.join(os.getcwd(), "step28"))
+        return {"code": 200, "msg": "ok", "result": cg}
+    except Exception:
+        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
+
+@app.route('/Parachute/calculateMOI', methods=['POST'])
+def calculateParachuteMOI():
+    app.logger.info(f"{request.json}")
+    try:
+        moi = parachute_moi_helper.calculateMOI(request.json)
+        check(moi, request.json['answer'], os.path.join(os.getcwd(), "step30"))
+        return {"code": 200, "msg": "ok", "result": moi}
+    except Exception:
+        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
+
+@app.route('/ShockCord/calculateCG', methods=['POST'])
+def calculateShockCordCG():
+    app.logger.info(f"{request.json}")
+    try:
+        cg = shockCord_cg_helper.calculateCG(request.json)
+        check(cg, request.json['answer'], os.path.join(os.getcwd(), "step31"))
+        return {"code": 200, "msg": "ok", "result": cg}
+    except Exception:
+        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
+
+@app.route('/ShockCord/calculateMOI', methods=['POST'])
+def calculateShockCordMOI():
+    app.logger.info(f"{request.json}")
+    try:
+        moi = shockCord_moi_helper.calculateMOI(request.json)
+        check(moi, request.json['answer'], os.path.join(os.getcwd(), "step33"))
+        return {"code": 200, "msg": "ok", "result": moi}
+    except Exception:
+        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
+@app.route('/MassComponent/calculateCG', methods=['POST'])
+def calculateMassComponentCG():
+    app.logger.info(f"{request.json}")
+    try:
+        cg = massComponent_cg_helper.calculateCG(request.json)
+        check(cg, request.json['answer'], os.path.join(os.getcwd(), "step34"))
+        return {"code": 200, "msg": "ok", "result": cg}
+    except Exception:
+        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
+
+@app.route('/MassComponent/calculateMOI', methods=['POST'])
+def calculateMassComponentMOI():
+    app.logger.info(f"{request.json}")
+    try:
+        moi = massComponent_moi_helper.calculateMOI(request.json)
+        check(moi, request.json['answer'], os.path.join(os.getcwd(), "step36"))
+        return {"code": 200, "msg": "ok", "result": moi}
+    except Exception:
+        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
+@app.route('/Streamer/calculateCG', methods=['POST'])
+def calculateStreamerCG():
+    app.logger.info(f"{request.json}")
+    try:
+        cg = streamer_cg_helper.calculateCG(request.json)
+        check(cg, request.json['answer'], os.path.join(os.getcwd(), "step37"))
+        return {"code": 200, "msg": "ok", "result": cg}
+    except Exception:
+        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
+
+@app.route('/Streamer/calculateMOI', methods=['POST'])
+def calculateStreamerMOI():
+    app.logger.info(f"{request.json}")
+    try:
+        moi = streamer_moi_helper.calculateMOI(request.json)
+        check(moi, request.json['answer'], os.path.join(os.getcwd(), "step39"))
+        return {"code": 200, "msg": "ok", "result": moi}
+    except Exception:
+        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
+@app.route('/Stage/calculateCG', methods=['POST'])
+def calculateStageCG():
+    app.logger.info(f"{request.json}")
+    try:
+        cg = stage_cg_helper.calculateCG(request.json)
+        check(cg, request.json['answer'], os.path.join(os.getcwd(), "step49"))
+        return {"code": 200, "msg": "ok", "result": cg}
+    except Exception:
+        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
+@app.route('/Stage/calculateCP', methods=['POST'])
+def calculateStageCP():
+    app.logger.info(f"{request.json}")
+    try:
+        cp = stage_cp_helper.calculateCP(request.json)
+        check(cp, request.json['answer'], os.path.join(os.getcwd(), "step50"))
+        return {"code": 200, "msg": "ok", "result": cp}
+    except Exception:
+        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
+
+@app.route('/Stage/calculateMOI', methods=['POST'])
+def calculateStageMOI():
+    app.logger.info(f"{request.json}")
+    try:
+        moi = stage_moi_helper.calculateMOI(request.json)
+        check(moi, request.json['answer'], os.path.join(os.getcwd(), "step51"))
+        return {"code": 200, "msg": "ok", "result": moi}
+    except Exception:
+        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
+
+@app.route('/Pods/calculateCG', methods=['POST'])
+def calculatePodsCG():
+    app.logger.info(f"{request.json}")
+    try:
+        cg = Pods_cg_helper.calculateCG(request.json)
+        check(cg, request.json['answer'], os.path.join(os.getcwd(), "step52"))
+        return {"code": 200, "msg": "ok", "result": cg}
+    except Exception:
+        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
+@app.route('/Pods/calculateCP', methods=['POST'])
+def calculatePodsCP():
+    app.logger.info(f"{request.json}")
+    try:
+        cp = Pods_cp_helper.calculateCP(request.json)
+        check(cp, request.json['answer'], os.path.join(os.getcwd(), "step53"))
+        return {"code": 200, "msg": "ok", "result": cp}
+    except Exception:
+        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
+
+@app.route('/Pods/calculateMOI', methods=['POST'])
+def calculatePodsMOI():
+    app.logger.info(f"{request.json}")
+    try:
+        moi = Pods_moi_helper.calculateMOI(request.json)
+        check(moi, request.json['answer'], os.path.join(os.getcwd(), "step54"))
+        return {"code": 200, "msg": "ok", "result": moi}
+    except Exception:
+        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 if __name__ == '__main__':
     app.run(host="127.0.0.1",port=8080, debug=True)

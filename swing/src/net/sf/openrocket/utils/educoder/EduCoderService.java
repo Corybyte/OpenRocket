@@ -185,4 +185,199 @@ public interface EduCoderService {
      */
     @POST("RailButton/calculateMOI")
     Call<Result> calculateMOI(@Body RailButtonMOIRequest request);
+
+
+    /**
+     * 计算内筒组件重心位置
+     *
+     * @param request request
+     * @return result
+     */
+    @POST("InnerTube/calculateCG")
+    Call<Result> calculateCG(@Body InnerTubeCgRequest request);
+
+
+    /**
+     * 计算连接器、中心环、隔板、发动机组件转动惯量
+     *
+     * @param request request
+     * @return result
+     */
+    @POST("InnerTube/calculateMOI")
+    Call<Result> calculateMOI(@Body InnerTubeMOIRequest request);
+
+
+    /**
+     * 计算连接器、中心环、隔板、发动机组件重心位置
+     *
+     * @param request request
+     * @return result
+     */
+    @POST("InnerComponent/calculateCG")
+    Call<Result> calculateCG(@Body InnerComponentCgRequest request);
+
+
+
+    /**
+     * 计算连接器、中心环、隔板、发动机组件转动惯量
+     *
+     * @param request request
+     * @return result
+     */
+    @POST("InnerComponent/calculateMOI")
+    Call<Result> calculateMOI(@Body InnerComponentMOIRequest request);
+
+
+    /**
+     * 计算Stage组件重心位置
+     *
+     * @param request request
+     * @return result
+     */
+    @POST("Stage/calculateCG")
+    Call<Result> calculateCG(@Body StageCgRequest request);
+
+
+    /**
+     * 计算Stage组件压心位置
+     *
+     * @param request request
+     * @return result
+     */
+    @POST("Stage/calculateCP")
+    Call<Result> calculateCP(@Body StageCpRequest request);
+
+
+
+    /**
+     * 计算Stage组件转动惯量
+     *
+     * @param request request
+     * @return result
+     */
+    @POST("Stage/calculateMOI")
+    Call<Result> calculateMOI(@Body StageMOIRequest request);
+
+
+
+
+    /**
+     * 计算Pods组件重心位置
+     *
+     * @param request request
+     * @return result
+     */
+    @POST("Pods/calculateCG")
+    Call<Result> calculateCG(@Body PodsCgRequest request);
+
+
+    /**
+     * 计算Pods组件压心位置
+     *
+     * @param request request
+     * @return result
+     */
+    @POST("Pods/calculateCP")
+    Call<Result> calculateCP(@Body PodsCpRequest request);
+
+
+
+    /**
+     * 计算Pods组件转动惯量
+     *
+     * @param request request
+     * @return result
+     */
+    @POST("Pods/calculateMOI")
+    Call<Result> calculateMOI(@Body PodsMOIRequest request);
+
+
+    /**
+     * 计算降落伞组件重心位置
+     *
+     * @param request request
+     * @return result
+     */
+    @POST("Parachute/calculateCG")
+    Call<Result> calculateCG(@Body ParachuteCgRequest request);
+
+
+
+
+
+    /**
+     * 计算降落伞组件转动惯量
+     *
+     * @param request request
+     * @return result
+     */
+    @POST("Parachute/calculateMOI")
+    Call<Result> calculateMOI(@Body ParachuteMOIRequest request);
+
+
+    /**
+     * 计算飘带组件重心位置
+     *
+     * @param request request
+     * @return result
+     */
+    @POST("Streamer/calculateCG")
+    Call<Result> calculateCG(@Body StreamerCgRequest request);
+
+
+
+
+
+    /**
+     * 计算飘带组件转动惯量
+     *
+     * @param request request
+     * @return result
+     */
+    @POST("Streamer/calculateMOI")
+    Call<Result> calculateMOI(@Body StreamerMOIRequest request);
+
+
+    /**
+     * 计算减震索组件重心位置
+     *
+     * @param request request
+     * @return result
+     */
+    @POST("ShockCord/calculateCG")
+    Call<Result> calculateCG(@Body ShockCordCgRequest request);
+
+
+
+
+
+    /**
+     * 计算减震索组件转动惯量
+     *
+     * @param request request
+     * @return result
+     */
+    @POST("ShockCord/calculateMOI")
+    Call<Result> calculateMOI(@Body ShockCordMOIRequest request);
+
+
+    /**
+     * 计算MassComponent组件重心位置
+     *
+     * @param request request
+     * @return result
+     */
+    @POST("MassComponent/calculateCG")
+    Call<Result> calculateCG(@Body MassComponentCgRequest request);
+
+
+    /**
+     * 计算MassComponent组件转动惯量
+     *
+     * @param request request
+     * @return result
+     */
+    @POST("MassComponent/calculateMOI")
+    Call<Result> calculateMOI(@Body MassComponentMOIRequest request);
+
 }

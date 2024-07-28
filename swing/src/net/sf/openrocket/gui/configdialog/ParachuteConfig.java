@@ -5,18 +5,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.lang.reflect.Method;
 
-import javax.swing.BorderFactory;
-import javax.swing.ComboBoxModel;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSeparator;
-import javax.swing.JSpinner;
-import javax.swing.SwingConstants;
+import javax.swing.*;
 
 import net.miginfocom.swing.MigLayout;
 import net.sf.openrocket.document.OpenRocketDocument;
@@ -29,12 +20,17 @@ import net.sf.openrocket.gui.components.UnitSelector;
 import net.sf.openrocket.gui.widgets.SelectColorButton;
 import net.sf.openrocket.l10n.Translator;
 import net.sf.openrocket.material.Material;
-import net.sf.openrocket.rocketcomponent.DeploymentConfiguration;
+import net.sf.openrocket.rocketcomponent.*;
 import net.sf.openrocket.rocketcomponent.DeploymentConfiguration.DeployEvent;
-import net.sf.openrocket.rocketcomponent.Parachute;
-import net.sf.openrocket.rocketcomponent.RocketComponent;
 import net.sf.openrocket.startup.Application;
+import net.sf.openrocket.startup.OpenRocket;
 import net.sf.openrocket.unit.UnitGroup;
+import net.sf.openrocket.util.Coordinate;
+import net.sf.openrocket.utils.educoder.*;
+import org.jetbrains.annotations.NotNull;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class ParachuteConfig extends RecoveryDeviceConfig {
 	
@@ -164,6 +160,110 @@ public class ParachuteConfig extends RecoveryDeviceConfig {
 
 		panel.add(shroudPanel, "spanx, wrap");
 		primary.add(panel, "grow, gapright 20lp");
+
+		{//// CG calculation demonstration
+			panel.add(new JLabel(trans.get("Parachute.lbl.CgCalc") + ":"), "alignx left");
+			JButton button2 = new JButton(trans.get("Parachute.lbl.CgEnter"));
+			panel.add(button2, "spanx, wrap");
+			button2.addActionListener(e -> {
+				JDialog dialog = new JDialog(this.parent, trans.get("Parachute.lbl.CgCalc"));
+				dialog.setSize(this.parent.getSize());
+				dialog.setLocationRelativeTo(null);
+				dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
+
+				final ParachuteCgRequest request = new ParachuteCgRequest();
+				request.setAnswer(component.getComponentCG().x);
+				request.setLength(component.getLength());
+				String labelText = trans.get("Parachute.lbl.length") + ": " + request.getLength();
+				String constraints = "newline, height 30!";
+				dialog.add(new JLabel(labelText), constraints);
+
+				JButton checkButton = new JButton(trans.get("Parachute.lbl.check"));
+				JLabel checkResult = new JLabel(trans.get("InnerTube.lbl.checkResult") + ": ");
+				JLabel answerLabel = new JLabel(trans.get("InnerTube.lbl.answer") + ": ");
+				dialog.add(checkButton, "newline, height 30!");
+				dialog.add(checkResult, "height 30!");
+				dialog.add(answerLabel, "height 30!");
+				// Do not use UI thread to get the answer
+				checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateCG(request).enqueue(new Callback<>() {
+					@Override
+					public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
+						Result result = response.body();
+						if (result == null) return;
+						SwingUtilities.invokeLater(() -> {
+							checkResult.setText(trans.get("InnerTube.lbl.checkResult") + ": " + result.getResult());
+							answerLabel.setText(trans.get("InnerTube.lbl.answer") + ": " + component.getComponentCG().x);
+						});
+					}
+
+					@Override
+					public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
+						SwingUtilities.invokeLater(() ->
+								JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
+					}
+				}));
+				dialog.setVisible(true);
+			});
+		}
+
+
+		{//// MOI calculation demonstration
+			panel.add(new JLabel(trans.get("Parachute.lbl.MOICal") + ":"), "alignx left");
+			JButton button2 = new JButton(trans.get("Parachute.lbl.MOIEnter"));
+			panel.add(button2, "spanx, wrap");
+			button2.addActionListener(e -> {
+				JDialog dialog = new JDialog(this.parent, trans.get("Parachute.lbl.MOICal"));
+				dialog.setSize(this.parent.getSize());
+				dialog.setLocationRelativeTo(null);
+				dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
+
+				final ParachuteMOIRequest request = new ParachuteMOIRequest();
+				request.setAnswer(component.getRotationalUnitInertia());
+
+				String[] methodNames = { "getRadius"};
+				try {
+					for (String methodName : methodNames) {
+						Method method = MassObject.class.getDeclaredMethod(methodName);
+						Method reqMethod = ParachuteMOIRequest.class.getDeclaredMethod(methodName.replaceFirst("get", "set"),Double.class);
+						method.setAccessible(true);
+						reqMethod.setAccessible(true);
+						Double value = (Double) method.invoke(component);
+						reqMethod.invoke(request,value);
+						String labelText = trans.get("Parachute.lbl." + methodName.replaceFirst("get", "")) + ": " + value;
+						dialog.add(new JLabel(labelText), "newline, height 30!");
+					}
+				} catch (Exception exception) {
+					exception.printStackTrace();
+				}
+
+
+				JButton checkButton = new JButton(trans.get("Parachute.lbl.check"));
+				JLabel checkResult = new JLabel(trans.get("Parachute.lbl.checkResult") + ": ");
+				JLabel answerLabel = new JLabel(trans.get("Parachute.lbl.answer") + ": ");
+				dialog.add(checkButton, "newline, height 30!");
+				dialog.add(checkResult, "height 30!");
+				dialog.add(answerLabel, "height 30!");
+				// Do not use UI thread to get the answer
+				checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateMOI(request).enqueue(new Callback<>() {
+					@Override
+					public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
+						Result result = response.body();
+						if (result == null) return;
+						SwingUtilities.invokeLater(() -> {
+							checkResult.setText(trans.get("Parachute.lbl.checkResult") + ": " + result.getResult());
+							answerLabel.setText(trans.get("Parachute.lbl.answer") + ": " + component.getRotationalUnitInertia());
+						});
+					}
+
+					@Override
+					public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
+						SwingUtilities.invokeLater(() ->
+								JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
+					}
+				}));
+				dialog.setVisible(true);
+			});
+		}
 
 		// Right side
 		panel = new JPanel(new MigLayout("gap rel unrel, ins 0", "[][65lp::][30lp::][]", ""));
