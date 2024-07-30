@@ -380,4 +380,16 @@ public interface EduCoderService {
     @POST("MassComponent/calculateMOI")
     Call<Result> calculateMOI(@Body MassComponentMOIRequest request);
 
+
+    /**
+     * 计算MassComponent组件重心位置
+     *
+     * @param request request
+     * @return result
+     */
+    @POST("Whole/calculateCG")
+    Call<Result> calculateCG(@Body WholeCgRequest request);
+
+
+
 }

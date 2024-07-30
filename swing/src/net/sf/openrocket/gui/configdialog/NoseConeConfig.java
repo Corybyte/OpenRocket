@@ -8,6 +8,8 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.*;
 
@@ -24,19 +26,22 @@ import net.sf.openrocket.gui.adaptors.TransitionShapeModel;
 import net.sf.openrocket.gui.components.BasicSlider;
 import net.sf.openrocket.gui.components.DescriptionArea;
 import net.sf.openrocket.gui.components.UnitSelector;
+import net.sf.openrocket.gui.figureelements.RocketInfo;
 import net.sf.openrocket.l10n.Translator;
 import net.sf.openrocket.logging.WarningSet;
+import net.sf.openrocket.masscalc.MassCalculation;
+import net.sf.openrocket.masscalc.MassCalculator;
+import net.sf.openrocket.masscalc.RigidBody;
 import net.sf.openrocket.material.Material;
+import net.sf.openrocket.motor.Motor;
+import net.sf.openrocket.motor.MotorConfiguration;
 import net.sf.openrocket.rocketcomponent.*;
 import net.sf.openrocket.startup.Application;
 import net.sf.openrocket.startup.OpenRocket;
 import net.sf.openrocket.unit.UnitGroup;
 import net.sf.openrocket.util.Coordinate;
 import net.sf.openrocket.util.Transformation;
-import net.sf.openrocket.utils.educoder.NoseConeCgRequest;
-import net.sf.openrocket.utils.educoder.NoseConeCpRequest;
-import net.sf.openrocket.utils.educoder.NoseConeMOIRequest;
-import net.sf.openrocket.utils.educoder.Result;
+import net.sf.openrocket.utils.educoder.*;
 import org.jetbrains.annotations.NotNull;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -169,7 +174,7 @@ public class NoseConeConfig extends RocketComponentConfig {
 		{//// CG calculation demonstration
 			panel.add(new JLabel(trans.get("NoseConeCfg.lbl.CgCalc") + ":"));
 			JButton button = new JButton(trans.get("NoseConeCfg.lbl.CgEnter"));
-			panel.add(button, "spanx, wrap");
+			panel.add(button);
 			button.addActionListener(e -> {
 				JDialog dialog = new JDialog(this.parent, trans.get("NoseConeCfg.lbl.CgCalc"));
 				dialog.setSize(this.parent.getSize());
@@ -259,7 +264,90 @@ public class NoseConeConfig extends RocketComponentConfig {
 				dialog.setVisible(true);
 			});
 		}
+		{//// whole CG calculation demonstration
+			panel.add(new JLabel(trans.get("NoseConeCfg.lbl.WholeCgCalc") + ":"),"gapleft 15px");
+			JButton button = new JButton(trans.get("NoseConeCfg.lbl.WholeCgEnter"));
+			panel.add(button, "span");
+			button.addActionListener(e -> {
+				JDialog dialog = new JDialog(this.parent, trans.get("NoseConeCfg.lbl.WholeCgCalc"));
+				dialog.setSize(this.parent.getSize());
+				dialog.setLocationRelativeTo(null);
+				dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
 
+
+				final WholeCgRequest request = new WholeCgRequest();
+
+				try {
+					//whole cg answer
+					RocketComponent rocket = document.getSelectedConfiguration().getRocket();
+					MyComponent rootComponent = new MyComponent();
+					rootComponent.setComponentName(rocket.getComponentName());
+					rootComponent.setCg(rocket.getCG());
+					rootComponent.setPosition(rocket.getPosition());
+					rootComponent.copyValues(rocket,document.getSelectedConfiguration());
+
+					request.setMyComponent(rootComponent);
+
+					FlightConfiguration configuration = document.getSelectedConfiguration();
+					MassCalculation calculation = new MassCalculation(MassCalculation.Type.LAUNCH, configuration,
+							Motor.PSEUDO_TIME_LAUNCH, null, configuration.getRocket(), Transformation.IDENTITY, null);
+					Method method = MassCalculation.class.getDeclaredMethod("calculateAssembly");
+					method.setAccessible(true);
+					method.invoke(calculation);
+					request.setAnswer(calculation.getCM().x);
+
+					//计算interTube
+					int i =1;
+					for (RocketComponent component:rocket.getAllChildren()){
+						if (component.getComponentName().equals("火箭")||component.getComponentName().equals("火箭级"))
+							continue;
+						String labelText =   component.getComponentName()+" 组件重心: " + component.getComponentCG().x;
+						String labelText2 =   component.getComponentName()+"组件位置: " + component.getPosition();
+						String constraints =  "newline, height 30!";
+						String constraints2 =  "height 30!";
+						if(i<11){
+							dialog.add(new JLabel(labelText), constraints);
+							dialog.add(new JLabel(labelText2), constraints2);
+						}
+						i++;
+
+					}
+					System.out.println(request);
+					JButton checkButton = new JButton(trans.get("NoseConeCfg.lbl.check"));
+					JLabel checkResult = new JLabel(trans.get("NoseConeCfg.lbl.checkResult") + ": ");
+					JLabel answerLabel = new JLabel(trans.get("NoseConeCfg.lbl.answer") + ": ");
+					dialog.add(checkButton, "newline, height 30!");
+					dialog.add(checkResult, "height 30!");
+					dialog.add(answerLabel, "height 30!");
+
+
+					// Do not use UI thread to get the answer
+					checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateCG(request).enqueue(new Callback<>() {
+						@Override
+						public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
+							RocketInfo rocketInfo=new RocketInfo(document.getSelectedConfiguration());
+							Result result = response.body();
+							if (result == null) return;
+							SwingUtilities.invokeLater(() -> {
+								checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult());
+								answerLabel.setText(trans.get("NoseConeCfg.lbl.answer") + ": " +calculation.getCM().x);
+							});
+						}
+
+						@Override
+						public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
+							SwingUtilities.invokeLater(() ->
+									JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
+						}
+					}));
+				} catch (Exception ex) {
+					// ignored
+					ex.printStackTrace();
+
+				}
+				dialog.setVisible(true);
+			});
+		}
 		{//// CP calculation demonstration
 			panel.add(new JLabel(trans.get("NoseConeCfg.lbl.CpCalc") + ":"));
 			JButton button = new JButton(trans.get("NoseConeCfg.lbl.CpEnter"));
@@ -348,7 +436,7 @@ public class NoseConeConfig extends RocketComponentConfig {
 
 				final NoseConeMOIRequest request = new NoseConeMOIRequest();
 				// answer = rotationalUnitInertia
-				request.setAnswer(component.getRotationalInertia());
+				request.setAnswer(component.getRotationalUnitInertia());
 
 				String[] transitionMethodNames = {"getForeRadius", "getAftRadius"};
 				String[] transitionFieldNames = {"shapeParameter", "type"};
@@ -518,4 +606,6 @@ public class NoseConeConfig extends RocketComponentConfig {
 			checkAutoBaseRadius.setToolTipText(trans.get("NoseConeCfg.checkbox.ttip.Automatic_alreadyAuto"));
 		}
 	}
+
+
 }
