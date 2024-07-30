@@ -31,6 +31,7 @@ import transition_moi_helper
 import tube_fine_set_cg_helper
 import tube_fine_set_cp_helper
 import tube_fine_set_moi_helper
+import whole_cg_helper
 from common_helper import equals
 import os
 import nose_cone_cg_helper
@@ -45,6 +46,7 @@ import traceback
 
 app = Flask(__name__)
 
+
 def check(result, answer, dir):
     if equals(result, answer):
         with open(os.path.join(dir, "result.txt"), 'w') as f:
@@ -52,6 +54,7 @@ def check(result, answer, dir):
     else:
         with open(os.path.join(dir, "result.txt"), 'w') as f:
             f.write("No")
+
 
 ###NoseCone
 @app.route('/NoseCone/calculateCG', methods=['POST'])
@@ -64,6 +67,7 @@ def calculateNoseConeCG():
     except Exception:
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
+
 @app.route('/NoseCone/calculateCP', methods=['POST'])
 def calculateNoseConeCP():
     app.logger.info(f"{request.json}")
@@ -73,6 +77,7 @@ def calculateNoseConeCP():
         return {"code": 200, "msg": "ok", "result": cp}
     except Exception:
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
 
 @app.route('/NoseCone/calculateMOI', methods=['POST'])
 def calculateNoseConeMOI():
@@ -84,6 +89,7 @@ def calculateNoseConeMOI():
     except Exception:
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
+
 ####BodyTube
 @app.route('/BodyTube/calculateCG', methods=['POST'])
 def calculateBodyTubeCG():
@@ -94,6 +100,8 @@ def calculateBodyTubeCG():
         return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
+
 @app.route('/BodyTube/calculateCP', methods=['POST'])
 def calculateBodyTubeCP():
     app.logger.info(f"{request.json}")
@@ -103,6 +111,8 @@ def calculateBodyTubeCP():
         return {"code": 200, "msg": "ok", "result": cp}
     except Exception:
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
+
 @app.route('/BodyTube/calculateMOI', methods=['POST'])
 def calculateBodyTubeMOI():
     app.logger.info(f"{request.json}")
@@ -112,6 +122,7 @@ def calculateBodyTubeMOI():
         return {"code": 200, "msg": "ok", "result": moi}
     except Exception:
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
 
 # Finset
 @app.route('/FinSet/calculateCG', methods=['POST'])
@@ -124,6 +135,7 @@ def calculateFinSetCG():
     except Exception:
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
+
 @app.route('/FinSet/calculateCP', methods=['POST'])
 def calculateFinSetCP():
     app.logger.info(f"{request.json}")
@@ -133,6 +145,7 @@ def calculateFinSetCP():
         return {"code": 200, "msg": "ok", "result": cp}
     except Exception:
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
 
 @app.route('/FinSet/calculateMOI', methods=['POST'])
 def calculateFinSetMOI():
@@ -144,6 +157,7 @@ def calculateFinSetMOI():
     except Exception:
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
+
 # Transition
 @app.route('/Transition/calculateCG', methods=['POST'])
 def calculateTransitionCG():
@@ -154,6 +168,8 @@ def calculateTransitionCG():
         return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
+
 @app.route('/Transition/calculateCP', methods=['POST'])
 def calculateTransitionCP():
     app.logger.info(f"{request.json}")
@@ -163,6 +179,8 @@ def calculateTransitionCP():
         return {"code": 200, "msg": "ok", "result": cp}
     except Exception:
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
+
 @app.route('/Transition/calculateMOI', methods=['POST'])
 def calculateTransitionMOI():
     app.logger.info(f"{request.json}")
@@ -183,6 +201,7 @@ def calculateTubeFinSetCG():
         return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
 
 @app.route('/TubeFinSet/calculateCP', methods=['POST'])
 def calculateTubeFinSetCP():
@@ -216,6 +235,7 @@ def calculateLaunchLugCG():
     except Exception:
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
+
 @app.route('/LaunchLug/calculateCP', methods=['POST'])
 def calculateLaunchLugCP():
     app.logger.info(f"{request.json}")
@@ -237,6 +257,7 @@ def calculateLaunchLugMOI():
     except Exception:
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
+
 @app.route('/RailButton/calculateCG', methods=['POST'])
 def calculateRailButtonCG():
     app.logger.info(f"{request.json}")
@@ -246,6 +267,7 @@ def calculateRailButtonCG():
         return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
 
 @app.route('/RailButton/calculateCP', methods=['POST'])
 def calculateRailButtonCP():
@@ -267,6 +289,7 @@ def calculateRailButtonMOI():
         return {"code": 200, "msg": "ok", "result": moi}
     except Exception:
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
 
 @app.route('/InnerTube/calculateCG', methods=['POST'])
 def calculateInnerTubeCG():
@@ -290,7 +313,6 @@ def calculateInnerTubeMOI():
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
-
 @app.route('/InnerComponent/calculateCG', methods=['POST'])
 def calculateInnerComponentCG():
     app.logger.info(f"{request.json}")
@@ -311,7 +333,6 @@ def calculateInnerComponentMOI():
         return {"code": 200, "msg": "ok", "result": moi}
     except Exception:
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
-
 
 
 @app.route('/Parachute/calculateCG', methods=['POST'])
@@ -357,6 +378,7 @@ def calculateShockCordMOI():
     except Exception:
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
+
 @app.route('/MassComponent/calculateCG', methods=['POST'])
 def calculateMassComponentCG():
     app.logger.info(f"{request.json}")
@@ -377,6 +399,7 @@ def calculateMassComponentMOI():
         return {"code": 200, "msg": "ok", "result": moi}
     except Exception:
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
 
 @app.route('/Streamer/calculateCG', methods=['POST'])
 def calculateStreamerCG():
@@ -399,6 +422,7 @@ def calculateStreamerMOI():
     except Exception:
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
+
 @app.route('/Stage/calculateCG', methods=['POST'])
 def calculateStageCG():
     app.logger.info(f"{request.json}")
@@ -408,6 +432,7 @@ def calculateStageCG():
         return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
 
 @app.route('/Stage/calculateCP', methods=['POST'])
 def calculateStageCP():
@@ -441,6 +466,7 @@ def calculatePodsCG():
     except Exception:
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
+
 @app.route('/Pods/calculateCP', methods=['POST'])
 def calculatePodsCP():
     app.logger.info(f"{request.json}")
@@ -462,5 +488,17 @@ def calculatePodsMOI():
     except Exception:
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
+@app.route('/Whole/calculateCG', methods=['POST'])
+def calculateWholeCG():
+    app.logger.info(f"{request.json}")
+    try:
+        cg = whole_cg_helper.calculateCG(request.json)
+        check(cg, request.json['answer'], os.path.join(os.getcwd(), "step55"))
+        return {"code": 200, "msg": "ok", "result": cg}
+    except Exception:
+        print(traceback.format_exc())
+        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
+
 if __name__ == '__main__':
-    app.run(host="127.0.0.1",port=8080, debug=True)
+    app.run(host="127.0.0.1", port=8080, debug=True)

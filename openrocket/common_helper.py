@@ -1,10 +1,12 @@
 import math
 
+
 def safe_sqrt(x):
     if x < 0:
         return 0
     else:
         return math.sqrt(x)
+
 
 def equals(a, b):
     epsilon = 0.00000001
@@ -12,6 +14,7 @@ def equals(a, b):
     if absb < epsilon / 2:
         return abs(a) < epsilon / 2
     return abs(a - b) < epsilon * absb
+
 
 def average(a, b):
     x1 = 0
@@ -32,13 +35,14 @@ def average(a, b):
         z1 = (a[2] * a[3] + b[2] * b[3]) / w1
     return (x1, y1, z1, w1)
 
+
 def transform(orig):
     matrix = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
-    matrix[0][0] =1
-    matrix[1][2] =1
-    matrix[1][2] =1
+    matrix[0][0] = 1
+    matrix[1][2] = 1
+    matrix[1][2] = 1
 
     x = matrix[0][0] * orig[0] + matrix[0][1] * orig[0] + matrix[2][2] * orig[0]
     y = matrix[1][0] * orig[0] + matrix[1][1] * orig[0] + matrix[2][2] * orig[0]
     z = matrix[2][0] * orig[0] + matrix[2][1] * orig[0] + matrix[2][2] * orig[0]
-    return [x,y,z]
+    return [x, y, z]
