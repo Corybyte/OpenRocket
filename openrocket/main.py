@@ -32,6 +32,8 @@ import tube_fine_set_cg_helper
 import tube_fine_set_cp_helper
 import tube_fine_set_moi_helper
 import whole_cg_helper
+import whole_cp_helper
+import whole_moi_helper
 from common_helper import equals
 import os
 import nose_cone_cg_helper
@@ -496,7 +498,26 @@ def calculateWholeCG():
         check(cg, request.json['answer'], os.path.join(os.getcwd(), "step55"))
         return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
-        print(traceback.format_exc())
+        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+@app.route('/Whole/calculateCP', methods=['POST'])
+def calculateWholeCP():
+    app.logger.info(f"{request.json}")
+    try:
+        cg = whole_cp_helper.calculateCP(request.json)
+        check(cg, request.json['answer'], os.path.join(os.getcwd(), "step56"))
+        return {"code": 200, "msg": "ok", "result": cg}
+    except Exception:
+        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
+
+@app.route('/Whole/calculateMOI', methods=['POST'])
+def calculateWholeMOI():
+    app.logger.info(f"{request.json}")
+    try:
+        cg = whole_moi_helper.calculateMOI(request.json)
+        check(cg, request.json['answer'], os.path.join(os.getcwd(), "step56"))
+        return {"code": 200, "msg": "ok", "result": cg}
+    except Exception:
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 

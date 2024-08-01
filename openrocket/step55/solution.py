@@ -11,14 +11,8 @@ def calculateCG(rootComponent: MyComponent) -> float:
     cg_structure = calculateStructure(rootComponent, parentTransform)
     init_cg = [0, 0, 0, 0]
     all_cg = merge(init_cg, cg_structure)
-    # print("structure")
-    # print(all_cg)
     cg_motor = calculateMotors(rootComponent, parentTransform)
-    # print("motor")
-    # print(cg_motor)
     all_cg = merge(all_cg, cg_motor)
-    # print("result")
-    # print(all_cg)
     return all_cg[0]
 
 

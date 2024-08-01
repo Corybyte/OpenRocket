@@ -12,5 +12,3 @@ def calculate_moi(param):
     moi = step6.solution.calculateMOI(innerRadius, param['outerRadius'])
     return moi
 
-# if __name__ == '__main__':
-#     print(calculate_moi(0.002, 0.025))
