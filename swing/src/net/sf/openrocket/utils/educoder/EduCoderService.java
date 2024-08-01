@@ -382,7 +382,7 @@ public interface EduCoderService {
 
 
     /**
-     * 计算MassComponent组件重心位置
+     * 计算总体组件重心位置
      *
      * @param request request
      * @return result
@@ -390,6 +390,23 @@ public interface EduCoderService {
     @POST("Whole/calculateCG")
     Call<Result> calculateCG(@Body WholeCgRequest request);
 
+    /**
+     * 计算总体组件压心位置
+     *
+     * @param request request
+     * @return result
+     */
+    @POST("Whole/calculateCP")
+    Call<Result> calculateCP(@Body WholeCpRequest request);
 
+
+    /**
+     * 计算总体组件转动惯量位置
+     *
+     * @param request request
+     * @return result
+     */
+    @POST("Whole/calculateMOI")
+    Call<Result> calculateMOI(@Body WholeMOIRequest request);
 
 }
