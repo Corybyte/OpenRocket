@@ -37,24 +37,37 @@ public class ThrustCurveMotor implements Motor, Comparable<ThrustCurveMotor>, Se
 	private Manufacturer manufacturer = Manufacturer.getManufacturer("Unknown");
 	private String code = "";
 	private String commonName = "";
+	//设计厂商
 	private String designation = "";
-		
+	//描述
 	private String description = "";
+	//发动机类型
 	private Motor.Type type = Motor.Type.UNKNOWN;
+	//延迟
 	private double[] delays = {};
+	//直径
 	private double diameter;
+	//长度
 	private double length;
+	//时间
 	private double[] time = {};
+	//推力
 	private double[] thrust = {};
+	//重心
 	private Coordinate[] cg = {};
 	
 	private String caseInfo = "";
 	private String propellantInfo = "";
+	//初始化马赫
 	
 	private double initialMass;
+	//最大推力
 	private double maxThrust;
+	//燃尽时间
 	private double burnTimeEstimate;
+	//平均推力
 	private double averageThrust;
+	//总冲量
 	private double totalImpulse;
 	private boolean available = true;
 	
@@ -170,15 +183,21 @@ public class ThrustCurveMotor implements Motor, Comparable<ThrustCurveMotor>, Se
 		
 		public ThrustCurveMotor build() {
 			// Check argument validity
-			if ((motor.time.length != motor.thrust.length) || (motor.time.length != motor.cg.length)) {
+			//数组长度一致
+//			if ((motor.time.length != motor.thrust.length) || (motor.time.length != motor.cg.length)) {
+//				throw new IllegalArgumentException("Array lengths do not match, " +
+//						"time:" + motor.time.length + " thrust:" + motor.thrust.length +
+//						" cg:" + motor.cg.length);
+//			}
+			if ((motor.time.length != motor.thrust.length)) {
 				throw new IllegalArgumentException("Array lengths do not match, " +
-						"time:" + motor.time.length + " thrust:" + motor.thrust.length +
-						" cg:" + motor.cg.length);
+						"time:" + motor.time.length);
 			}
+			//length<2
 			if (motor.time.length < 2) {
 				throw new IllegalArgumentException("Too short thrust-curve, length=" + motor.time.length);
 			}
-			
+			//time递增
 			for (int i = 0; i < motor.time.length - 1; i++) {
 				if (motor.time[i + 1] <= motor.time[i]) {
 					throw new IllegalArgumentException("Two thrust values for single time point, " +
@@ -186,7 +205,7 @@ public class ThrustCurveMotor implements Motor, Comparable<ThrustCurveMotor>, Se
 													   "; time[" + (i + 1) + "]=" + motor.time[i + 1] + ", thrust=" + motor.thrust[i+1]);
 				}
 			}
-
+			//不是从0开始
 			if (!MathUtil.equals(motor.time[0], 0)) {
 				throw new IllegalArgumentException("Curve starts at time " + motor.time[0]);
 			}
@@ -203,7 +222,7 @@ public class ThrustCurveMotor implements Motor, Comparable<ThrustCurveMotor>, Se
 			//     throw new IllegalArgumentException("Curve ends at thrust " +
 			//			motor.thrust[motor.thrust.length - 1]);
 			//}
-
+			//复数或者nan或者太大
 			for (double t : motor.thrust) {
 				if (t < 0) {
 					throw new IllegalArgumentException("Negative thrust.");
@@ -212,26 +231,27 @@ public class ThrustCurveMotor implements Motor, Comparable<ThrustCurveMotor>, Se
 					throw new IllegalArgumentException("Invalid thrust " + t);
 				}
 			}
-			for (Coordinate c : motor.cg) {
-				if (c.isNaN()) {
-					throw new IllegalArgumentException("Invalid CG " + c);
-				}
-				if (c.x < 0) {
-					throw new IllegalArgumentException("Invalid CG position " + String.format("%f", c.x) + ": CG is below the start of the motor.");
-				}
-				if (c.x > motor.length) {
-					throw new IllegalArgumentException("Invalid CG position: " + String.format("%f", c.x) + ": CG is above the end of the motor.");
-				}
-				if (c.weight < 0) {
-					throw new IllegalArgumentException("Negative mass " + c.weight + "at time=" + motor.time[Arrays.asList(motor.cg).indexOf(c)]);
-				}
-			}
-			
+			//nan x<0  x>长度 weight<0
+//			for (Coordinate c : motor.cg) {
+//				if (c.isNaN()) {
+//					throw new IllegalArgumentException("Invalid CG " + c);
+//				}
+//				if (c.x < 0) {
+//					throw new IllegalArgumentException("Invalid CG position " + String.format("%f", c.x) + ": CG is below the start of the motor.");
+//				}
+//				if (c.x > motor.length) {
+//					throw new IllegalArgumentException("Invalid CG position: " + String.format("%f", c.x) + ": CG is above the end of the motor.");
+//				}
+//				if (c.weight < 0) {
+//					throw new IllegalArgumentException("Negative mass " + c.weight + "at time=" + motor.time[Arrays.asList(motor.cg).indexOf(c)]);
+//				}
+//			}
+			//四种type
 			if (motor.type != Motor.Type.SINGLE && motor.type != Motor.Type.RELOAD &&
 					motor.type != Motor.Type.HYBRID && motor.type != Motor.Type.UNKNOWN) {
 				throw new IllegalArgumentException("Illegal motor type=" + motor.type);
 			}
-			
+			//diameter 和length
 			motor.unitRotationalInertia = Inertia.filledCylinderRotational( motor.diameter / 2);
 			motor.unitLongitudinalInertia = Inertia.filledCylinderLongitudinal( motor.diameter / 2, motor.length);
 
@@ -774,7 +794,7 @@ public class ThrustCurveMotor implements Motor, Comparable<ThrustCurveMotor>, Se
 	public static String getDelayString(double delay) {
 		return getDelayString(delay, "P");
 	}
-	
+
 	/**
 	 * Return a String representation of a delay time.  If the delay is {@link #PLUGGED_DELAY},
 	 * <code>plugged</code> is returned.
@@ -830,4 +850,30 @@ public class ThrustCurveMotor implements Motor, Comparable<ThrustCurveMotor>, Se
 		
 	}
 
+	@Override
+	public String toString() {
+		return "ThrustCurveMotor{" +
+				"digest='" + digest + '\'' +'\n'+
+				", manufacturer=" + manufacturer +'\n'+
+				", code='" + code + '\'' +'\n'+
+				", commonName='" + commonName + '\'' +'\n'+
+				", type=" + type +'\n'+
+				", delays=" + Arrays.toString(delays) +'\n'+
+				", diameter=" + diameter +'\n'+
+				", length=" + length +'\n'+
+				", time=" + Arrays.toString(time) +'\n'+
+				", thrust=" + Arrays.toString(thrust) +'\n'+
+				", cg=" + Arrays.toString(cg) +'\n'+
+				", caseInfo='" + caseInfo + '\'' +'\n'+
+				", propellantInfo='" + propellantInfo + '\'' +'\n'+
+				", initialMass=" + initialMass +'\n'+
+				", maxThrust=" + maxThrust +'\n'+
+				", burnTimeEstimate=" + burnTimeEstimate +'\n'+
+				", averageThrust=" + averageThrust +'\n'+
+				", totalImpulse=" + totalImpulse +'\n'+
+				", available=" + available +'\n'+
+				", unitRotationalInertia=" + unitRotationalInertia +'\n'+
+				", unitLongitudinalInertia=" + unitLongitudinalInertia +'\n'+
+				'}';
+	}
 }

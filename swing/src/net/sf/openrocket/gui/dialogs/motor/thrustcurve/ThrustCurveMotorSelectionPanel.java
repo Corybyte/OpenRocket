@@ -1,53 +1,59 @@
 package net.sf.openrocket.gui.dialogs.motor.thrustcurve;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Paint;
-import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EventObject;
-import java.util.HashSet;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.*;
 import java.util.List;
-import java.util.Set;
 import java.util.prefs.Preferences;
+import java.util.stream.Collectors;
 
-import javax.swing.ButtonGroup;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.ListCellRenderer;
-import javax.swing.ListSelectionModel;
-import javax.swing.RowSorter;
-import javax.swing.SortOrder;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.RowSorterEvent;
 import javax.swing.event.RowSorterListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
+import net.sf.openrocket.database.motor.ThrustCurveMotorSetDatabase;
+import net.sf.openrocket.gui.components.UnitSelector;
 import net.sf.openrocket.gui.plot.Util;
-import net.sf.openrocket.gui.util.UITheme;
+import net.sf.openrocket.gui.simulation.FlightDataComboBox;
+import net.sf.openrocket.gui.simulation.SimulationPlotPanel;
+import net.sf.openrocket.gui.util.*;
+import net.sf.openrocket.gui.widgets.SelectColorButton;
+import net.sf.openrocket.simulation.FlightDataType;
+import net.sf.openrocket.simulation.FlightDataTypeGroup;
+import net.sf.openrocket.startup.OpenRocket;
+import net.sf.openrocket.unit.Unit;
+import net.sf.openrocket.unit.UnitGroup;
+import net.sf.openrocket.util.Coordinate;
 import net.sf.openrocket.util.StateChangeListener;
+import net.sf.openrocket.utils.educoder.DataResult;
+import net.sf.openrocket.utils.educoder.Result;
+import org.jetbrains.annotations.NotNull;
 import org.jfree.chart.ChartColor;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.NumberTickUnit;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
+import org.jfree.chart.renderer.xy.XYSplineRenderer;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,8 +62,6 @@ import net.sf.openrocket.database.motor.ThrustCurveMotorSet;
 import net.sf.openrocket.gui.components.StyledLabel;
 import net.sf.openrocket.gui.dialogs.motor.CloseableDialog;
 import net.sf.openrocket.gui.dialogs.motor.MotorSelector;
-import net.sf.openrocket.gui.util.GUIUtil;
-import net.sf.openrocket.gui.util.SwingPreferences;
 import net.sf.openrocket.l10n.Translator;
 import net.sf.openrocket.logging.Markers;
 import net.sf.openrocket.motor.Manufacturer;
@@ -69,6 +73,9 @@ import net.sf.openrocket.rocketcomponent.MotorMount;
 import net.sf.openrocket.startup.Application;
 import net.sf.openrocket.util.BugException;
 import net.sf.openrocket.utils.MotorCorrelation;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class ThrustCurveMotorSelectionPanel extends JPanel implements MotorSelector {
 	private static final long serialVersionUID = -8737784181512143155L;
@@ -111,6 +118,12 @@ public class ThrustCurveMotorSelectionPanel extends JPanel implements MotorSelec
 	private ThrustCurveMotorSet selectedMotorSet;
 	private double selectedDelay;
 
+	private List<HashMap<String,String>> simulateFunctions;
+
+	private List<String> functionList = new ArrayList<>();
+
+	private List<String> lowList = new ArrayList<>();
+	private List<String> highList = new ArrayList<>();
 	private static Color dimTextColor;
 
 	static {
@@ -132,6 +145,7 @@ public class ThrustCurveMotorSelectionPanel extends JPanel implements MotorSelec
 		model = new ThrustCurveMotorDatabaseModel(database);
 		rowFilter = new MotorRowFilter(model);
 		motorInformationPanel = new MotorInformationPanel();
+
 
 		//// MotorFilter
 		{
@@ -170,8 +184,10 @@ public class ThrustCurveMotorSelectionPanel extends JPanel implements MotorSelec
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					MotorHolder value = (MotorHolder)curveSelectionBox.getSelectedItem();
+
 					if (value != null) {
 						select(((MotorHolder) value).getMotor());
+
 					}
 				}
 			});
@@ -387,6 +403,636 @@ public class ThrustCurveMotorSelectionPanel extends JPanel implements MotorSelec
 			});
 			panel.add(searchField, "span, growx");
 		}
+
+		{
+			JButton newMotor = new JButton("自定义发动机(数据点拟合)");
+			panel.add(newMotor);
+
+			newMotor.addActionListener(e -> {
+				// 创建一个模态对话框
+				JDialog chartDialog = new JDialog((Frame) null, "自定义曲线", true);
+				chartDialog.setSize(800, 600);
+				chartDialog.setLocationRelativeTo(null);
+
+				// 设置对话框的布局
+				chartDialog.setLayout(new BorderLayout());
+
+				// Thrust curve plot
+				JFreeChart chart = ChartFactory.createXYLineChart(
+						"Motor thrust curves",
+						"Time",
+						"Thrust",
+						null,
+						PlotOrientation.VERTICAL,
+						true,
+						true,
+						false
+				);
+
+				// 获取 XYPlot
+				XYPlot plot = chart.getXYPlot();
+				plot.setBackgroundPaint(Color.WHITE);
+				plot.setDomainGridlinePaint(Color.LIGHT_GRAY);
+				plot.setRangeGridlinePaint(Color.LIGHT_GRAY);
+
+				// 创建 chartPanel 并设置其大小
+				ChartPanel chartPanel = new ChartPanel(chart,
+						false, true, false, true, true);
+				chartPanel.setMouseWheelEnabled(true);
+				chartPanel.setPreferredSize(new Dimension(600, 400));
+
+				// 配置渲染器
+				StandardXYItemRenderer renderer = new StandardXYItemRenderer();
+				renderer.setBaseShapesVisible(true);
+				renderer.setBaseShapesFilled(true);
+				plot.setRenderer(renderer);
+				simulateFunctions= new ArrayList<>();
+
+				// 创建数据集
+				XYSeriesCollection dataset = new XYSeriesCollection();
+				XYSeries xySeries = new XYSeries("Thrust Curve");
+				dataset.addSeries(xySeries);
+				plot.setDataset(dataset);
+
+				// 创建输入框和按钮
+				JPanel controlPanel = new JPanel(new MigLayout("wrap 4", "[][][]", "[]"));
+				//		controlPanel.setLayout(new MigLayout("gap 10px", "", ""));
+//				controlPanel.setLayout(new GridLayout(4, 2, 10, 10));  // 4 行 2 列，10 像素间距
+				JTextField xField = new JTextField(40);  // 输入 x 序列
+				JTextField yField = new JTextField(40);  // 输入 y 序列
+
+				JTextField designation = new JTextField(20);  // 输入 制造商
+				JTextField commonName = new JTextField(20);  // 输入 发动机名称
+				JTextField weight = new JTextField(20);  // 输入 发动机质量
+				JTextField diameter  = new JTextField(20);  // 输入 直径
+				JTextField length = new JTextField(20);  // 输入 长度
+				String[] options = {"Single-use", "Reloadable", "Hybrid","Unknown"};
+				JComboBox<Object> box = new JComboBox<>(options);//发动机类型
+
+				JButton updateButton = new JButton("生成推力曲线");
+				JButton loadSampleButton  = new JButton(" 加载数据点 ");
+
+				xField.setBorder(BorderFactory.createBevelBorder(1) );
+				yField.setBorder(BorderFactory.createBevelBorder(1) );
+				designation.setBorder(BorderFactory.createBevelBorder(1) );
+				commonName.setBorder(BorderFactory.createBevelBorder(1) );
+				box.setBorder(BorderFactory.createBevelBorder(1) );
+				length.setBorder(BorderFactory.createBevelBorder(1) );
+				diameter.setBorder(BorderFactory.createBevelBorder(1) );
+				weight.setBorder(BorderFactory.createBevelBorder(1) );
+				controlPanel.add(new JLabel("X轴:时间(逗号分隔):"));
+				controlPanel.add(xField);
+				controlPanel.add(updateButton,"gapleft 10,wrap");
+
+				controlPanel.add(new JLabel("Y轴:推力(逗号分隔):"));
+				controlPanel.add(yField);
+				controlPanel.add(loadSampleButton,"gapleft 10,wrap");
+
+
+				controlPanel.add(new JLabel("发动机质量:(kg)"),"align center");
+				controlPanel.add(weight);
+				controlPanel.add(new JLabel("发动机类型:"),"gapleft 10");
+				controlPanel.add(box,"align left");
+
+				controlPanel.add(new JLabel("发动机直径:(m)"),"align center");
+				controlPanel.add(diameter);
+				controlPanel.add(new JLabel("发动机长度:(m)"),"gapleft 10");
+				controlPanel.add(length,"align left");
+
+				controlPanel.add(new JLabel("设计者:"),"align center");
+				controlPanel.add(designation);
+				controlPanel.add(new JLabel("发动机名称:"),"gapleft 10");
+				controlPanel.add(commonName,"align left");
+
+				JButton loadIn = new JButton("    导入    ");
+				controlPanel.add(loadIn,"gapleft 10");
+				JButton loadOut = new JButton("    导出    ");
+				controlPanel.add(loadOut,"gapleft 10");
+
+				JButton jButton = new JButton("提交");
+				controlPanel.add(jButton);
+				jButton.addActionListener(e1 -> {
+					try {
+						// 获取 x 和 y 的输入并解析
+						String[] xValues = xField.getText().split(",");
+						String[] yValues = yField.getText().split(",");
+						if ((xValues.length==1||yValues.length==1)&&(xValues[0].equals("")||yValues[0].equals(""))){
+							throw new IllegalArgumentException("X轴或Y轴不能为空");
+						}
+						if (xValues.length != yValues.length) {
+							throw new IllegalArgumentException("X 和 Y 的值数量必须相等");
+						}
+						if (designation.getText().length()==0){
+							throw new IllegalArgumentException("请留下你的姓名");
+						}
+						if (commonName.getText().length()==0){
+							throw new IllegalArgumentException("请留下你的作品名称");
+						}
+						if (diameter.getText().length()==0){
+							throw new IllegalArgumentException("直径不能为空");
+						}
+						if (length.getText().length()==0){
+							throw new IllegalArgumentException("长度不能为空");
+						}
+						if (weight.getText().length()==0){
+							throw new IllegalArgumentException("发动机初始重量不能为空");
+						}
+
+
+						//转double
+						double[] timePoint = new double[xValues.length];
+						double[] thrustPoint = new double[yValues.length];
+						for (int i = 0; i < xValues.length; i++) {
+							timePoint[i]=Double.parseDouble(xValues[i]);
+							thrustPoint[i]=Double.parseDouble(yValues[i]);
+
+						}
+
+						//设计者
+						String design = designation.getText();
+
+						//火箭类型
+						String selectedItem = (String) box.getSelectedItem();
+						Motor.Type motorType = null;
+						if (selectedItem.equals("Single-use")){
+							motorType= Motor.Type.SINGLE;
+						}else if(selectedItem.equals("Reloadable")){
+							motorType= Motor.Type.RELOAD;
+						}else if(selectedItem.equals("Hybrid")){
+							motorType= Motor.Type.HYBRID;
+						}else {
+							motorType=Motor.Type.UNKNOWN;
+						}
+
+
+
+						ThrustCurveMotor motor = new ThrustCurveMotor.Builder()
+								.setManufacturer(Manufacturer.getManufacturer(design))
+								.setDesignation(design)
+								.setDescription(" ")
+								.setCaseInfo(" ")
+								.setMotorType(motorType)
+								.setStandardDelays(new double[]{})
+								.setInitialMass(Double.parseDouble(weight.getText()))
+								.setDiameter(Double.parseDouble(diameter.getText()))
+								.setLength(Double.parseDouble(length.getText()))
+								.setTimePoints(timePoint)
+								.setThrustPoints(thrustPoint)
+								.setCGPoints(new Coordinate[]{
+										new Coordinate(.035, 0, 0, 0.025),new Coordinate(.035, 0, 0, 0.025)})
+								.setDigest(design+"test")
+								.build();
+						Method method = ThrustCurveMotor.class.getDeclaredMethod("computeStatistics");
+						method.setAccessible(true);
+						method.invoke(motor);
+
+						//calculate weight
+						double I_sp = motor.getTotalImpulseEstimate()/(motor.getBurnTimeEstimate()*motor.getInitialMass());
+
+						double[] mass = new double[motor.getTimePoints().length];
+						mass[0] = motor.getInitialMass();
+
+						for (int i = 1; i < mass.length; i++) {
+							double deltaT = motor.getTimePoints()[i] - motor.getTimePoints()[i - 1];
+							double massFlowRate = motor.getThrustPoints()[i - 1] / (I_sp * 9.80665);
+							double massLoss = massFlowRate * deltaT;
+							mass[i] = mass[i - 1] - massLoss;
+						}
+
+
+						Coordinate[] cgs = new Coordinate[xValues.length];
+						for (int i = 0; i < cgs.length; i++) {
+							Coordinate coordinate = new Coordinate(Double.parseDouble(length.getText()) / 2, 0, 0, mass[i]);
+							cgs[i]=coordinate;
+						}
+
+						Field field = ThrustCurveMotor.class.getDeclaredField("cg");
+						field.setAccessible(true);
+						field.set(motor,cgs);
+
+						JOptionPane.showMessageDialog(null,"发动机创建成功");
+						ThrustCurveMotorSetDatabase database1 = Application.getThrustCurveMotorSetDatabase();
+						database1.addMotor(motor);
+
+					} catch (NumberFormatException ex) {
+						JOptionPane.showMessageDialog(chartDialog, "请输入有效的数字");
+					} catch (IllegalArgumentException ex) {
+						JOptionPane.showMessageDialog(chartDialog, ex.getMessage());
+					} catch (InvocationTargetException ex) {
+						throw new RuntimeException(ex);
+					} catch (IllegalAccessException ex) {
+						throw new RuntimeException(ex);
+					} catch (NoSuchMethodException ex) {
+						throw new RuntimeException(ex);
+					} catch (NoSuchFieldException ex) {
+						throw new RuntimeException(ex);
+					}
+
+				});
+
+
+				loadOut.addActionListener(e2->doExport(chartDialog,null,null,null, xField.getText().split(","), yField.getText().split(","),
+						designation.getText(),commonName.getText(),
+						diameter.getText(),length.getText(),weight.getText(),(String) box.getSelectedItem()));
+
+				// 添加按钮点击事件
+				updateButton.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						try {
+							// 获取 x 和 y 的输入并解析
+							String[] xValues = xField.getText().split(",");
+							String[] yValues = yField.getText().split(",");
+
+							if (xValues.length != yValues.length) {
+								throw new IllegalArgumentException("X 和 Y 的值数量必须相等");
+							}
+
+//							// 清除之前的数据
+							xySeries.clear();
+
+							// 批量添加数据点
+							for (int i = 0; i < xValues.length; i++) {
+								double x = Double.parseDouble(xValues[i].trim());
+								double y = Double.parseDouble(yValues[i].trim());
+								xySeries.add(x, y);
+							}
+
+							// 清空输入框
+//							xField.setText("");
+//							yField.setText("");
+						} catch (NumberFormatException ex) {
+							JOptionPane.showMessageDialog(chartDialog, "请输入有效的数字");
+						} catch (IllegalArgumentException ex) {
+							JOptionPane.showMessageDialog(chartDialog, ex.getMessage());
+						}
+					}
+				});
+				// 样例数据
+				//添加接口................
+				loadSampleButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculatePoint(200).enqueue(new Callback<DataResult>() {
+					@Override
+					public void onResponse(Call<DataResult> call, Response<DataResult> response) {
+						try {
+							DataResult result = response.body();
+							//解析函数.......
+							String xx = result.getResult().get(0).stream().
+									map(String::valueOf).collect(Collectors.joining(","));
+							String yy = result.getResult().get(1).stream().
+									map(String::valueOf).collect(Collectors.joining(","));
+							xField.setText(xx);
+							yField.setText(yy);
+						}catch(IllegalStateException e){
+							JOptionPane.showMessageDialog(chartDialog, "参数不合法");
+						}
+					}
+
+					@Override
+					public void onFailure(@NotNull Call<DataResult> call, @NotNull Throwable throwable) {
+						SwingUtilities.invokeLater(() ->
+								JOptionPane.showMessageDialog(chartDialog, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
+					}
+				}));
+				// 将 chartPanel 添加到对话框的中心
+				chartDialog.add(chartPanel, BorderLayout.CENTER);
+				// 将控制面板（输入框和按钮）添加到对话框的底部
+				chartDialog.add(controlPanel, BorderLayout.SOUTH);
+
+				// 显示对话框
+				chartDialog.setVisible(true);
+			});
+		}
+		{
+			JButton newMotor = new JButton("自定义发动机(函数定义)");
+			panel.add(newMotor);
+
+			newMotor.addActionListener(e -> {
+				// 创建一个模态对话框
+				JDialog chartDialog = new JDialog((Frame) null, "自定义曲线", true);
+				chartDialog.setSize(800, 600);
+				chartDialog.setLocationRelativeTo(null);
+
+				// 设置对话框的布局
+				chartDialog.setLayout(new BorderLayout());
+
+				// Thrust curve plot
+				JFreeChart chart = ChartFactory.createXYLineChart(
+						"Motor thrust curves",
+						"Time",
+						"Thrust",
+						null,
+						PlotOrientation.VERTICAL,
+						true,
+						true,
+						false
+				);
+
+				// 获取 XYPlot
+				XYPlot plot = chart.getXYPlot();
+				plot.setBackgroundPaint(Color.WHITE);
+				plot.setDomainGridlinePaint(Color.LIGHT_GRAY);
+				plot.setRangeGridlinePaint(Color.LIGHT_GRAY);
+
+				// 创建 chartPanel 并设置其大小
+				ChartPanel chartPanel = new ChartPanel(chart,
+						false, true, false, true, true);
+				chartPanel.setMouseWheelEnabled(true);
+				chartPanel.setPreferredSize(new Dimension(600, 400));
+
+				// 配置渲染器
+				StandardXYItemRenderer renderer = new StandardXYItemRenderer();
+				renderer.setBaseShapesVisible(true);
+				renderer.setBaseShapesFilled(true);
+				plot.setRenderer(renderer);
+				simulateFunctions = new ArrayList<>();
+
+				// 创建数据集
+				XYSeriesCollection dataset = new XYSeriesCollection();
+				XYSeries xySeries = new XYSeries("Thrust Curve");
+				dataset.addSeries(xySeries);
+				plot.setDataset(dataset);
+
+				// 创建输入框和按钮
+				JPanel controlPanel = new JPanel(new MigLayout("wrap 4", "[][][]", "[]"));
+				//		controlPanel.setLayout(new MigLayout("gap 10px", "", ""));
+//				controlPanel.setLayout(new GridLayout(4, 2, 10, 10));  // 4 行 2 列，10 像素间距
+				JTextField xField = new JTextField(40);  // 输入 x 序列
+				JTextField yField = new JTextField(40);  // 输入 y 序列
+
+				JTextField designation = new JTextField(20);  // 输入 制造商
+				JTextField commonName = new JTextField(20);  // 输入 发动机名称
+				JTextField weight = new JTextField(20);  // 输入 发动机质量
+				JTextField diameter  = new JTextField(20);  // 输入 直径
+				JTextField length = new JTextField(20);  // 输入 长度
+				String[] options = {"Single-use", "Reloadable", "Hybrid","Unknown"};
+				JComboBox<Object> box = new JComboBox<>(options);//发动机类型
+
+				JButton updateButton = new JButton("生成推力曲线");
+				JButton loadSampleButton  = new JButton("  加载函数  ");
+
+				xField.setBorder(BorderFactory.createBevelBorder(1) );
+				yField.setBorder(BorderFactory.createBevelBorder(1) );
+				designation.setBorder(BorderFactory.createBevelBorder(1) );
+				commonName.setBorder(BorderFactory.createBevelBorder(1) );
+				box.setBorder(BorderFactory.createBevelBorder(1) );
+				length.setBorder(BorderFactory.createBevelBorder(1) );
+				diameter.setBorder(BorderFactory.createBevelBorder(1) );
+				weight.setBorder(BorderFactory.createBevelBorder(1) );
+				controlPanel.add(new JLabel("X轴:时间(逗号分隔):"));
+				controlPanel.add(xField);
+				controlPanel.add(updateButton,"gapleft 10,wrap");
+
+				controlPanel.add(new JLabel("Y轴:推力(逗号分隔):"));
+				controlPanel.add(yField);
+				controlPanel.add(loadSampleButton,"gapleft 10,wrap");
+
+
+				controlPanel.add(new JLabel("发动机质量:(kg)"),"align center");
+				controlPanel.add(weight);
+				controlPanel.add(new JLabel("发动机类型:"),"gapleft 10");
+				controlPanel.add(box,"align left");
+
+				controlPanel.add(new JLabel("发动机直径:(m)"),"align center");
+				controlPanel.add(diameter);
+				controlPanel.add(new JLabel("发动机长度:(m)"),"gapleft 10");
+				controlPanel.add(length,"align left");
+
+				controlPanel.add(new JLabel("设计者:"),"align center");
+				controlPanel.add(designation);
+				controlPanel.add(new JLabel("发动机名称:"),"gapleft 10");
+				controlPanel.add(commonName,"align left");
+
+				JButton loadIn = new JButton("    导入    ");
+				controlPanel.add(loadIn,"gapleft 10");
+				//x序列 y序列 长度
+				loadIn.addActionListener(
+						e3->{
+							List<Object> objects = doImport(chartDialog);
+							if (objects==null) return;
+							System.out.println(objects);
+							simulateFunctions.clear();
+							List<String> xx = (List<String>) objects.get(0);
+							List<String> yy = (List<String>) objects.get(1);
+							String xList = xx.stream().
+									map(String::valueOf).collect(Collectors.joining(","));
+							String yList = yy.stream().
+									map(String::valueOf).collect(Collectors.joining(","));
+							xField.setText(xList);
+							yField.setText(yList);
+							String  design = (String) objects.get(2);
+							designation.setText(design);
+							String  coName = (String) objects.get(3);
+							commonName.setText(coName);
+							String  dia = (String) objects.get(4);
+							diameter.setText(dia);
+							String  len = (String) objects.get(5);
+							length.setText(len);
+							String  wei = (String) objects.get(6);
+							weight.setText(wei);
+							String  caseType = (String) objects.get(7);
+							designation.setText(design);
+							box.setSelectedItem(caseType);
+
+							//	objects.get()
+
+
+						});
+
+				JButton loadOut = new JButton("    导出    ");
+				controlPanel.add(loadOut,"gapleft 10");
+
+				JButton jButton = new JButton("提交");
+				controlPanel.add(jButton);
+				jButton.addActionListener(e1 -> {
+					try {
+						// 获取 x 和 y 的输入并解析
+						String[] xValues = xField.getText().split(",");
+						String[] yValues = yField.getText().split(",");
+						if ((xValues.length==1||yValues.length==1)&&(xValues[0].equals("")||yValues[0].equals(""))){
+							throw new IllegalArgumentException("X轴或Y轴不能为空");
+						}
+						if (xValues.length != yValues.length) {
+							throw new IllegalArgumentException("X 和 Y 的值数量必须相等");
+						}
+						if (designation.getText().length()==0){
+							throw new IllegalArgumentException("请留下你的姓名");
+						}
+						if (commonName.getText().length()==0){
+							throw new IllegalArgumentException("请留下你的作品名称");
+						}
+						if (diameter.getText().length()==0){
+							throw new IllegalArgumentException("直径不能为空");
+						}
+						if (length.getText().length()==0){
+							throw new IllegalArgumentException("长度不能为空");
+						}
+						if (weight.getText().length()==0){
+							throw new IllegalArgumentException("发动机初始重量不能为空");
+						}
+
+
+						//转double
+						double[] timePoint = new double[xValues.length];
+						double[] thrustPoint = new double[yValues.length];
+						for (int i = 0; i < xValues.length; i++) {
+							timePoint[i]=Double.parseDouble(xValues[i]);
+							thrustPoint[i]=Double.parseDouble(yValues[i]);
+
+						}
+
+						//设计者
+						String design = designation.getText();
+
+						//火箭类型
+						String selectedItem = (String) box.getSelectedItem();
+						Motor.Type motorType = null;
+						if (selectedItem.equals("Single-use")){
+							motorType= Motor.Type.SINGLE;
+						}else if(selectedItem.equals("Reloadable")){
+							motorType= Motor.Type.RELOAD;
+						}else if(selectedItem.equals("Hybrid")){
+							motorType= Motor.Type.HYBRID;
+						}else {
+							motorType=Motor.Type.UNKNOWN;
+						}
+
+
+
+						ThrustCurveMotor motor = new ThrustCurveMotor.Builder()
+								.setManufacturer(Manufacturer.getManufacturer(design))
+								.setDesignation(design)
+								.setDescription(" ")
+								.setCaseInfo(" ")
+								.setMotorType(motorType)
+								.setStandardDelays(new double[]{})
+								.setInitialMass(Double.parseDouble(weight.getText()))
+								.setDiameter(Double.parseDouble(diameter.getText()))
+								.setLength(Double.parseDouble(length.getText()))
+								.setTimePoints(timePoint)
+								.setThrustPoints(thrustPoint)
+								.setCGPoints(new Coordinate[]{
+										new Coordinate(.035, 0, 0, 0.025),new Coordinate(.035, 0, 0, 0.025)})
+								.setDigest(design+"test")
+								.build();
+						Method method = ThrustCurveMotor.class.getDeclaredMethod("computeStatistics");
+						method.setAccessible(true);
+						method.invoke(motor);
+
+						//calculate weight
+						double I_sp = motor.getTotalImpulseEstimate()/(motor.getBurnTimeEstimate()*motor.getInitialMass());
+
+						double[] mass = new double[motor.getTimePoints().length];
+						mass[0] = motor.getInitialMass();
+
+						for (int i = 1; i < mass.length; i++) {
+							double deltaT = motor.getTimePoints()[i] - motor.getTimePoints()[i - 1];
+							double massFlowRate = motor.getThrustPoints()[i - 1] / (I_sp * 9.80665);
+							double massLoss = massFlowRate * deltaT;
+							mass[i] = mass[i - 1] - massLoss;
+						}
+
+
+						Coordinate[] cgs = new Coordinate[xValues.length];
+						for (int i = 0; i < cgs.length; i++) {
+							Coordinate coordinate = new Coordinate(Double.parseDouble(length.getText()) / 2, 0, 0, mass[i]);
+							cgs[i]=coordinate;
+						}
+
+						Field field = ThrustCurveMotor.class.getDeclaredField("cg");
+						field.setAccessible(true);
+						field.set(motor,cgs);
+
+						JOptionPane.showMessageDialog(null,"发动机创建成功");
+						ThrustCurveMotorSetDatabase database1 = Application.getThrustCurveMotorSetDatabase();
+						database1.addMotor(motor);
+
+					} catch (NumberFormatException ex) {
+						JOptionPane.showMessageDialog(chartDialog, "请输入有效的数字");
+					} catch (IllegalArgumentException ex) {
+						JOptionPane.showMessageDialog(chartDialog, ex.getMessage());
+					} catch (InvocationTargetException ex) {
+						throw new RuntimeException(ex);
+					} catch (IllegalAccessException ex) {
+						throw new RuntimeException(ex);
+					} catch (NoSuchMethodException ex) {
+						throw new RuntimeException(ex);
+					} catch (NoSuchFieldException ex) {
+						throw new RuntimeException(ex);
+					}
+
+				});
+
+
+				loadOut.addActionListener(e2->doExport(chartDialog,null,null,null, xField.getText().split(","), yField.getText().split(","),
+						designation.getText(),commonName.getText(),
+						diameter.getText(),length.getText(),weight.getText(),(String) box.getSelectedItem()));
+
+				// 添加按钮点击事件
+				updateButton.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						try {
+							// 获取 x 和 y 的输入并解析
+							String[] xValues = xField.getText().split(",");
+							String[] yValues = yField.getText().split(",");
+
+							if (xValues.length != yValues.length) {
+								throw new IllegalArgumentException("X 和 Y 的值数量必须相等");
+							}
+
+//							// 清除之前的数据
+							xySeries.clear();
+
+							// 批量添加数据点
+							for (int i = 0; i < xValues.length; i++) {
+								double x = Double.parseDouble(xValues[i].trim());
+								double y = Double.parseDouble(yValues[i].trim());
+								xySeries.add(x, y);
+							}
+
+							// 清空输入框
+//							xField.setText("");
+//							yField.setText("");
+						} catch (NumberFormatException ex) {
+							JOptionPane.showMessageDialog(chartDialog, "请输入有效的数字");
+						} catch (IllegalArgumentException ex) {
+							JOptionPane.showMessageDialog(chartDialog, ex.getMessage());
+						}
+					}
+				});
+				// 样例数据
+				//添加接口................
+				loadSampleButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateFunction(200).enqueue(new Callback<DataResult>() {
+					@Override
+					public void onResponse(Call<DataResult> call, Response<DataResult> response) {
+
+						DataResult result = response.body();
+						//解析函数.......
+						String xx = result.getResult().get(0).stream().
+								map(String::valueOf).collect(Collectors.joining(","));
+						String yy = result.getResult().get(1).stream().
+								map(String::valueOf).collect(Collectors.joining(","));
+						xField.setText(xx);
+						yField.setText(yy);
+					}
+
+					@Override
+					public void onFailure(@NotNull Call<DataResult> call, @NotNull Throwable throwable) {
+						SwingUtilities.invokeLater(() ->
+								JOptionPane.showMessageDialog(chartDialog, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
+					}
+				}));
+				// 将 chartPanel 添加到对话框的中心
+				chartDialog.add(chartPanel, BorderLayout.CENTER);
+				// 将控制面板（输入框和按钮）添加到对话框的底部
+				chartDialog.add(controlPanel, BorderLayout.SOUTH);
+
+				// 显示对话框
+				chartDialog.setVisible(true);
+			});
+		}
+
+
 		this.add(panel, "grow");
 
 		// Vertical split
@@ -403,6 +1049,318 @@ public class ThrustCurveMotorSelectionPanel extends JPanel implements MotorSelec
 		setDelays(false);
 		hideUnavailableBox.getActionListeners()[0].actionPerformed(null);
 		hideSimilarBox.getActionListeners()[0].actionPerformed(null);
+
+	}
+	private void updateFunctions(JPanel typeSelectorPanel){
+		typeSelectorPanel.removeAll();
+		for(int i=0;i<simulateFunctions.size();i++){
+			typeSelectorPanel.add(new JLabel("函数："),"gapright 5");
+			JTextField jTextField = new JTextField(simulateFunctions.get(i).get("function"));
+			typeSelectorPanel.add(jTextField,"width :80,gapright 10");
+			typeSelectorPanel.add(new JLabel("时间区间："),"gapright 5");
+			JTextField low = new JTextField(simulateFunctions.get(i).get("low"));
+			typeSelectorPanel.add(low,"gapright 10,align center,width :30");
+			typeSelectorPanel.add(new JLabel("-"),"align center,width :15");
+			JTextField high = new JTextField(simulateFunctions.get(i).get("high"));
+			typeSelectorPanel.add(high,"gapright 10,align center,width :30");
+			JButton deleteButton = new SelectColorButton(Icons.EDIT_DELETE);
+			int index = i;
+			//函数窗口
+			jTextField.getDocument().addDocumentListener(new DocumentListener() {
+				@Override
+				public void insertUpdate(DocumentEvent e) {
+					printText(jTextField);
+				}
+
+				@Override
+				public void removeUpdate(DocumentEvent e) {
+					printText(jTextField);
+
+				}
+
+				@Override
+				public void changedUpdate(DocumentEvent e) {
+					printText(jTextField);
+
+				}
+				// 输出 JTextField 中的当前值
+				private void printText(JTextField textField) {
+					HashMap<String, String> stringStringHashMap = simulateFunctions.get(index);
+					stringStringHashMap.put("function",textField.getText());
+				}
+			});
+			//low
+			low.getDocument().addDocumentListener(new DocumentListener() {
+				@Override
+				public void insertUpdate(DocumentEvent e) {
+					printText(low);
+				}
+
+				@Override
+				public void removeUpdate(DocumentEvent e) {
+					printText(low);
+
+				}
+
+				@Override
+				public void changedUpdate(DocumentEvent e) {
+					printText(low);
+
+				}
+				// 输出 JTextField 中的当前值
+				private void printText(JTextField textField) {
+					HashMap<String, String> stringStringHashMap = simulateFunctions.get(index);
+					stringStringHashMap.put("low",textField.getText());
+				}
+			});
+			//high
+			high.getDocument().addDocumentListener(new DocumentListener() {
+				@Override
+				public void insertUpdate(DocumentEvent e) {
+					printText(high);
+				}
+
+				@Override
+				public void removeUpdate(DocumentEvent e) {
+					printText(high);
+
+				}
+
+				@Override
+				public void changedUpdate(DocumentEvent e) {
+					printText(high);
+
+				}
+				// 输出 JTextField 中的当前值
+				private void printText(JTextField textField) {
+					HashMap<String, String> stringStringHashMap = simulateFunctions.get(index);
+					stringStringHashMap.put("high",textField.getText());
+				}
+			});
+
+			deleteButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					simulateFunctions.remove(index);
+					updateFunctions(typeSelectorPanel);
+				}
+			});
+			deleteButton.setBorderPainted(false);
+			typeSelectorPanel.add(deleteButton,"wrap");
+
+		}
+
+		typeSelectorPanel.validate();
+		typeSelectorPanel.repaint();
+	}
+	//导出文件
+	//x y序列
+	//或者function
+	//
+	private void doExport(JDialog chartDialog,String[]functions,String[]lowList,String[] highList,Object[] xValues, Object[]yValues,
+						  String designation,String commonName,
+						  String diameter,String length,String weight,String type) {
+		if(xValues.length==0||xValues==null){
+			JOptionPane.showMessageDialog(chartDialog, "数据点为空,请先生成推力曲线");
+			return;
+		}
+		if ((xValues.length==1||yValues.length==1)&&(xValues[0].equals("")||yValues[0].equals(""))){
+			JOptionPane.showMessageDialog(chartDialog, "X轴或Y轴不能为空");
+			return;
+		}
+		if (xValues.length != yValues.length) {
+			JOptionPane.showMessageDialog(chartDialog, "X 和 Y 的值数量必须相等");
+			return;
+		}
+		JFileChooser fileChooser  = new JFileChooser();
+		fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Text Files", "txt"));
+		int returnValue = fileChooser.showSaveDialog(null);
+		if (returnValue==JFileChooser.APPROVE_OPTION){
+			File file = fileChooser.getSelectedFile();
+			if (file!=null){
+				file = new File(file.getAbsolutePath()+".txt");
+				file.setReadOnly();
+				try(BufferedWriter writer = new BufferedWriter(new FileWriter(file))){
+					writer.write("xValues:\n");
+					for (Object x:xValues){
+						writer.write(x +",");
+					}
+					writer.write("\n");
+					writer.write("yValues:\n");
+					for (Object y:yValues){
+						writer.write(y +",");
+					}
+					writer.write("\n");
+
+					writer.write("designation:\n");
+					writer.write(designation+"\n");
+					writer.write("commonName:\n");
+					writer.write(commonName+"\n");
+					writer.write("diameter:\n");
+					writer.write(diameter+"\n");
+					writer.write("length:\n");
+					writer.write(length+"\n");
+					writer.write("weight:\n");
+					writer.write(weight+"\n");
+					writer.write("type:\n");
+					writer.write(type);
+
+					JOptionPane.showMessageDialog(chartDialog, "数据导出成功");
+				} catch (IOException e) {
+					JOptionPane.showMessageDialog(chartDialog, "导出失败");
+
+				} catch (IllegalArgumentException ex) {
+					JOptionPane.showMessageDialog(chartDialog, ex.getMessage());
+				}
+			}
+		}
+	}
+
+
+	private List<Object>  doImport(JDialog chartDialog){
+		List<Object> returnList = new ArrayList<>();
+		List<String> xList = new ArrayList<>();
+		List<String> yList = new ArrayList<>();
+		JFileChooser fileChooser = new JFileChooser();
+		FileNameExtensionFilter filter = new FileNameExtensionFilter("Text Files", "txt");
+		fileChooser.setFileFilter(filter);
+		int returnValue = fileChooser.showSaveDialog(null);
+		try{
+			if (returnValue==JFileChooser.APPROVE_OPTION){
+				File file = fileChooser.getSelectedFile();
+				//判断文件类型
+				int i = file.getName().lastIndexOf('.');
+				String subString = file.getName().substring(i);
+				if (!subString.equals(".txt")){
+					throw new IllegalArgumentException("无法识别的文件，请重新导入");
+				}
+				//存储文本
+				StringBuilder content = new StringBuilder();
+				//解析txt
+				try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+					String line;
+					while ((line = br.readLine()) != null) {
+						content.append(line).append("\n");
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				//处理文本
+				String contentString = content.toString();
+				if (!contentString.contains("xValues")||!contentString.contains("yValues")||
+						!contentString.contains("designation")||!contentString.contains("commonName")||
+						!contentString.contains("diameter")||!contentString.contains("length")||
+						!contentString.contains("weight")||!contentString.contains("type")){
+					throw new IllegalArgumentException("文件导入失败，请检查txt文件");
+
+				}
+				if (contentString.contains("xValues:")){
+					int beginIndex = contentString.lastIndexOf("xValues:");
+					int endIndex = contentString.lastIndexOf("yValues");
+					String functions = contentString.substring(beginIndex,endIndex);
+					functions = functions.substring(functions.indexOf('\n'),functions.length()-1);
+					functions = functions.trim();
+					String[] strings = functions.split(",");
+					xList = Arrays.stream(strings).toList();
+				}
+				if (contentString.contains("yValues:")){
+					int beginIndex = contentString.lastIndexOf("yValues");
+					int endIndex = contentString.lastIndexOf("designation:");
+					String functions = contentString.substring(beginIndex,endIndex);
+					functions = functions.trim();
+					functions = functions.substring(functions.indexOf(':')+2,functions.length()-1);
+
+					String[] strings = functions.split(",");
+					yList = Arrays.stream(strings).toList();
+				}
+				int designationBegin = contentString.lastIndexOf("designation:");
+				int designationEnd = contentString.lastIndexOf("commonName:");
+				int commonNameBegin = contentString.lastIndexOf("commonName:");
+				int commonNameEnd = contentString.lastIndexOf("diameter:");
+				int diameterBegin = contentString.lastIndexOf("diameter:");
+				int diameterEnd = contentString.lastIndexOf("length:");
+				int lengthBegin = contentString.lastIndexOf("length:");
+				int lengthEnd = contentString.lastIndexOf("weight:");
+				int weightBegin = contentString.lastIndexOf("weight:");
+				int weightEnd = contentString.lastIndexOf("type:");
+				int typeStart = contentString.lastIndexOf("type:");
+				//     int typeEnd = contentString.lastIndexOf("commonName:");
+				//designation:
+				String designation = contentString.substring(designationBegin,designationEnd);
+				designation =designation.trim();
+
+
+				if ((designation.indexOf(":")+2)>designation.length()){
+					designation = "";
+				}else{
+					designation = designation.substring(designation.indexOf(":")+2);
+				}
+
+				String commonName = contentString.substring(commonNameBegin,commonNameEnd);
+				commonName =commonName.trim();
+
+				if ((commonName.indexOf(":")+2)>commonName.length()){
+					commonName = "";
+				}else{
+					commonName = commonName.substring(commonName.indexOf(":")+2);
+
+				}
+
+				String diameter = contentString.substring(diameterBegin,diameterEnd);
+				diameter =diameter.trim();
+
+				if ((diameter.indexOf(":")+2)>diameter.length()){
+					diameter = "";
+				}else{
+					diameter = diameter.substring(diameter.indexOf(":")+2);
+				}
+
+
+				String length = contentString.substring(lengthBegin,lengthEnd);
+				length =length.trim();
+
+				if ((length.indexOf(":")+2)>length.length()){
+					length = "";
+				}else{
+					length = length.substring(length.indexOf(":")+2);
+				}
+
+				String weight = contentString.substring(weightBegin,weightEnd);
+				weight =weight.trim();
+
+				if ((weight.indexOf(":")+2)>weight.length()){
+					weight = "";
+				}else{
+					weight = weight.substring(weight.indexOf(":")+2);
+				}
+
+				String type = contentString.substring(typeStart);
+				type =type.trim();
+				if ((type.indexOf(":")+2)>type.length()){
+					type = "";
+				}else{
+					type = type.substring(type.indexOf(":")+2);
+				}
+
+				returnList.add(xList);
+				returnList.add(yList);
+				returnList.add(designation);
+				returnList.add(commonName);
+				returnList.add(diameter);
+				returnList.add(length);
+				returnList.add(weight);
+				returnList.add(type);
+
+				return returnList;
+			}else {
+				return null;
+			}
+		}catch (IllegalArgumentException ex){
+			JOptionPane.showMessageDialog(chartDialog, ex.getMessage());
+
+		}
+
+		return returnList;
 
 	}
 
@@ -771,3 +1729,4 @@ public class ThrustCurveMotorSelectionPanel extends JPanel implements MotorSelec
 		}
 	}
 }
+

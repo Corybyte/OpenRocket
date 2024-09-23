@@ -408,5 +408,19 @@ public interface EduCoderService {
      */
     @POST("Whole/calculateMOI")
     Call<Result> calculateMOI(@Body WholeMOIRequest request);
+    /**
+     * 数据点拟合推力曲线
+     *
+     * @return result
+     */
+    @POST("Motor/point")
+    Call<DataResult> calculatePoint(@Body Integer status);
+    /**
+     * 函数拟合推力曲线
+     *
+     * @return result
+     */
+    @POST("Motor/function")
+    Call<DataResult> calculateFunction(@Body Integer status);
 
 }
