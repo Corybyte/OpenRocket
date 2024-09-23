@@ -67,6 +67,8 @@ def calculateNoseConeCG():
         check(cg, request.json['answer'], os.path.join(os.getcwd(), "step1"))
         return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
+        with open(os.path.join("step1", "error.txt"), 'w') as f:
+            f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
@@ -520,6 +522,31 @@ def calculateWholeMOI():
     except Exception:
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
+@app.route('/Motor/point', methods=['POST'])
+def calculatePoint():
+    app.logger.info(f"{request.json}")
+    try:
+        result = myPoint.point()
+        with open(os.path.join("calculatePoint", "result.txt"), 'w') as f:
+            f.write("发动机数据点加载成功")
+        print(result)
+        return {"code": 200, "msg": "ok", "result": result}
+    except Exception:
+        with open(os.path.join("calculatePoint", "error.txt"), 'w') as f:
+            f.write(traceback.format_exc())
+        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+@app.route('/Motor/function', methods=['POST'])
+def calculateFunction():
+    app.logger.info(f"{request.json}")
+    try:
+        result = myFunction.functions()
+        with open(os.path.join("calculateFunction", "result.txt"), 'w') as f:
+            f.write("发动机数据点加载成功")
+        return {"code": 200, "msg": "ok", "result": result}
+    except Exception:
+        with open(os.path.join("calculatePoint", "error.txt"), 'w') as f:
+            f.write(traceback.format_exc())
+        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 if __name__ == '__main__':
     app.run(host="127.0.0.1", port=8080, debug=True)
