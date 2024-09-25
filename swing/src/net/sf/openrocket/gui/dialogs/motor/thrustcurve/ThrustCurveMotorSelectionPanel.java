@@ -120,10 +120,6 @@ public class ThrustCurveMotorSelectionPanel extends JPanel implements MotorSelec
 
 	private List<HashMap<String,String>> simulateFunctions;
 
-	private List<String> functionList = new ArrayList<>();
-
-	private List<String> lowList = new ArrayList<>();
-	private List<String> highList = new ArrayList<>();
 	private static Color dimTextColor;
 
 	static {
@@ -178,7 +174,7 @@ public class ThrustCurveMotorSelectionPanel extends JPanel implements MotorSelec
 			curveSelectionModel = new DefaultComboBoxModel<MotorHolder>();
 			curveSelectionBox = new JComboBox<MotorHolder>(curveSelectionModel);
 			@SuppressWarnings("unchecked")
-			ListCellRenderer<MotorHolder> lcr = (ListCellRenderer<MotorHolder>) curveSelectionBox.getRenderer(); 
+			ListCellRenderer<MotorHolder> lcr = (ListCellRenderer<MotorHolder>) curveSelectionBox.getRenderer();
 			curveSelectionBox.setRenderer(new CurveSelectionRenderer(lcr));
 			curveSelectionBox.addActionListener(new ActionListener() {
 				@Override
@@ -242,7 +238,7 @@ public class ThrustCurveMotorSelectionPanel extends JPanel implements MotorSelec
 			});
 			panel.add(hideSimilarBox, "gapleft para, spanx, growx, wrap");
 		}
-		
+
 		//// Hide unavailable motors
 		{
 			hideUnavailableBox = new JCheckBox(trans.get("TCMotorSelPan.checkbox.hideUnavailable"));
@@ -256,7 +252,7 @@ public class ThrustCurveMotorSelectionPanel extends JPanel implements MotorSelec
 				}
 			});
 			panel.add(hideUnavailableBox, "gapleft para, spanx, growx, wrap");
-			
+
 		}
 
 		//// Motor name column
@@ -470,7 +466,6 @@ public class ThrustCurveMotorSelectionPanel extends JPanel implements MotorSelec
 				JComboBox<Object> box = new JComboBox<>(options);//发动机类型
 
 				JButton updateButton = new JButton("生成推力曲线");
-				JButton loadSampleButton  = new JButton(" 加载数据点 ");
 
 				xField.setBorder(BorderFactory.createBevelBorder(1) );
 				yField.setBorder(BorderFactory.createBevelBorder(1) );
@@ -482,12 +477,13 @@ public class ThrustCurveMotorSelectionPanel extends JPanel implements MotorSelec
 				weight.setBorder(BorderFactory.createBevelBorder(1) );
 				controlPanel.add(new JLabel("X轴:时间(逗号分隔):"));
 				controlPanel.add(xField);
+				xField.setEditable(false);
 				controlPanel.add(updateButton,"gapleft 10,wrap");
 
 				controlPanel.add(new JLabel("Y轴:推力(逗号分隔):"));
-				controlPanel.add(yField);
-				controlPanel.add(loadSampleButton,"gapleft 10,wrap");
 
+				controlPanel.add(yField,"wrap");
+				yField.setEditable(false);
 
 				controlPanel.add(new JLabel("发动机质量:(kg)"),"align center");
 				controlPanel.add(weight);
@@ -508,7 +504,44 @@ public class ThrustCurveMotorSelectionPanel extends JPanel implements MotorSelec
 				controlPanel.add(loadIn,"gapleft 10");
 				JButton loadOut = new JButton("    导出    ");
 				controlPanel.add(loadOut,"gapleft 10");
+				//x序列 y序列 长度
+				loadIn.addActionListener(
+						e3->{
+							List<Object> objects = doImport(chartDialog);
+							if (objects==null) return;
+							simulateFunctions.clear();
+							List<String> xx = (List<String>) objects.get(0);
+							List<String> yy = (List<String>) objects.get(1);
+							String xList = xx.stream().
+									map(String::valueOf).collect(Collectors.joining(","));
+							String yList = yy.stream().
+									map(String::valueOf).collect(Collectors.joining(","));
+							xField.setText(xList);
+							yField.setText(yList);
+							xySeries.clear();
+							for (int i = 0; i < xx.size(); i++) {
+								double x = Double.parseDouble(xx.get(i).trim());
+								double y = Double.parseDouble(yy.get(i).trim());
+								xySeries.add(x, y);
+							}
+							String  design = (String) objects.get(2);
+							designation.setText(design);
+							String  coName = (String) objects.get(3);
+							commonName.setText(coName);
+							String  dia = (String) objects.get(4);
+							diameter.setText(dia);
+							String  len = (String) objects.get(5);
+							length.setText(len);
+							String  wei = (String) objects.get(6);
+							weight.setText(wei);
+							String  caseType = (String) objects.get(7);
+							designation.setText(design);
+							box.setSelectedItem(caseType);
 
+							//	objects.get()
+
+
+						});
 				JButton jButton = new JButton("提交");
 				controlPanel.add(jButton);
 				jButton.addActionListener(e1 -> {
@@ -631,69 +664,65 @@ public class ThrustCurveMotorSelectionPanel extends JPanel implements MotorSelec
 				});
 
 
-				loadOut.addActionListener(e2->doExport(chartDialog,null,null,null, xField.getText().split(","), yField.getText().split(","),
+				loadOut.addActionListener(e2->doExport(chartDialog, xField.getText().split(","), yField.getText().split(","),
 						designation.getText(),commonName.getText(),
 						diameter.getText(),length.getText(),weight.getText(),(String) box.getSelectedItem()));
 
-				// 添加按钮点击事件
-				updateButton.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						try {
-							// 获取 x 和 y 的输入并解析
-							String[] xValues = xField.getText().split(",");
-							String[] yValues = yField.getText().split(",");
 
-							if (xValues.length != yValues.length) {
-								throw new IllegalArgumentException("X 和 Y 的值数量必须相等");
-							}
-
-//							// 清除之前的数据
-							xySeries.clear();
-
-							// 批量添加数据点
-							for (int i = 0; i < xValues.length; i++) {
-								double x = Double.parseDouble(xValues[i].trim());
-								double y = Double.parseDouble(yValues[i].trim());
-								xySeries.add(x, y);
-							}
-
-							// 清空输入框
-//							xField.setText("");
-//							yField.setText("");
-						} catch (NumberFormatException ex) {
-							JOptionPane.showMessageDialog(chartDialog, "请输入有效的数字");
-						} catch (IllegalArgumentException ex) {
-							JOptionPane.showMessageDialog(chartDialog, ex.getMessage());
-						}
-					}
-				});
-				// 样例数据
 				//添加接口................
-				loadSampleButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculatePoint(200).enqueue(new Callback<DataResult>() {
-					@Override
-					public void onResponse(Call<DataResult> call, Response<DataResult> response) {
-						try {
-							DataResult result = response.body();
-							//解析函数.......
-							String xx = result.getResult().get(0).stream().
-									map(String::valueOf).collect(Collectors.joining(","));
-							String yy = result.getResult().get(1).stream().
-									map(String::valueOf).collect(Collectors.joining(","));
-							xField.setText(xx);
-							yField.setText(yy);
-						}catch(IllegalStateException e){
-							JOptionPane.showMessageDialog(chartDialog, "参数不合法");
-						}
-					}
+				updateButton.addActionListener(e1 -> {
+					//调用接口
+					OpenRocket.eduCoderService.calculatePoint(200).enqueue(new Callback<DataResult>() {
+						@Override
+						public void onResponse(Call<DataResult> call, Response<DataResult> response) {
+							try {
+								DataResult result = response.body();
+								//解析函数.......
+								String xx = result.getResult().get(0).stream().
+										map(String::valueOf).collect(Collectors.joining(","));
+								String yy = result.getResult().get(1).stream().
+										map(String::valueOf).collect(Collectors.joining(","));
+								xField.setText(xx);
+								yField.setText(yy);
 
-					@Override
-					public void onFailure(@NotNull Call<DataResult> call, @NotNull Throwable throwable) {
-						SwingUtilities.invokeLater(() ->
-								JOptionPane.showMessageDialog(chartDialog, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
-					}
-				}));
-				// 将 chartPanel 添加到对话框的中心
+								// 获取 x 和 y 的输入并解析
+								String[] xValues = xField.getText().split(",");
+								String[] yValues = yField.getText().split(",");
+								if (xValues.length != yValues.length) {
+									throw new IllegalArgumentException("X 和 Y 的值数量必须相等");
+								}
+								xySeries.clear();
+								// 批量添加数据点
+								for (int i = 0; i < xValues.length; i++) {
+									double x = Double.parseDouble(xValues[i].trim());
+									double y = Double.parseDouble(yValues[i].trim());
+									xySeries.add(x, y);
+								}
+
+							}catch(IllegalStateException e){
+								JOptionPane.showMessageDialog(chartDialog, "参数不合法");
+							}catch (IllegalArgumentException e){
+								JOptionPane.showMessageDialog(chartDialog,e.getMessage());
+							}
+						}
+
+						@Override
+						public void onFailure(@NotNull Call<DataResult> call, @NotNull Throwable throwable) {
+							SwingUtilities.invokeLater(() ->
+									JOptionPane.showMessageDialog(chartDialog, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
+						}
+					});
+					//
+
+
+
+				});
+
+
+
+
+
+				// 将 chartPanel 添加到对话框的中心f
 				chartDialog.add(chartPanel, BorderLayout.CENTER);
 				// 将控制面板（输入框和按钮）添加到对话框的底部
 				chartDialog.add(controlPanel, BorderLayout.SOUTH);
@@ -768,7 +797,6 @@ public class ThrustCurveMotorSelectionPanel extends JPanel implements MotorSelec
 				JComboBox<Object> box = new JComboBox<>(options);//发动机类型
 
 				JButton updateButton = new JButton("生成推力曲线");
-				JButton loadSampleButton  = new JButton("  加载函数  ");
 
 				xField.setBorder(BorderFactory.createBevelBorder(1) );
 				yField.setBorder(BorderFactory.createBevelBorder(1) );
@@ -783,9 +811,9 @@ public class ThrustCurveMotorSelectionPanel extends JPanel implements MotorSelec
 				controlPanel.add(updateButton,"gapleft 10,wrap");
 
 				controlPanel.add(new JLabel("Y轴:推力(逗号分隔):"));
-				controlPanel.add(yField);
-				controlPanel.add(loadSampleButton,"gapleft 10,wrap");
-
+				controlPanel.add(yField,"wrap");
+				xField.setEditable(false);
+				yField.setEditable(false);
 
 				controlPanel.add(new JLabel("发动机质量:(kg)"),"align center");
 				controlPanel.add(weight);
@@ -809,7 +837,6 @@ public class ThrustCurveMotorSelectionPanel extends JPanel implements MotorSelec
 						e3->{
 							List<Object> objects = doImport(chartDialog);
 							if (objects==null) return;
-							System.out.println(objects);
 							simulateFunctions.clear();
 							List<String> xx = (List<String>) objects.get(0);
 							List<String> yy = (List<String>) objects.get(1);
@@ -819,6 +846,13 @@ public class ThrustCurveMotorSelectionPanel extends JPanel implements MotorSelec
 									map(String::valueOf).collect(Collectors.joining(","));
 							xField.setText(xList);
 							yField.setText(yList);
+							xySeries.clear();
+							for (int i = 0; i < xx.size(); i++) {
+								double x = Double.parseDouble(xx.get(i).trim());
+								double y = Double.parseDouble(yy.get(i).trim());
+								xySeries.add(x, y);
+							}
+
 							String  design = (String) objects.get(2);
 							designation.setText(design);
 							String  coName = (String) objects.get(3);
@@ -950,78 +984,69 @@ public class ThrustCurveMotorSelectionPanel extends JPanel implements MotorSelec
 						JOptionPane.showMessageDialog(chartDialog, "请输入有效的数字");
 					} catch (IllegalArgumentException ex) {
 						JOptionPane.showMessageDialog(chartDialog, ex.getMessage());
-					} catch (InvocationTargetException ex) {
-						throw new RuntimeException(ex);
-					} catch (IllegalAccessException ex) {
-						throw new RuntimeException(ex);
-					} catch (NoSuchMethodException ex) {
-						throw new RuntimeException(ex);
-					} catch (NoSuchFieldException ex) {
+					} catch (InvocationTargetException | NoSuchFieldException | IllegalAccessException |
+							 NoSuchMethodException ex) {
 						throw new RuntimeException(ex);
 					}
 
 				});
 
 
-				loadOut.addActionListener(e2->doExport(chartDialog,null,null,null, xField.getText().split(","), yField.getText().split(","),
+
+				loadOut.addActionListener(e2->doExport(chartDialog, xField.getText().split(","), yField.getText().split(","),
 						designation.getText(),commonName.getText(),
 						diameter.getText(),length.getText(),weight.getText(),(String) box.getSelectedItem()));
 
-				// 添加按钮点击事件
-				updateButton.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						try {
-							// 获取 x 和 y 的输入并解析
-							String[] xValues = xField.getText().split(",");
-							String[] yValues = yField.getText().split(",");
-
-							if (xValues.length != yValues.length) {
-								throw new IllegalArgumentException("X 和 Y 的值数量必须相等");
-							}
-
-//							// 清除之前的数据
-							xySeries.clear();
-
-							// 批量添加数据点
-							for (int i = 0; i < xValues.length; i++) {
-								double x = Double.parseDouble(xValues[i].trim());
-								double y = Double.parseDouble(yValues[i].trim());
-								xySeries.add(x, y);
-							}
-
-							// 清空输入框
-//							xField.setText("");
-//							yField.setText("");
-						} catch (NumberFormatException ex) {
-							JOptionPane.showMessageDialog(chartDialog, "请输入有效的数字");
-						} catch (IllegalArgumentException ex) {
-							JOptionPane.showMessageDialog(chartDialog, ex.getMessage());
-						}
-					}
-				});
-				// 样例数据
 				//添加接口................
-				loadSampleButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateFunction(200).enqueue(new Callback<DataResult>() {
-					@Override
-					public void onResponse(Call<DataResult> call, Response<DataResult> response) {
+				updateButton.addActionListener(e1 -> {
+					//调用接口
+					OpenRocket.eduCoderService.calculateFunction(200).enqueue(new Callback<DataResult>() {
+						@Override
+						public void onResponse(Call<DataResult> call, Response<DataResult> response) {
+							try {
+								DataResult result = response.body();
+								//解析函数.......
+								String xx = result.getResult().get(0).stream().
+										map(String::valueOf).collect(Collectors.joining(","));
+								String yy = result.getResult().get(1).stream().
+										map(String::valueOf).collect(Collectors.joining(","));
+								xField.setText(xx);
+								yField.setText(yy);
 
-						DataResult result = response.body();
-						//解析函数.......
-						String xx = result.getResult().get(0).stream().
-								map(String::valueOf).collect(Collectors.joining(","));
-						String yy = result.getResult().get(1).stream().
-								map(String::valueOf).collect(Collectors.joining(","));
-						xField.setText(xx);
-						yField.setText(yy);
-					}
 
-					@Override
-					public void onFailure(@NotNull Call<DataResult> call, @NotNull Throwable throwable) {
-						SwingUtilities.invokeLater(() ->
-								JOptionPane.showMessageDialog(chartDialog, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
-					}
-				}));
+								// 获取 x 和 y 的输入并解析
+								String[] xValues = xField.getText().split(",");
+								String[] yValues = yField.getText().split(",");
+								if (xValues.length != yValues.length) {
+									throw new IllegalArgumentException("X 和 Y 的值数量必须相等");
+								}
+								xySeries.clear();
+								// 批量添加数据点
+								for (int i = 0; i < xValues.length; i++) {
+									double x = Double.parseDouble(xValues[i].trim());
+									double y = Double.parseDouble(yValues[i].trim());
+									xySeries.add(x, y);
+								}
+
+							}catch(IllegalStateException e){
+								JOptionPane.showMessageDialog(chartDialog, "参数不合法");
+							}catch (IllegalArgumentException e){
+								JOptionPane.showMessageDialog(chartDialog,e.getMessage());
+							}
+						}
+
+						@Override
+						public void onFailure(@NotNull Call<DataResult> call, @NotNull Throwable throwable) {
+							SwingUtilities.invokeLater(() ->
+									JOptionPane.showMessageDialog(chartDialog, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
+						}
+					});
+					//
+
+
+
+				});
+
 				// 将 chartPanel 添加到对话框的中心
 				chartDialog.add(chartPanel, BorderLayout.CENTER);
 				// 将控制面板（输入框和按钮）添加到对话框的底部
@@ -1051,113 +1076,10 @@ public class ThrustCurveMotorSelectionPanel extends JPanel implements MotorSelec
 		hideSimilarBox.getActionListeners()[0].actionPerformed(null);
 
 	}
-	private void updateFunctions(JPanel typeSelectorPanel){
-		typeSelectorPanel.removeAll();
-		for(int i=0;i<simulateFunctions.size();i++){
-			typeSelectorPanel.add(new JLabel("函数："),"gapright 5");
-			JTextField jTextField = new JTextField(simulateFunctions.get(i).get("function"));
-			typeSelectorPanel.add(jTextField,"width :80,gapright 10");
-			typeSelectorPanel.add(new JLabel("时间区间："),"gapright 5");
-			JTextField low = new JTextField(simulateFunctions.get(i).get("low"));
-			typeSelectorPanel.add(low,"gapright 10,align center,width :30");
-			typeSelectorPanel.add(new JLabel("-"),"align center,width :15");
-			JTextField high = new JTextField(simulateFunctions.get(i).get("high"));
-			typeSelectorPanel.add(high,"gapright 10,align center,width :30");
-			JButton deleteButton = new SelectColorButton(Icons.EDIT_DELETE);
-			int index = i;
-			//函数窗口
-			jTextField.getDocument().addDocumentListener(new DocumentListener() {
-				@Override
-				public void insertUpdate(DocumentEvent e) {
-					printText(jTextField);
-				}
-
-				@Override
-				public void removeUpdate(DocumentEvent e) {
-					printText(jTextField);
-
-				}
-
-				@Override
-				public void changedUpdate(DocumentEvent e) {
-					printText(jTextField);
-
-				}
-				// 输出 JTextField 中的当前值
-				private void printText(JTextField textField) {
-					HashMap<String, String> stringStringHashMap = simulateFunctions.get(index);
-					stringStringHashMap.put("function",textField.getText());
-				}
-			});
-			//low
-			low.getDocument().addDocumentListener(new DocumentListener() {
-				@Override
-				public void insertUpdate(DocumentEvent e) {
-					printText(low);
-				}
-
-				@Override
-				public void removeUpdate(DocumentEvent e) {
-					printText(low);
-
-				}
-
-				@Override
-				public void changedUpdate(DocumentEvent e) {
-					printText(low);
-
-				}
-				// 输出 JTextField 中的当前值
-				private void printText(JTextField textField) {
-					HashMap<String, String> stringStringHashMap = simulateFunctions.get(index);
-					stringStringHashMap.put("low",textField.getText());
-				}
-			});
-			//high
-			high.getDocument().addDocumentListener(new DocumentListener() {
-				@Override
-				public void insertUpdate(DocumentEvent e) {
-					printText(high);
-				}
-
-				@Override
-				public void removeUpdate(DocumentEvent e) {
-					printText(high);
-
-				}
-
-				@Override
-				public void changedUpdate(DocumentEvent e) {
-					printText(high);
-
-				}
-				// 输出 JTextField 中的当前值
-				private void printText(JTextField textField) {
-					HashMap<String, String> stringStringHashMap = simulateFunctions.get(index);
-					stringStringHashMap.put("high",textField.getText());
-				}
-			});
-
-			deleteButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					simulateFunctions.remove(index);
-					updateFunctions(typeSelectorPanel);
-				}
-			});
-			deleteButton.setBorderPainted(false);
-			typeSelectorPanel.add(deleteButton,"wrap");
-
-		}
-
-		typeSelectorPanel.validate();
-		typeSelectorPanel.repaint();
-	}
 	//导出文件
 	//x y序列
-	//或者function
 	//
-	private void doExport(JDialog chartDialog,String[]functions,String[]lowList,String[] highList,Object[] xValues, Object[]yValues,
+	private void doExport(JDialog chartDialog,Object[] xValues, Object[]yValues,
 						  String designation,String commonName,
 						  String diameter,String length,String weight,String type) {
 		if(xValues.length==0||xValues==null){
@@ -1380,17 +1302,17 @@ public class ThrustCurveMotorSelectionPanel extends JPanel implements MotorSelec
 			throw new NullPointerException(" attempted to set mount with a null mount. bug. ");
 		}
 		motorFilterPanel.setMotorMount(mountToEdit);
-		
+
 		MotorConfiguration curMotorInstance = mountToEdit.getMotorConfig(_fcid);
 		selectedMotor = null;
 		selectedMotorSet = null;
 		selectedDelay = 0;
 		ThrustCurveMotor motorToSelect = null;
-		if ( curMotorInstance.hasMotor()){ 
+		if ( curMotorInstance.hasMotor()){
 			motorToSelect = (ThrustCurveMotor) curMotorInstance.getMotor();
 			selectedDelay = curMotorInstance.getEjectionDelay();
 		}
-		
+
 		// If current motor is not found in db, add a new ThrustCurveMotorSet containing it
 		if (motorToSelect != null) {
 			ThrustCurveMotorSet motorSetToSelect = null;
@@ -1402,7 +1324,7 @@ public class ThrustCurveMotorSelectionPanel extends JPanel implements MotorSelec
 				database.add(extra);
 				Collections.sort(database);
 			}
-			
+
 			select(motorToSelect);
 
 		}
@@ -1578,7 +1500,7 @@ public class ThrustCurveMotorSelectionPanel extends JPanel implements MotorSelec
 
 	/**
 	 * Find the ThrustCurveMotorSet that contains a motor.
-	 * 
+	 *
 	 * @param motor		the motor to look for.
 	 * @return			the ThrustCurveMotorSet, or null if not found.
 	 */
@@ -1598,7 +1520,7 @@ public class ThrustCurveMotorSelectionPanel extends JPanel implements MotorSelec
 	 * Select the default motor from this ThrustCurveMotorSet.  This uses primarily motors
 	 * that the user has previously used, and secondarily a heuristic method of selecting which
 	 * thrust curve seems to be better or more reliable.
-	 * 
+	 *
 	 * @param set	the motor set
 	 * @return		the default motor in this set
 	 */
@@ -1708,7 +1630,7 @@ public class ThrustCurveMotorSelectionPanel extends JPanel implements MotorSelec
 
 		@Override
 		public Component getListCellRendererComponent(JList<? extends MotorHolder> list, MotorHolder value, int index,
-				boolean isSelected, boolean cellHasFocus) {
+													  boolean isSelected, boolean cellHasFocus) {
 
 			JLabel label = (JLabel) renderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 			if (value != null) {
