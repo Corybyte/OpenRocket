@@ -1109,7 +1109,7 @@ public class ThrustCurveMotorSelectionPanel extends JPanel implements MotorSelec
             JOptionPane.showMessageDialog(chartDialog, "X 和 Y 的值数量必须相等");
             return;
         }
-        JFileChooser fileChooser = new JFileChooser();
+        JFileChooser fileChooser = new JFileChooser("/data/workspace/downloadfiles");
         fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Text Files", "txt"));
         int returnValue = fileChooser.showSaveDialog(null);
         if (returnValue == JFileChooser.APPROVE_OPTION) {
@@ -1158,7 +1158,7 @@ public class ThrustCurveMotorSelectionPanel extends JPanel implements MotorSelec
         List<Object> returnList = new ArrayList<>();
         List<String> xList = new ArrayList<>();
         List<String> yList = new ArrayList<>();
-        JFileChooser fileChooser = new JFileChooser();
+        JFileChooser fileChooser = new JFileChooser("/data/workspace/downloadfiles");
         FileNameExtensionFilter filter = new FileNameExtensionFilter("Text Files", "txt");
         fileChooser.setFileFilter(filter);
         int returnValue = fileChooser.showSaveDialog(null);

@@ -6,6 +6,9 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.nio.file.*;
 import java.util.Arrays;
 import java.util.stream.IntStream;
 
@@ -22,14 +25,19 @@ import net.sf.openrocket.communication.UpdateInfoRetriever;
 import net.sf.openrocket.communication.UpdateInfoRetriever.ReleaseStatus;
 import net.sf.openrocket.communication.WelcomeInfoRetriever;
 import net.sf.openrocket.database.Databases;
+import net.sf.openrocket.document.OpenRocketDocument;
+import net.sf.openrocket.document.OpenRocketDocumentFactory;
+import net.sf.openrocket.document.StorageOptions;
+import net.sf.openrocket.file.GeneralRocketSaver;
+import net.sf.openrocket.file.openrocket.OpenRocketSaver;
+import net.sf.openrocket.file.rasaero.RASAeroCommonConstants;
+import net.sf.openrocket.gui.dialogs.SwingWorkerDialog;
 import net.sf.openrocket.gui.dialogs.UpdateInfoDialog;
 import net.sf.openrocket.gui.dialogs.WelcomeDialog;
 import net.sf.openrocket.gui.main.BasicFrame;
 import net.sf.openrocket.gui.main.Splash;
 import net.sf.openrocket.gui.main.SwingExceptionHandler;
-import net.sf.openrocket.gui.util.GUIUtil;
-import net.sf.openrocket.gui.util.SwingPreferences;
-import net.sf.openrocket.gui.util.UITheme;
+import net.sf.openrocket.gui.util.*;
 import net.sf.openrocket.logging.LoggingSystemSetup;
 import net.sf.openrocket.logging.PrintStreamToSLF4J;
 import net.sf.openrocket.plugin.PluginModule;
@@ -42,6 +50,8 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 
+import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
+
 /**
  * 启动 OpenRocket swing 应用程序
  * @author Corybyte <rzd200213@gmail.com>
@@ -49,6 +59,7 @@ import com.google.inject.Module;
 public class SwingStartup {
 	
 	private final static Logger log = LoggerFactory.getLogger(SwingStartup.class);
+	private static BasicFrame start=null;
 	
 	/**
 	 * OpenRocket 启动主方法。
@@ -95,7 +106,62 @@ public class SwingStartup {
 		});
 		
 		log.info("Startup complete");
-		
+		//监听是否有参数传入
+		if (args.length>0){
+			System.out.println(args[0]);
+		}
+		watchDirectory("/tmp");
+	}
+	public static void watchDirectory(String directoryPath) {
+		GeneralRocketSaver ROCKET_SAVER = new GeneralRocketSaver();
+		try {
+			// 获取文件系统的 WatchService
+			WatchService watchService = FileSystems.getDefault().newWatchService();
+			// 将目录注册到 WatchService
+			Path path = Paths.get(directoryPath);
+			path.register(watchService, ENTRY_CREATE);
+
+			System.out.println("监听目录: " + directoryPath);
+
+			// 无限循环监听事件
+			while (true) {
+				// 等待监听事件
+				WatchKey key = watchService.take();
+
+				for (WatchEvent<?> event : key.pollEvents()) {
+					WatchEvent.Kind<?> kind = event.kind();
+
+					// 检查是否是文件创建事件
+					if (kind == ENTRY_CREATE) {
+						Path createdFilePath = ((WatchEvent<Path>) event).context();
+						System.out.println("文件创建");
+						// 如果检测到 trigger.save 文件，则执行保存操作
+						if (createdFilePath.toString().equals("strugger.save")) {
+							OpenRocketDocument document = OpenRocketDocumentFactory.mydoc;
+							File file = new File("/data/workspace/downloadfiles/1.ork");
+							file = FileHelper.forceExtension(file,"ork");
+							document.getDefaultStorageOptions().setFileType(StorageOptions.FileType.OPENROCKET);
+							SaveFileWorker worker = new SaveFileWorker(document, file, ROCKET_SAVER);
+							SwingWorkerDialog.runWorker(null, "Saving file",
+									"Writing " + file.getName() + "...", worker);
+							worker.get();
+							document.setFile(file);
+							document.setSaved(true);
+
+
+							Files.delete(path.resolve(createdFilePath));  // 保存完成后删除触发文件
+						}
+					}
+				}
+
+				// 重置 WatchKey 并继续监听
+				if (!key.reset()) {
+					break;
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -228,6 +294,7 @@ public class SwingStartup {
 		log.info("打开应用程序主窗口");
 		if (!handleCommandLine(args)) {
 			BasicFrame startupFrame = BasicFrame.reopen();
+			start = startupFrame;
 			BasicFrame.setStartupFrame(startupFrame);
 			showWelcomeDialog();
 		}
