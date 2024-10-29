@@ -8,13 +8,16 @@ from Component import Component
 
 def calculateMOI(rootComponent: Component) -> float:
     parentTransform = Transformation(translate=None, rotation=None)
+    #火箭所有组件结构的转动惯量列表
     inertia_list = []
     inertia_list2 = []
+    #计算结构转动惯量
     centerofMass = calculateStructure(rootComponent, parentTransform, inertia_list)
     rigidBody = calculateMomentInertia(inertia_list, centerofMass)
-
+    #计算发动机转动惯量
     centerofMass2 = calculateMotors(rootComponent, parentTransform, inertia_list2)
     list = inertia_list + inertia_list2
+    #与相对于变换原点的质心进行平均
     all_centerofMass = average(centerofMass, centerofMass2)
 
     rigidBody = calculateMomentInertia(list, all_centerofMass)
@@ -60,8 +63,9 @@ def calculateStructure(rootComponent, parentTransform, inertia_list):
     compCM[1] = compCM[1] + compPosition[1]
     compCM[2] = compCM[2] + compPosition[2]
     compCM = parentTransform.transform(compCM)
-
+    # 计算当前组件的单位转动惯量
     compIx = rootComponent.rotationalUnitInertia * compCM[3]
+    # 计算当前组件的纵向单位转动惯量
     compIt = rootComponent.longitudinalUnitInertia * compCM[3]
     componentInertia = [compCM, compIx, compIt, compIt]
 
@@ -125,10 +129,17 @@ def calculateMomentInertia(inertia_list, centerOfMass):
     centerOfMass = centerOfMass
     Ir = 0
     It = 0
-    for eachLocal in inertia_list:
-        eachLocal = rebase(eachLocal, centerOfMass)
-        Ir = Ir + eachLocal[1]
-        It = It + eachLocal[2]
+    ############### Begin ###############
+
+    # 遍历列表中的所有转动惯量
+
+        # 调用rebase方法
+        # 根据新的坐标系位置调整惯性矩阵。通过质心的位移和惯性矩阵的转移公式，计算出在新坐标系下的惯性矩阵的分量
+
+        # Ir 分别与列表中的每一个转动惯量的inertia_list[i][1] 相加
+        # It 分别与列表中的每一个转动惯量的inertia_list[i][2] 相加
+
+    ############### End ###############
     return [centerOfMass, Ir, It, It]
 
 

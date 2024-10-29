@@ -1,2 +1,4 @@
 def calculateMOI() -> float:
-    return 0
+    ############### Begin ###############
+    pass
+    ############### End #################

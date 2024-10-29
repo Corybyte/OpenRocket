@@ -36,9 +36,9 @@ def functions() -> tuple[list[float], list[float]]:
         # 处理边界问题,防止重复
         if len(x_list) is not 0 and x_list[-1] == x_values[0]:
             x_values[0] += round(random.uniform(0.0001, 0.00000001), 6)
-        print(x_values[0])
         x_list.extend(x_values)
         y_list.extend(y_values)
-    print(x_list)
-    print(y_list)
     return x_list, y_list
+
+
+functions()

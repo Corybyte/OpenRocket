@@ -15,7 +15,7 @@ def calculateCG(rootComponent: MyComponent) -> float:
     all_cg = merge(all_cg, cg_motor)
     return all_cg[0]
 
-
+#计算当前组件的结构重心
 def calculateStructure(rootComponent, parentTransform):
     instanceCount = rootComponent.instanceCount
 
@@ -23,7 +23,7 @@ def calculateStructure(rootComponent, parentTransform):
 
     allInstanceAngles = rootComponent.allInstanceAngles
 
-    # 计算每个子组件的cg
+    # 递归计算当前组件的子组件的cg
     children_cg = [0, 0, 0, 0]
 
     for i in range(instanceCount):
@@ -45,19 +45,20 @@ def calculateStructure(rootComponent, parentTransform):
             eachCg = calculateStructure(eachChild, currentTransform)
             children_cg = merge(children_cg, eachCg)
 
-    # 计算每个组件的cg
+    ############### Begin ###############
+    # 获取组件的重心
 
-    compCM = [rootComponent.cg.get('x'), rootComponent.cg.get('y'), rootComponent.cg.get('z'),
-              rootComponent.cg.get('weight')]
-    compPosition = [rootComponent.position.get('x'), rootComponent.position.get('y'), rootComponent.position.get('z')]
 
-    compCM[0] = compCM[0] + compPosition[0]
-    compCM[1] = compCM[1] + compPosition[1]
-    compCM[2] = compCM[2] + compPosition[2]
-    compCM = parentTransform.transform(compCM)
+    # 获取组件的所在位置
 
-    cg = merge(compCM, children_cg)
+    #组件重心与组件位置相加
 
+
+    #使用父类组件 parentTransform对结果进行transform变换
+
+    #与子组件的重心合并
+
+    ############### End ###############
     return cg
 
 
@@ -67,7 +68,7 @@ def calculateMountData(compCM, motor, parentTransform):
     results = parentTransform.transform(clusterLocalCM)
     return results
 
-
+#计算当前组件的发动机重心
 def calculateMotors(rootComponent, parentTransform):
     compCM = [0, 0, 0, 0]
     instanceCount = rootComponent.instanceCount
@@ -91,10 +92,13 @@ def calculateMotors(rootComponent, parentTransform):
             eachChild = child
             eachCg = calculateMotors(eachChild, currentTransform)
             children_cg = merge(children_cg, eachCg)
+    ############### Begin ###############
+    #判断子组件的重心是否有效（>0.00000001）
+    #有效则将当前组件的重心与子组件的重心合并
 
-    if (children_cg[0] > 0.00000001):
-        cg_motor = merge(compCM, children_cg)
-        compCM = cg_motor
+
+
+    ############### End ###############
     return compCM
 
 
@@ -178,6 +182,3 @@ class Transformation:
         y = rotation[1][0] * orig[0] + rotation[1][1] * orig[1] + rotation[1][2] * orig[2] + translate[1]
         z = rotation[2][0] * orig[0] + rotation[2][1] * orig[1] + rotation[2][2] * orig[2] + translate[2]
         return x, y, z, orig[3]
-# # 使用示例
-# translation = {'x': 1.0, 'y': 2.0, 'z': 3.0}
-# transformation = Transformation(translation)

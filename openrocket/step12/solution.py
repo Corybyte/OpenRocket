@@ -1,6 +1,7 @@
 import math
 
-def calculate_unit_rot_moi(r1: float, r2: float) -> float:
+
+def calculate_unit_rot_moi(r1, r2):
     """
     Calculates the unit rotational moment of inertia for a frustum or a cylinder.
 
@@ -12,16 +13,14 @@ def calculate_unit_rot_moi(r1: float, r2: float) -> float:
         float: The unit rotational moment of inertia.
     """
     # Define an epsilon value for floating point comparison
+    ############### Begin ###############
     EPSILON = 0.00000001
 
-    # Check for cylinder special case
-    if abs(r1 - r2) < EPSILON:
-        return 10.0 * pow2(r1) / 6.0
-
-    return (math.pow(r2, 5) - math.pow(r1, 5)) / (math.pow(r2, 3) - math.pow(r1, 3))
+    pass
+    ############### End ###############
 
 
-def pow2(x: float) -> float:
+def pow2(x):
     """
     Computes the square of a number.
 

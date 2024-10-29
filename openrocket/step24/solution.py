@@ -1,3 +1,5 @@
-def calculateMOI(innerRadius: float, outerRadius: float) -> float:
+def calculateMOI(innerRadius, outerRadius):
+    ############### Begin ###############
+    pass
+    ############### End #################
 
-    return (innerRadius * innerRadius + outerRadius * outerRadius) / 2

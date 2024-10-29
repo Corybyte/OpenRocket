@@ -1,3 +1,4 @@
 def calculateCP() -> float:
-
-    return 0
+    ############### Begin ###############
+    pass
+    ############### End #################
