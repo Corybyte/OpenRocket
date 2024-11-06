@@ -177,7 +177,9 @@ public class NoseConeConfig extends RocketComponentConfig {
             order.add(filledCheckbox);
         }
 
-        {//// CG calculation demonstration
+        {
+            //// CG calculation demonstration
+            //// 头椎重心计算
             panel.add(new JLabel(trans.get("NoseConeCfg.lbl.CgCalc") + ":"));
             JButton button = new JButton(trans.get("NoseConeCfg.lbl.CgEnter"));
             panel.add(button);
@@ -246,8 +248,10 @@ public class NoseConeConfig extends RocketComponentConfig {
                     dialog.add(checkButton, "newline, height 30!");
                     dialog.add(checkResult, "height 30!");
                     dialog.add(answerLabel, "height 30!");
+                    System.out.println(component.getComponentCG().x);
                     // Do not use UI thread to get the answer
                     checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateCG(request).enqueue(new Callback<>() {
+
                         @Override
                         public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
                             Result result = response.body();
@@ -257,6 +261,7 @@ public class NoseConeConfig extends RocketComponentConfig {
                                 answerLabel.setText(trans.get("NoseConeCfg.lbl.answer") + ": " + component.getComponentCG().x);
                             });
                         }
+
 
                         @Override
                         public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
