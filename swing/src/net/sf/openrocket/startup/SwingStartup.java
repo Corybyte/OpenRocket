@@ -12,10 +12,7 @@ import java.nio.file.*;
 import java.util.Arrays;
 import java.util.stream.IntStream;
 
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
-import javax.swing.Timer;
-import javax.swing.ToolTipManager;
+import javax.swing.*;
 
 import net.miginfocom.layout.LayoutUtil;
 import net.sf.openrocket.arch.SystemInfo;
@@ -295,6 +292,7 @@ public class SwingStartup {
 		if (!handleCommandLine(args)) {
 			BasicFrame startupFrame = BasicFrame.reopen();
 			start = startupFrame;
+			startupFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 			BasicFrame.setStartupFrame(startupFrame);
 			showWelcomeDialog();
 		}
