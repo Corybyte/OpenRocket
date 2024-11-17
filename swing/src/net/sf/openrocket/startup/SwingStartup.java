@@ -73,7 +73,7 @@ public class SwingStartup {
 			LayoutUtil.setGlobalDebugMillis(100);
 		}
 
-		initializeLogging();
+		//initializeLogging();
 		log.info("Starting up OpenRocket version {}", BuildProperties.getVersion());
 
 		// 检查 JRE 版本
@@ -144,8 +144,6 @@ public class SwingStartup {
 							worker.get();
 							document.setFile(file);
 							document.setSaved(true);
-
-
 							Files.delete(path.resolve(createdFilePath));  // 保存完成后删除触发文件
 						}
 					}

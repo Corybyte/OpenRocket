@@ -135,6 +135,10 @@ public class ComponentAddButtons extends JPanel implements Scrollable {
 		addButtonGroup(row, 
 				//// Nose cone
 				new BodyComponentButton(NoseCone.class, trans.get("compaddbuttons.Nosecone")),
+
+				//// Glider
+				new BodyComponentButton(NoseCone.class, trans.get("compaddbuttons.Glider")),
+
 				//// Body tube
 				new BodyComponentButton(BodyTube.class, trans.get("compaddbuttons.Bodytube")),
 				//// Transition
