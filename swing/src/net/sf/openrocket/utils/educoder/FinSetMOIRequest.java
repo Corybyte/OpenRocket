@@ -1,6 +1,6 @@
 package net.sf.openrocket.utils.educoder;
 
-public class FinSetMOIRequest extends Request{
+public class FinSetMOIRequest{
     private Double length;
     /**
      * 翼展
@@ -12,6 +12,24 @@ public class FinSetMOIRequest extends Request{
     private Integer finCount;
 
     private Double bodyRadius;
+    private Double singlePlanformArea;
+    private Double[] answer;
+
+    public Double getSinglePlanformArea() {
+        return singlePlanformArea;
+    }
+
+    public void setSinglePlanformArea(Double singlePlanformArea) {
+        this.singlePlanformArea = singlePlanformArea;
+    }
+
+    public Double[] getAnswer() {
+        return answer;
+    }
+
+    public void setAnswer(Double[] answer) {
+        this.answer = answer;
+    }
 
     public Double getBodyRadius() {
         return bodyRadius;

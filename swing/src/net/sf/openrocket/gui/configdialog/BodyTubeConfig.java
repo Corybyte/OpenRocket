@@ -30,6 +30,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 @SuppressWarnings("serial")
@@ -174,7 +175,16 @@ public class BodyTubeConfig extends RocketComponentConfig {
 				dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
 
 				final BodyTubeCpRequest request = new BodyTubeCpRequest();
-
+				request.setLength(c.getLength());
+				request.setDivisions(128);
+				try {
+					Method method1 = BodyTube.class.getDeclaredMethod("getOuterRadius");
+					method1.setAccessible(true);
+					Double radius = (Double) method1.invoke(component);
+					request.setOuterRadius(radius);
+				} catch (Exception ex) {
+					throw new RuntimeException(ex);
+				}
 				FlightConfiguration curConfig = document.getSelectedConfiguration();
 				FlightConditions conditions = new FlightConditions(curConfig);
 				String[] methodNames = {"getSincAOA", "getSinAOA", "getRefArea", "getMach", "getAOA"};
@@ -250,10 +260,11 @@ public class BodyTubeConfig extends RocketComponentConfig {
 
 				final BodyTubeMOIRequest request = new BodyTubeMOIRequest();
 				// answer = rotationalUnitInertia
-				request.setAnswer(component.getRotationalUnitInertia());
+				request.setAnswer(new Double[]{component.getRotationalUnitInertia(),component.getLongitudinalUnitInertia()});
 
-				String[] MethodNames = {"getOuterRadius"};
+				String[] MethodNames = {"getOuterRadius","getInnerRadius"};
 				String[] fieldNames = {"thickness","filled"};
+				request.setLength(component.getLength());
 
 				try{
 					//get and set  properties
@@ -274,7 +285,7 @@ public class BodyTubeConfig extends RocketComponentConfig {
 						Method reqMethod = BodyTubeMOIRequest.class.getDeclaredMethod(methodName.replaceFirst("get","set"), Double.class);
 						Double value = (Double) method.invoke(component); // All values are double type
 						reqMethod.invoke(request, value);
-						String labelText = "OuterRadius" + ": " + value;
+						String labelText = methodName.replaceFirst("get","") + ": " + value;
 						dialog.add(new JLabel(labelText), "newline, height 30!");
 					}
 					JButton checkButton = new JButton(trans.get("NoseConeCfg.lbl.check"));
@@ -286,17 +297,17 @@ public class BodyTubeConfig extends RocketComponentConfig {
 					// Do not use UI thread to get the answer
 					checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateMOI(request).enqueue(new Callback<>() {
 						@Override
-						public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
-							Result result = response.body();
+						public void onResponse(@NotNull Call<Result2> call, @NotNull Response<Result2> response) {
+							Result2 result = response.body();
 							if (result == null) return;
 							SwingUtilities.invokeLater(() -> {
-								checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult());
-								answerLabel.setText(trans.get("NoseConeCfg.lbl.answer") + ": " + component.getRotationalUnitInertia());
+								checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult()[0]+","+result.getResult()[1]);
+								answerLabel.setText(trans.get("NoseConeCfg.lbl.answer") + ": " + component.getRotationalUnitInertia()+","+component.getLongitudinalUnitInertia());
 							});
 						}
 
 						@Override
-						public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
+						public void onFailure(@NotNull Call<Result2> call, @NotNull Throwable throwable) {
 							SwingUtilities.invokeLater(() ->
 									JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
 						}

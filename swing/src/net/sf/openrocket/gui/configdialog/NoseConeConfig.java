@@ -192,7 +192,6 @@ public class NoseConeConfig extends RocketComponentConfig {
 
                 String[] transitionMethodNames = {"getForeRadius", "getAftRadius"};
                 String[] transitionFieldNames = {"shapeParameter", "type"};
-
                 String[] fieldNames = {"filled", "thickness", "DIVISIONS"};
 
                 try {
@@ -231,6 +230,14 @@ public class NoseConeConfig extends RocketComponentConfig {
                             labelText = trans.get("NoseConeCfg.lbl." + reqFieldName) + ": " + ((Transition.Shape) value).name();
                         dialog.add(new JLabel(labelText), "newline, height 30!");
                     }
+                    request.setForeShoulderLength(((NoseCone) component).getForeShoulderLength());
+                    request.setForeShoulderRadius(((NoseCone) component).getForeShoulderRadius());
+                    request.setAftShoulderRadius(((NoseCone) component).getAftShoulderRadius());
+                    request.setForeShoulderThickness(((NoseCone) component).getForeShoulderThickness());
+                    request.setAftShoulderLength(((NoseCone) component).getAftShoulderLength());
+                    request.setAftShoulderThickness(((NoseCone) component).getAftShoulderThickness());
+                    request.setIsForeShoulderCapped(((NoseCone) component).isForeShoulderCapped());
+                    request.setIsAftShoulderCapped(((NoseCone) component).isAftShoulderCapped());
                     for (String methodName : transitionMethodNames) {
                         Method method = Transition.class.getDeclaredMethod(methodName);
                         Method reqMethod = NoseConeCgRequest.class
@@ -550,11 +557,10 @@ public class NoseConeConfig extends RocketComponentConfig {
 
                 final NoseConeMOIRequest request = new NoseConeMOIRequest();
                 // answer = rotationalUnitInertia
-                request.setAnswer(component.getRotationalUnitInertia());
+                request.setAnswer(new Double[]{component.getRotationalUnitInertia(),component.getLongitudinalUnitInertia()});
 
                 String[] transitionMethodNames = {"getForeRadius", "getAftRadius"};
                 String[] transitionFieldNames = {"shapeParameter", "type"};
-
                 String[] fieldNames = {"filled", "thickness", "DIVISIONS"};
 
                 try {
@@ -570,9 +576,11 @@ public class NoseConeConfig extends RocketComponentConfig {
                         String constraints = (fieldName.equals(fieldNames[0])) ? "spanx, height 30!" : "newline, height 30!";
                         dialog.add(new JLabel(labelText), constraints);
                     }
+
                     //set len
                     double length = component.getLength();
                     request.setLength(length);
+                    request.setDensity(((NoseCone) component).getMaterial().getDensity());
                     String lengthLabelText = trans.get("NoseConeCfg.lbl.length") + ": " + length;
                     dialog.add(new JLabel(lengthLabelText), "newline, height 30!");
 
@@ -590,6 +598,15 @@ public class NoseConeConfig extends RocketComponentConfig {
                             labelText = trans.get("NoseConeCfg.lbl." + reqFieldName) + ": " + ((Transition.Shape) value).name();
                         dialog.add(new JLabel(labelText), "newline, height 30!");
                     }
+                    //set transitionMethodNames
+                    request.setForeShoulderLength(((NoseCone) component).getForeShoulderLength());
+                    request.setForeShoulderRadius(((NoseCone) component).getForeShoulderRadius());
+                    request.setAftShoulderRadius(((NoseCone) component).getAftShoulderRadius());
+                    request.setForeShoulderThickness(((NoseCone) component).getForeShoulderThickness());
+                    request.setAftShoulderLength(((NoseCone) component).getAftShoulderLength());
+                    request.setAftShoulderThickness(((NoseCone) component).getAftShoulderThickness());
+                    request.setForeShoulderCapped(((NoseCone) component).isForeShoulderCapped());
+                    request.setAftShoulderCapped(((NoseCone) component).isAftShoulderCapped());
                     // AftRadius
                     for (String methodName : transitionMethodNames) {
                         Method method = Transition.class.getDeclaredMethod(methodName);
@@ -607,19 +624,20 @@ public class NoseConeConfig extends RocketComponentConfig {
                     dialog.add(checkResult, "height 30!");
                     dialog.add(answerLabel, "height 30!");
                     // Do not use UI thread to get the answer
+
                     checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateMOI(request).enqueue(new Callback<>() {
                         @Override
-                        public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
-                            Result result = response.body();
+                        public void onResponse(@NotNull Call<Result2> call, @NotNull Response<Result2> response) {
+                            Result2 result = response.body();
                             if (result == null) return;
                             SwingUtilities.invokeLater(() -> {
-                                checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult());
-                                answerLabel.setText(trans.get("NoseConeCfg.lbl.answer") + ": " + component.getRotationalUnitInertia());
+                                checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult()[0]+","+result.getResult()[1]);
+                                answerLabel.setText(trans.get("NoseConeCfg.lbl.answer") + ": " + component.getRotationalUnitInertia()+","+component.getLongitudinalUnitInertia());
                             });
                         }
 
                         @Override
-                        public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
+                        public void onFailure(@NotNull Call<Result2> call, @NotNull Throwable throwable) {
                             SwingUtilities.invokeLater(() ->
                                     JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
                         }
@@ -662,20 +680,21 @@ public class NoseConeConfig extends RocketComponentConfig {
                     method.setAccessible(true);
                     method.invoke(calculation);
                     RigidBody rigidBody = MassCalculator.calculateLaunch(configuration);
-                    request.setAnswer(rigidBody.Ixx);
-
+                    request.setAnswer(new Double[]{rigidBody.Ixx,rigidBody.Iyy});
 
                     int i=1;
                     for (RocketComponent component1:rocket.getAllChildren()){
                         if (component1.getComponentName().equals("火箭") || component1.getComponentName().equals("火箭级"))
                             continue;
                         String labelText = component1.getComponentName() + " 组件重心: " + component1.getComponentCG().x;
-                        String labelText2 = component1.getComponentName() + "转动惯量: " + component1.getRotationalUnitInertia();
+                        String labelText2 = component1.getComponentName() + "横向转动惯量: " + component1.getRotationalUnitInertia();
+                        String labelText3 = component1.getComponentName() + "纵向转动惯量: " + component1.getLongitudinalUnitInertia();
                         String constraints = "newline, height 30!";
                         String constraints2 = "height 30!";
                         if (i < 11) {
                             dialog.add(new JLabel(labelText), constraints);
                             dialog.add(new JLabel(labelText2), constraints2);
+                            dialog.add(new JLabel(labelText3), constraints2);
                         }
                         i++;
 
@@ -690,17 +709,17 @@ public class NoseConeConfig extends RocketComponentConfig {
                     // Do not use UI thread to get the answer
                     checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateMOI(request).enqueue(new Callback<>() {
                         @Override
-                        public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
-                            Result result = response.body();
+                        public void onResponse(@NotNull Call<Result2> call, @NotNull Response<Result2> response) {
+                            Result2 result = response.body();
                             if (result == null) return;
                             SwingUtilities.invokeLater(() -> {
-                                checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult());
-                                answerLabel.setText(trans.get("NoseConeCfg.lbl.answer") + ": " + rigidBody.Ixx);
+                                checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult()[0]+","+result.getResult()[1]);
+                                answerLabel.setText(trans.get("NoseConeCfg.lbl.answer") + ": " + rigidBody.Ixx+","+rigidBody.Iyy);
                             });
                         }
 
                         @Override
-                        public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
+                        public void onFailure(@NotNull Call<Result2> call, @NotNull Throwable throwable) {
                             SwingUtilities.invokeLater(() ->
                                     JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
                         }

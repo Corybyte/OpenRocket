@@ -311,8 +311,7 @@ public class TubeFinSetConfig extends RocketComponentConfig {
                 final TubeFinSetMOIRequest request = new TubeFinSetMOIRequest();
                 // answer = rotationalUnitInertia
                 component.getRotationalUnitInertia();
-                request.setAnswer(component.getRotationalUnitInertia());
-
+                request.setAnswer(new Double[]{component.getRotationalUnitInertia(),component.getLongitudinalUnitInertia()});
                 String[] MethodNames = {"getOuterRadius","getBodyRadius","getInnerRadius"};
                 String[] fieldNames = {"thickness","fins"};
 
@@ -339,27 +338,28 @@ public class TubeFinSetConfig extends RocketComponentConfig {
                         String labelText = trans.get("TubeFinSet.lbl." + methodName.replaceFirst("get", "")) + ": " + value;
                         dialog.add(new JLabel(labelText), "newline, height 30!");
                     }
+                    request.setLength(c.getLength());
+                    request.setAxialOffset(c.getAxialOffset());
                     JButton checkButton = new JButton(trans.get("TubeFinSet.lbl.check"));
                     JLabel checkResult = new JLabel(trans.get("TubeFinSet.lbl.checkResult") + ": ");
                     JLabel answerLabel = new JLabel(trans.get("TubeFinSet.lbl.answer") + ": ");
                     dialog.add(checkButton, "newline, height 30!");
                     dialog.add(checkResult, "height 30!");
                     dialog.add(answerLabel, "height 30!");
-                    System.out.println(666);
                     // Do not use UI thread to get the answer
                     checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateMOI(request).enqueue(new Callback<>() {
                         @Override
-                        public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
-                            Result result = response.body();
+                        public void onResponse(@NotNull Call<Result2> call, @NotNull Response<Result2> response) {
+                            Result2 result = response.body();
                             if (result == null) return;
                             SwingUtilities.invokeLater(() -> {
-                                checkResult.setText(trans.get("TubeFinSet.lbl.checkResult") + ": " + result.getResult());
-                                answerLabel.setText(trans.get("TubeFinSet.lbl.answer") + ": " + component.getRotationalUnitInertia());
+                                checkResult.setText(trans.get("TubeFinSet.lbl.checkResult") + ": " + result.getResult()[0]+","+result.getResult()[1]);
+                                answerLabel.setText(trans.get("TubeFinSet.lbl.answer") + ": " + component.getRotationalUnitInertia()+","+component.getLongitudinalUnitInertia());
                             });
                         }
 
                         @Override
-                        public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
+                        public void onFailure(@NotNull Call<Result2> call, @NotNull Throwable throwable) {
                             SwingUtilities.invokeLater(() ->
                                     JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
                         }

@@ -8,6 +8,7 @@ public class BodyTubeCpRequest {
     /**
      * 机翼面积
      */
+    private Double outerRadius;
     private Double planformArea;
     /**
      * 迎角的sinc值
@@ -29,10 +30,40 @@ public class BodyTubeCpRequest {
      * 迎角
      */
     private Double AOA;
+    private Double length;
+    private Integer divisions;
     /**
      * 正确结果
      */
     private Double answer;
+
+    public Integer getDivisions() {
+        return divisions;
+    }
+
+    public Double getOuterRadius() {
+        return outerRadius;
+    }
+
+    public void setOuterRadius(Double outerRadius) {
+        this.outerRadius = outerRadius;
+    }
+
+    public void setDivisions(Integer divisions) {
+        this.divisions = divisions;
+    }
+
+    public void setDivisions(int divisions) {
+        this.divisions = divisions;
+    }
+
+    public Double getLength() {
+        return length;
+    }
+
+    public void setLength(Double length) {
+        this.length = length;
+    }
 
     public Double getPlanformCenter() {
         return planformCenter;

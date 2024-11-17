@@ -70,13 +70,13 @@ public class TransitionMOIRequest {
         this.transitionAftRadius = transitionAftRadius;
     }
 
-    private Double answer;
+    private Double[] answer;
 
-    public Double getAnswer() {
+    public Double[] getAnswer() {
         return answer;
     }
 
-    public void setAnswer(Double answer) {
+    public void setAnswer(Double[] answer) {
         this.answer = answer;
     }
 

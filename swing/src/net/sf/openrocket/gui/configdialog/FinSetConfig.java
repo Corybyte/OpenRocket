@@ -467,11 +467,11 @@ public abstract class FinSetConfig extends RocketComponentConfig {
                 dialog.setLocationRelativeTo(null);
                 dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
                 final FinSetMOIRequest request = new FinSetMOIRequest();
-                request.setAnswer(component.getRotationalUnitInertia());
+                request.setAnswer(new Double[]{component.getRotationalUnitInertia(),component.getLongitudinalUnitInertia()});
                 String[] methodNames = {"getBodyRadius"};
                 String[] fieldNames = { "span", "finArea"};
-
 				FinSetCalc componentCalc = new FinSetCalc((FinSet) component);
+                request.setSinglePlanformArea(((FinSet) component).getPlanformArea());
                 try {
                     for (String methodName : methodNames) {
                         Method declaredMethod = FinSet.class.getDeclaredMethod(methodName);
@@ -513,19 +513,19 @@ public abstract class FinSetConfig extends RocketComponentConfig {
                     dialog.add(checkButton, "newline, height 30!");
                     dialog.add(checkResult, "height 30!");
                     dialog.add(answerLabel, "height 30!");
-                    checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateMOI(request).enqueue(new Callback<Result>() {
+                    checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateMOI(request).enqueue(new Callback<>() {
                         @Override
-                        public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
-                            Result result = response.body();
+                        public void onResponse(@NotNull Call<Result2> call, @NotNull Response<Result2> response) {
+                            Result2 result = response.body();
                             if (result == null) return;
                             SwingUtilities.invokeLater(() -> {
-                                checkResult.setText(trans.get("FinSet.lbl.checkResult") + ": " + result.getResult());
-                                answerLabel.setText(trans.get("FinSet.lbl.answer") + ": " + component.getRotationalUnitInertia());
+                                checkResult.setText(trans.get("FinSet.lbl.checkResult") + ": " + result.getResult()[0]+","+result.getResult()[1]);
+                                answerLabel.setText(trans.get("FinSet.lbl.answer") + ": " + component.getRotationalUnitInertia()+","+component.getLongitudinalUnitInertia());
                             });
                         }
 
                         @Override
-                        public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
+                        public void onFailure(@NotNull Call<Result2> call, @NotNull Throwable throwable) {
                             SwingUtilities.invokeLater(() ->
                                     JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
                         }

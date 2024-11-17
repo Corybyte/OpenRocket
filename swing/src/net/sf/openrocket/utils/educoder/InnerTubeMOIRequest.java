@@ -2,10 +2,20 @@ package net.sf.openrocket.utils.educoder;
 
 import java.util.Arrays;
 
-public class InnerTubeMOIRequest extends Request{
+public class InnerTubeMOIRequest  {
     Double outerRadius; //getOuterRadius
     Double innerRadius; //getInnerRadius
+    Double length;
 
+    Double[] answer;
+
+    public Double getLength() {
+        return length;
+    }
+
+    public void setLength(Double length) {
+        this.length = length;
+    }
 
     public Double getOuterRadius() {
         return outerRadius;
@@ -23,6 +33,13 @@ public class InnerTubeMOIRequest extends Request{
         this.innerRadius = innerRadius;
     }
 
+    public Double[] getAnswer() {
+        return answer;
+    }
+
+    public void setAnswer(Double[] answer) {
+        this.answer = answer;
+    }
 
     @Override
     public String toString() {

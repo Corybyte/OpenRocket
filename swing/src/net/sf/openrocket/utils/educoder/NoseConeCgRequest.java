@@ -36,10 +36,88 @@ public class NoseConeCgRequest {
 
     private Double transitionAftRadius;
 
+
+    private Double foreShoulderLength;
+    private Double foreShoulderRadius;
+    private Double aftShoulderRadius;
+    private Double foreShoulderThickness;
+    private Double aftShoulderLength;
+    private Double aftShoulderThickness;
+    private Boolean aftShoulderCapped;
+    private Boolean foreShoulderCapped;
+
     /**
      * 正确结果
      */
     private Double answer;
+
+    public void setTransitionType(Transition.Shape transitionType) {
+        this.transitionType = transitionType;
+    }
+
+    public Double getForeShoulderLength() {
+        return foreShoulderLength;
+    }
+
+    public void setForeShoulderLength(Double foreShoulderLength) {
+        this.foreShoulderLength = foreShoulderLength;
+    }
+
+    public Double getForeShoulderRadius() {
+        return foreShoulderRadius;
+    }
+
+    public void setForeShoulderRadius(Double foreShoulderRadius) {
+        this.foreShoulderRadius = foreShoulderRadius;
+    }
+
+    public Double getAftShoulderRadius() {
+        return aftShoulderRadius;
+    }
+
+    public void setAftShoulderRadius(Double aftShoulderRadius) {
+        this.aftShoulderRadius = aftShoulderRadius;
+    }
+
+    public Double getForeShoulderThickness() {
+        return foreShoulderThickness;
+    }
+
+    public void setForeShoulderThickness(Double foreShoulderThickness) {
+        this.foreShoulderThickness = foreShoulderThickness;
+    }
+
+    public Double getAftShoulderLength() {
+        return aftShoulderLength;
+    }
+
+    public void setAftShoulderLength(Double aftShoulderLength) {
+        this.aftShoulderLength = aftShoulderLength;
+    }
+
+    public Double getAftShoulderThickness() {
+        return aftShoulderThickness;
+    }
+
+    public void setAftShoulderThickness(Double aftShoulderThickness) {
+        this.aftShoulderThickness = aftShoulderThickness;
+    }
+
+    public Boolean getIsForeShoulderCapped() {
+        return foreShoulderCapped;
+    }
+
+    public void setIsForeShoulderCapped(Boolean isForeShoulderCapped) {
+        this.foreShoulderCapped = isForeShoulderCapped;
+    }
+
+    public Boolean getIsAftShoulderCapped() {
+        return aftShoulderCapped;
+    }
+
+    public void setIsAftShoulderCapped(Boolean isAftShoulderCapped) {
+        this.aftShoulderCapped = isAftShoulderCapped;
+    }
 
     public Double getLength() {
         return length;

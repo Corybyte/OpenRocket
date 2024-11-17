@@ -8,6 +8,7 @@ import net.sf.openrocket.startup.Application;
 public class OpenRocketDocumentFactory {
 	
 	private static final Translator trans = Application.getTranslator();
+	public static OpenRocketDocument mydoc;
 	
 	public static OpenRocketDocument createNewRocket() {
 		Rocket rocket = new Rocket();
@@ -18,17 +19,20 @@ public class OpenRocketDocumentFactory {
 		rocket.getSelectedConfiguration().setAllStages();
 		OpenRocketDocument doc = new OpenRocketDocument(rocket);
 		doc.setSaved(true);
+		mydoc = doc;
 		return doc;
 	}
 	
 	public static OpenRocketDocument createDocumentFromRocket(Rocket r) {
 		OpenRocketDocument doc = new OpenRocketDocument(r);
+		mydoc = doc;
 		return doc;
 	}
 	
 	public static OpenRocketDocument createEmptyRocket() {
 		Rocket rocket = new Rocket();
 		OpenRocketDocument doc = new OpenRocketDocument(rocket);
+		mydoc = doc;
 		return doc;
 	}
 	

@@ -36,7 +36,88 @@ public class NoseConeMOIRequest {
     private Double transitionForeRadius;
 
     private Double transitionAftRadius;
+    private Double density;
 
+    private Double foreShoulderLength;
+    private Double foreShoulderRadius;
+    private Double aftShoulderRadius;
+    private Double foreShoulderThickness;
+    private Double aftShoulderLength;
+    private Double aftShoulderThickness;
+    private Boolean aftShoulderCapped;
+    private Boolean foreShoulderCapped;
+
+    public Double getForeShoulderLength() {
+        return foreShoulderLength;
+    }
+
+    public Double getForeShoulderRadius() {
+        return foreShoulderRadius;
+    }
+
+    public Double getAftShoulderRadius() {
+        return aftShoulderRadius;
+    }
+
+    public Double getForeShoulderThickness() {
+        return foreShoulderThickness;
+    }
+
+    public Double getAftShoulderLength() {
+        return aftShoulderLength;
+    }
+
+    public Double getAftShoulderThickness() {
+        return aftShoulderThickness;
+    }
+
+    public Boolean getAftShoulderCapped() {
+        return aftShoulderCapped;
+    }
+
+    public Boolean getForeShoulderCapped() {
+        return foreShoulderCapped;
+    }
+
+    public void setForeShoulderLength(Double foreShoulderLength) {
+        this.foreShoulderLength = foreShoulderLength;
+    }
+
+    public void setForeShoulderRadius(Double foreShoulderRadius) {
+        this.foreShoulderRadius = foreShoulderRadius;
+    }
+
+    public void setAftShoulderRadius(Double aftShoulderRadius) {
+        this.aftShoulderRadius = aftShoulderRadius;
+    }
+
+    public void setForeShoulderThickness(Double foreShoulderThickness) {
+        this.foreShoulderThickness = foreShoulderThickness;
+    }
+
+    public void setAftShoulderLength(Double aftShoulderLength) {
+        this.aftShoulderLength = aftShoulderLength;
+    }
+
+    public void setAftShoulderThickness(Double aftShoulderThickness) {
+        this.aftShoulderThickness = aftShoulderThickness;
+    }
+
+    public void setAftShoulderCapped(Boolean aftShoulderCapped) {
+        this.aftShoulderCapped = aftShoulderCapped;
+    }
+
+    public void setForeShoulderCapped(Boolean foreShoulderCapped) {
+        this.foreShoulderCapped = foreShoulderCapped;
+    }
+
+    public Double getDensity() {
+        return density;
+    }
+
+    public void setDensity(Double density) {
+        this.density = density;
+    }
 
     public Double getTransitionShapeParameter() {
         return transitionShapeParameter;
@@ -70,13 +151,13 @@ public class NoseConeMOIRequest {
         this.transitionAftRadius = transitionAftRadius;
     }
 
-    private Double answer;
+    private Double[] answer;
 
-    public Double getAnswer() {
+    public Double[] getAnswer() {
         return answer;
     }
 
-    public void setAnswer(Double answer) {
+    public void setAnswer(Double[] answer) {
         this.answer = answer;
     }
 
@@ -123,6 +204,7 @@ public class NoseConeMOIRequest {
                 ", transitionType=" + transitionType +
                 ", transitionForeRadius=" + transitionForeRadius +
                 ", transitionAftRadius=" + transitionAftRadius +
+                ", density=" + density +
                 ", answer=" + answer +
                 '}';
     }

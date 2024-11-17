@@ -1,9 +1,27 @@
 package net.sf.openrocket.utils.educoder;
 
-public class LaunchLugMOIRequest extends Request {
+public class LaunchLugMOIRequest {
 
     private Double outerRadius;
     private Double innerRadius;
+    private Double length;
+    private Double[] answer;
+
+    public Double getLength() {
+        return length;
+    }
+
+    public void setLength(Double length) {
+        this.length = length;
+    }
+
+    public Double[] getAnswer() {
+        return answer;
+    }
+
+    public void setAnswer(Double[] answer) {
+        this.answer = answer;
+    }
 
     public Double getOuterRadius() {
         return outerRadius;

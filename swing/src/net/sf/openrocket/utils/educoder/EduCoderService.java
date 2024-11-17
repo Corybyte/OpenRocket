@@ -20,7 +20,7 @@ public interface EduCoderService {
      * @return result
      */
     @POST("NoseCone/calculateMOI")
-    Call<Result> calculateMOI(@Body NoseConeMOIRequest request);
+    Call<Result2> calculateMOI(@Body NoseConeMOIRequest request);
 
     /**
      * 计算头锥组件压心位置
@@ -58,7 +58,7 @@ public interface EduCoderService {
      * @return result
      */
     @POST("BodyTube/calculateMOI")
-    Call<Result> calculateMOI(@Body BodyTubeMOIRequest request);
+    Call<Result2> calculateMOI(@Body BodyTubeMOIRequest request);
 
     /**
      * 计算尾翼组件重心位置
@@ -84,7 +84,7 @@ public interface EduCoderService {
      * @return result
      */
     @POST("FinSet/calculateMOI")
-    Call<Result> calculateMOI(@Body FinSetMOIRequest request);
+    Call<Result2> calculateMOI(@Body FinSetMOIRequest request);
 
     /**
      * 计算级间段组件压心位置
@@ -97,7 +97,7 @@ public interface EduCoderService {
     @POST("Transition/calculateCP")
     Call<Result> calculateCP(@Body TransitionCpRequest request);
     @POST("Transition/calculateMOI")
-    Call<Result> calculateMOI(@Body TransitionMOIRequest request);
+    Call<Result2> calculateMOI(@Body TransitionMOIRequest request);
 
 
 
@@ -125,7 +125,7 @@ public interface EduCoderService {
      * @return result
      */
     @POST("TubeFinSet/calculateMOI")
-    Call<Result> calculateMOI(@Body TubeFinSetMOIRequest request);
+    Call<Result2> calculateMOI(@Body TubeFinSetMOIRequest request);
 
     /**
      * 计算发射套柄组件重心位置
@@ -154,7 +154,7 @@ public interface EduCoderService {
      * @return result
      */
     @POST("LaunchLug/calculateMOI")
-    Call<Result> calculateMOI(@Body LaunchLugMOIRequest request);
+    Call<Result2> calculateMOI(@Body LaunchLugMOIRequest request);
 
 
     /**
@@ -184,7 +184,7 @@ public interface EduCoderService {
      * @return result
      */
     @POST("RailButton/calculateMOI")
-    Call<Result> calculateMOI(@Body RailButtonMOIRequest request);
+    Call<Result2> calculateMOI(@Body RailButtonMOIRequest request);
 
 
     /**
@@ -204,7 +204,7 @@ public interface EduCoderService {
      * @return result
      */
     @POST("InnerTube/calculateMOI")
-    Call<Result> calculateMOI(@Body InnerTubeMOIRequest request);
+    Call<Result2> calculateMOI(@Body InnerTubeMOIRequest request);
 
 
     /**
@@ -225,7 +225,7 @@ public interface EduCoderService {
      * @return result
      */
     @POST("InnerComponent/calculateMOI")
-    Call<Result> calculateMOI(@Body InnerComponentMOIRequest request);
+    Call<Result2> calculateMOI(@Body InnerComponentMOIRequest request);
 
 
     /**
@@ -256,7 +256,7 @@ public interface EduCoderService {
      * @return result
      */
     @POST("Stage/calculateMOI")
-    Call<Result> calculateMOI(@Body StageMOIRequest request);
+    Call<Result2> calculateMOI(@Body StageMOIRequest request);
 
 
 
@@ -289,7 +289,7 @@ public interface EduCoderService {
      * @return result
      */
     @POST("Pods/calculateMOI")
-    Call<Result> calculateMOI(@Body PodsMOIRequest request);
+    Call<Result2> calculateMOI(@Body PodsMOIRequest request);
 
 
     /**
@@ -312,7 +312,7 @@ public interface EduCoderService {
      * @return result
      */
     @POST("Parachute/calculateMOI")
-    Call<Result> calculateMOI(@Body ParachuteMOIRequest request);
+    Call<Result2> calculateMOI(@Body ParachuteMOIRequest request);
 
 
     /**
@@ -335,7 +335,7 @@ public interface EduCoderService {
      * @return result
      */
     @POST("Streamer/calculateMOI")
-    Call<Result> calculateMOI(@Body StreamerMOIRequest request);
+    Call<Result2> calculateMOI(@Body StreamerMOIRequest request);
 
 
     /**
@@ -358,7 +358,7 @@ public interface EduCoderService {
      * @return result
      */
     @POST("ShockCord/calculateMOI")
-    Call<Result> calculateMOI(@Body ShockCordMOIRequest request);
+    Call<Result2> calculateMOI(@Body ShockCordMOIRequest request);
 
 
     /**
@@ -378,7 +378,7 @@ public interface EduCoderService {
      * @return result
      */
     @POST("MassComponent/calculateMOI")
-    Call<Result> calculateMOI(@Body MassComponentMOIRequest request);
+    Call<Result2> calculateMOI(@Body MassComponentMOIRequest request);
 
 
     /**
@@ -407,7 +407,7 @@ public interface EduCoderService {
      * @return result
      */
     @POST("Whole/calculateMOI")
-    Call<Result> calculateMOI(@Body WholeMOIRequest request);
+    Call<Result2> calculateMOI(@Body WholeMOIRequest request);
     /**
      * 数据点拟合推力曲线
      *
