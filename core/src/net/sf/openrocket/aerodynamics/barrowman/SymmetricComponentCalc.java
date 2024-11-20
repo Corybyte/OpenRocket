@@ -32,9 +32,7 @@ import org.slf4j.LoggerFactory;
  * @author Sampo Niskanen <sampo.niskanen@iki.fi>
  */
 public class SymmetricComponentCalc extends RocketComponentCalc {
-	
-	private final static Logger log = LoggerFactory.getLogger(SymmetricComponentCalc.class);
-	
+
 	public static final double BODY_LIFT_K = 1.1;
 	
 	private final double length;
@@ -138,6 +136,7 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 			cp = new Coordinate(cpCache, 0, 0, cnaCache * conditions.getSincAOA() /
 					conditions.getRefArea()).average(getLiftCP(conditions, warnings));
 		}
+		//mul * BODY_LIFT_K * planformArea / conditions.getRefArea() * conditions.getSinAOA() * conditions.getSincAOA()  /2 *  conditions.getAOA()
 		
 		forces.setCP(cp);
 		forces.setCNa(cp.weight);
