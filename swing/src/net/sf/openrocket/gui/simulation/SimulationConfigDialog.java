@@ -80,6 +80,7 @@ public class SimulationConfigDialog extends JDialog {
 	public SimulationConfigDialog(Window parent, final OpenRocketDocument document, boolean isNewSimulation, Simulation... sims) {
 		super(parent, sims.length == 1 ? trans.get("simedtdlg.title.Editsim") : trans.get("simedtdlg.title.MultiSimEdit"),
 				JDialog.ModalityType.DOCUMENT_MODAL);
+		
 		this.document = document;
 		this.parentWindow = parent;
 		this.simulationList = sims;

@@ -1,6 +1,6 @@
 package net.sf.openrocket.gui.simulation;
 
-import java.awt.Component;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -9,21 +9,14 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
 import net.miginfocom.swing.MigLayout;
+import net.sf.openrocket.aerodynamics.barrowman.SymmetricComponentCalc;
 import net.sf.openrocket.document.Simulation;
 import net.sf.openrocket.gui.components.CsvOptionPanel;
 import net.sf.openrocket.gui.components.UnitCellEditor;
@@ -38,9 +31,16 @@ import net.sf.openrocket.simulation.FlightData;
 import net.sf.openrocket.simulation.FlightDataBranch;
 import net.sf.openrocket.simulation.FlightDataType;
 import net.sf.openrocket.startup.Application;
+import net.sf.openrocket.startup.OpenRocket;
 import net.sf.openrocket.unit.Unit;
 import net.sf.openrocket.unit.UnitGroup;
 import net.sf.openrocket.gui.widgets.SelectColorButton;
+import net.sf.openrocket.utils.educoder.DataResult;
+import net.sf.openrocket.utils.educoder.HullCGRequest;
+import net.sf.openrocket.utils.educoder.NoseConeCgRequest;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class SimulationExportPanel extends JPanel {
 	
@@ -63,15 +63,16 @@ public class SimulationExportPanel extends JPanel {
 	private final boolean[] selected;
 	private final FlightDataType[] types;
 	private final Unit[] units;
-	
 	private final CsvOptionPanel csvOptions;
-	
-	
+
+
+
 	public SimulationExportPanel(Simulation sim) {
 		super(new MigLayout("fill, flowy"));
-		
+
 		JPanel panel;
 		JButton button;
+		JButton edu_button;
 		
 		this.simulation = sim;
 		
@@ -160,8 +161,77 @@ public class SimulationExportPanel extends JPanel {
 			}
 		});
 		panel.add(button, "growx 1, sizegroup selectbutton, wrap");
-		
-		
+
+
+		final HullCGRequest request = new HullCGRequest();
+		edu_button = new SelectColorButton(trans.get("SimExpPan.but.Edu"));
+		edu_button.addActionListener(e -> {
+					// 创建一个模态对话框，父窗口为当前组件的顶层窗口
+					JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "弹体法向力系数评测", Dialog.ModalityType.MODELESS);
+
+					// 设置对话框的主布局为 BorderLayout
+					dialog.setLayout(new BorderLayout());
+
+					// 创建主内容面板，使用 GridLayout 管理两部分内容
+					JPanel mainPanel = new JPanel(new GridLayout(1, 2, 10, 0)); // 1 行 2 列，水平间距 10
+
+					// 左边的大文本框
+					JTextArea leftTextArea = new JTextArea();
+					leftTextArea.setLineWrap(true); // 自动换行
+					leftTextArea.setWrapStyleWord(true); // 仅在单词边界处换行
+					leftTextArea.setFont(new Font("Monospaced", Font.PLAIN, 14)); // 设置字体
+					leftTextArea.setText(SymmetricComponentCalc.edu_cn.toString());
+					JScrollPane leftScrollPane = new JScrollPane(leftTextArea);
+					mainPanel.add(leftScrollPane);
+
+					// 右边的小文本框
+					JTextArea rightTextArea = new JTextArea();
+					rightTextArea.setLineWrap(true); // 自动换行
+					rightTextArea.setWrapStyleWord(true); // 仅在单词边界处换行
+					rightTextArea.setFont(new Font("Monospaced", Font.PLAIN, 14)); // 设置字体
+					rightTextArea.setText("右侧文本框的内容...");
+					JScrollPane rightScrollPane = new JScrollPane(rightTextArea);
+					mainPanel.add(rightScrollPane);
+
+					// 将主面板添加到对话框的中间区域
+					dialog.add(mainPanel, BorderLayout.CENTER);
+
+					// 创建关闭按钮
+					JButton closeButton = new JButton("关闭");
+					closeButton.addActionListener(ev -> dialog.dispose()); // 点击按钮时关闭对话框
+
+					// 创建一个新的按钮
+					JButton newButton = new JButton("评测");
+					newButton.addActionListener(ev ->OpenRocket.eduCoderService.calculateCN(request).enqueue(new Callback<DataResult>() {
+						@Override
+						public void onResponse(Call<DataResult> call, Response<DataResult> response) {
+							System.out.println(response.toString());
+						}
+
+						@Override
+						public void onFailure(Call<DataResult> call, Throwable throwable) {
+
+						}
+					}));
+
+					// 创建按钮面板
+					JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0)); // 水平间距 10
+					buttonPanel.add(closeButton); // 添加关闭按钮
+					buttonPanel.add(newButton);   // 添加新按钮
+					dialog.add(buttonPanel, BorderLayout.SOUTH); // 将按钮面板放置在底部
+
+					// 设置对话框属性
+					dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE); // 关闭时释放对话框资源
+					dialog.setSize(800, 400); // 设置窗口宽度更大，适应两个文本框
+					dialog.setLocationRelativeTo(this); // 设置相对于父窗口居中显示
+					dialog.setVisible(true); // 显示对话框
+				});
+
+
+		panel.add(edu_button, "growx 1, sizegroup selectbutton, wrap");
+
+
+
 		selectedCountLabel = new JLabel();
 		updateSelectedCount();
 		panel.add(selectedCountLabel);
@@ -174,6 +244,7 @@ public class SimulationExportPanel extends JPanel {
 				trans.get("SimExpPan.checkbox.Includesimudesc"),
 				trans.get("SimExpPan.checkbox.ttip.Includesimudesc"),
 				trans.get("SimExpPan.checkbox.Includefielddesc"),
+
 				trans.get("SimExpPan.checkbox.ttip.Includefielddesc"),
 				trans.get("SimExpPan.checkbox.Incflightevents"),
 				trans.get("SimExpPan.checkbox.ttip.Incflightevents"));

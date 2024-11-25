@@ -423,4 +423,10 @@ public interface EduCoderService {
     @POST("Motor/function")
     Call<DataResult> calculateFunction(@Body Integer status);
 
+    /**
+     *  弹体法向力系数
+     */
+    @POST("Projectile/cn")
+    Call <DataResult> calculateCN  (@Body HullCGRequest status);
+
 }

@@ -11,12 +11,7 @@ import net.sf.openrocket.rocketcomponent.BodyTube;
 import net.sf.openrocket.rocketcomponent.RocketComponent;
 import net.sf.openrocket.rocketcomponent.SymmetricComponent;
 import net.sf.openrocket.rocketcomponent.Transition;
-import net.sf.openrocket.util.BugException;
-import net.sf.openrocket.util.Coordinate;
-import net.sf.openrocket.util.LinearInterpolator;
-import net.sf.openrocket.util.MathUtil;
-import net.sf.openrocket.util.PolyInterpolator;
-import net.sf.openrocket.util.Transformation;
+import net.sf.openrocket.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,11 +27,8 @@ import org.slf4j.LoggerFactory;
  * @author Sampo Niskanen <sampo.niskanen@iki.fi>
  */
 public class SymmetricComponentCalc extends RocketComponentCalc {
-	
-	private final static Logger log = LoggerFactory.getLogger(SymmetricComponentCalc.class);
-	
+
 	public static final double BODY_LIFT_K = 1.1;
-	
 	private final double length;
 	private final double foreRadius, aftRadius;
 	private final double fineness;
@@ -47,6 +39,7 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 	private final double planformArea, planformCenter;
 	private final double wetArea;
 	private final double sinphi;
+	public static ArrayList edu_cn = new ArrayList();
 	
 	public SymmetricComponentCalc(RocketComponent c) {
 		super(c);
@@ -138,10 +131,17 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 			cp = new Coordinate(cpCache, 0, 0, cnaCache * conditions.getSincAOA() /
 					conditions.getRefArea()).average(getLiftCP(conditions, warnings));
 		}
-		
+		//mul * BODY_LIFT_K * planformArea / conditions.getRefArea() * conditions.getSinAOA() * conditions.getSincAOA()  /2 *  conditions.getAOA()
+
+
 		forces.setCP(cp);
 		forces.setCNa(cp.weight);
 		forces.setCN(forces.getCNa() * conditions.getAOA());
+		if (forces.getCNa() * conditions.getAOA() != 0 ) {
+			edu_cn.add(forces.getCNa() * conditions.getAOA());
+		}
+		System.out.println(edu_cn.toString());
+
 		forces.setCm(forces.getCN() * cp.x / conditions.getRefLength());
 		forces.setCroll(0);
 		forces.setCrollDamp(0);
