@@ -8,10 +8,8 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 import javax.swing.*;
 
@@ -255,7 +253,6 @@ public class NoseConeConfig extends RocketComponentConfig {
                     dialog.add(checkButton, "newline, height 30!");
                     dialog.add(checkResult, "height 30!");
                     dialog.add(answerLabel, "height 30!");
-                    System.out.println(component.getComponentCG().x);
                     // Do not use UI thread to get the answer
                     checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateCG(request).enqueue(new Callback<>() {
 
@@ -342,7 +339,6 @@ public class NoseConeConfig extends RocketComponentConfig {
                     checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateCG(request).enqueue(new Callback<>() {
                         @Override
                         public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
-                            RocketInfo rocketInfo = new RocketInfo(document.getSelectedConfiguration());
                             Result result = response.body();
                             if (result == null) return;
                             SwingUtilities.invokeLater(() -> {
@@ -473,83 +469,95 @@ public class NoseConeConfig extends RocketComponentConfig {
                     //get instance
                     //包含所有实例的组件
                     InstanceMap imap = curConfig.getActiveInstances();
-					int i = 1;
-
+                    int i = 1;
+                    Double[] machs = arange(0, 1, 0.01);
+                    FlightConditions conditions_mach = new FlightConditions(document.getSelectedConfiguration());
+                    Double initMach = conditions.getMach();
                     for (Map.Entry<RocketComponent, ArrayList<InstanceContext>> mapEntry : imap.entrySet()) {
-                        final RocketComponent comp = mapEntry.getKey();
-                        final List<InstanceContext> contextList = mapEntry.getValue();
+                        Coordinate[] cps = new Coordinate[machs.length];
+                        WholeCpDTO wholeCpDTO = new WholeCpDTO();
 
-                        RocketComponentCalc calcObj = calcMap.get(comp);
-                        AerodynamicForces componentForces = null;
-                        if (null != calcObj) {
-                            Method method2 = BarrowmanCalculator.class.getDeclaredMethod("calculateComponentNonAxialForces",
-                                    FlightConditions.class, RocketComponent.class, RocketComponentCalc.class, List.class, WarningSet.class);
-                            method2.setAccessible(true);
-                            componentForces = (AerodynamicForces) method2.invoke(aerodynamicCalculator, conditions, comp, calcObj, contextList, new WarningSet());
-							Coordinate np = new Coordinate(componentForces.getCP().x,componentForces.getCP().y,componentForces.getCP().z);
-							//set ui
-							String labelText =   comp.getComponentName()+" 组件压心: " + np;
-							String labelText2 =   comp.getComponentName()+"组件位置: " + comp.getPosition();
-							String constraints =  "newline, height 30!";
-							String constraints2 =  "height 30!";
-							if(i<11){
-								dialog.add(new JLabel(labelText), constraints);
-								dialog.add(new JLabel(labelText2), constraints2);
-							}
-							i++;
+                        for (int j = 0; j < machs.length; j++) {
+                            final RocketComponent comp = mapEntry.getKey();
+                            final List<InstanceContext> contextList = mapEntry.getValue();
+                            conditions_mach.setMach(machs[i]);
+
+                            RocketComponentCalc calcObj = calcMap.get(comp);
+                            AerodynamicForces componentForces = null;
+                            if (null != calcObj) {
+                                Method method2 = BarrowmanCalculator.class.getDeclaredMethod("calculateComponentNonAxialForces",
+                                        FlightConditions.class, RocketComponent.class, RocketComponentCalc.class, List.class, WarningSet.class);
+                                method2.setAccessible(true);
+                                componentForces = (AerodynamicForces) method2.invoke(aerodynamicCalculator, conditions, comp, calcObj, contextList, new WarningSet());
+                                Coordinate np = new Coordinate(componentForces.getCP().x, componentForces.getCP().y, componentForces.getCP().z);
+                                cps[j]=componentForces.getCP();
+                                //set ui
+                                if (initMach == conditions.getMach()) {
+                                    String labelText = comp.getComponentName() + " 组件压心: " + np;
+                                    String labelText2 = comp.getComponentName() + "组件位置: " + comp.getPosition();
+                                    String constraints = "newline, height 30!";
+                                    String constraints2 = "height 30!";
+                                    if (i < 11) {
+                                        dialog.add(new JLabel(labelText), constraints);
+                                        dialog.add(new JLabel(labelText2), constraints2);
+                                    }
+                                    i++;
+
+                                }
+
+                            }
 
                         }
+                            //set request
+                            wholeCpDTO.setComponentName(mapEntry.getKey().getComponentName());
+                            wholeCpDTO.setCp(cps);
+                            wholeCpDTO.setRocketComponentCalc(calcMap.get(mapEntry.getKey()) == null ? Boolean.FALSE : Boolean.TRUE);
+                            wholeCpDTOList.add(wholeCpDTO);
 
-
-						//set request
-                        WholeCpDTO wholeCpDTO = new WholeCpDTO();
-                        wholeCpDTO.setComponentName(comp.getComponentName());
-                        wholeCpDTO.setCp(componentForces == null ? new Coordinate() : componentForces.getCP());
-                        wholeCpDTO.setRocketComponentCalc(calcMap.get(comp) == null ? Boolean.FALSE : Boolean.TRUE);
-                        wholeCpDTOList.add(wholeCpDTO);
                     }
+
+
                     request.setList(wholeCpDTOList);
-
-
                     Coordinate cp = aerodynamicCalculator.getCP(document.getSelectedConfiguration(),
                             new FlightConditions(document.getSelectedConfiguration()), new WarningSet());
                     request.setAnswer(cp.x);
 
 
-					JButton checkButton = new JButton(trans.get("NoseConeCfg.lbl.check"));
-					JLabel checkResult = new JLabel(trans.get("NoseConeCfg.lbl.checkResult") + ": ");
-					JLabel answerLabel = new JLabel(trans.get("NoseConeCfg.lbl.answer") + ": ");
-					dialog.add(checkButton, "newline, height 30!");
-					dialog.add(checkResult, "height 30!");
-					dialog.add(answerLabel, "height 30!");
+                    JButton checkButton = new JButton(trans.get("NoseConeCfg.lbl.check"));
+                    JLabel checkResult = new JLabel(trans.get("NoseConeCfg.lbl.checkResult") + ": ");
+                    JLabel answerLabel = new JLabel(trans.get("NoseConeCfg.lbl.answer") + ": ");
+                    dialog.add(checkButton, "newline, height 30!");
+                    dialog.add(checkResult, "height 30!");
+                    dialog.add(answerLabel, "height 30!");
 
 
-					// Do not use UI thread to get the answer
-					checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateCP(request).enqueue(new Callback<>() {
-						@Override
-						public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
-							Result result = response.body();
-							if (result == null) return;
-							SwingUtilities.invokeLater(() -> {
-								checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult());
-								answerLabel.setText(trans.get("NoseConeCfg.lbl.answer") + ": " + cp.x);
-							});
-						}
+                    // Do not use UI thread to get the answer
+                    checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateCP(request).enqueue(new Callback<>() {
+                        @Override
+                        public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
+                            Result result = response.body();
+                            if (result == null) return;
+                            SwingUtilities.invokeLater(() -> {
+                                checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult());
+                                answerLabel.setText(trans.get("NoseConeCfg.lbl.answer") + ": " + cp.x);
+                            });
+                        }
 
-						@Override
-						public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
-							SwingUtilities.invokeLater(() ->
-									JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
-						}
-					}));
+                        @Override
+                        public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
+                            SwingUtilities.invokeLater(() ->
+                                    JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
+                        }
+                    }));
                 } catch (Exception ex) {
                     //ignore
                 }
-				dialog.setVisible(true);
+                dialog.setVisible(true);
 
                 //map---->wholeCPDTO
             });
         }
+
         { // MOI calculate:
             panel.add(new JLabel(trans.get("NoseConeCfg.lbl.MOICalc") + ":"));
             JButton button = new JButton(trans.get("NoseConeCfg.lbl.MOIEnter"));
@@ -562,8 +570,7 @@ public class NoseConeConfig extends RocketComponentConfig {
 
                 final NoseConeMOIRequest request = new NoseConeMOIRequest();
                 // answer = rotationalUnitInertia
-                request.setAnswer(new Double[]{component.getRotationalUnitInertia(),component.getLongitudinalUnitInertia()});
-
+                request.setAnswer(new Double[]{component.getRotationalUnitInertia(), component.getLongitudinalUnitInertia()});
                 String[] transitionMethodNames = {"getForeRadius", "getAftRadius"};
                 String[] transitionFieldNames = {"shapeParameter", "type"};
                 String[] fieldNames = {"filled", "thickness", "DIVISIONS"};
@@ -636,8 +643,8 @@ public class NoseConeConfig extends RocketComponentConfig {
                             Result2 result = response.body();
                             if (result == null) return;
                             SwingUtilities.invokeLater(() -> {
-                                checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult()[0]+","+result.getResult()[1]);
-                                answerLabel.setText(trans.get("NoseConeCfg.lbl.answer") + ": " + component.getRotationalUnitInertia()+","+component.getLongitudinalUnitInertia());
+                                checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult()[0] + "," + result.getResult()[1]);
+                                answerLabel.setText(trans.get("NoseConeCfg.lbl.answer") + ": " + component.getRotationalUnitInertia() + "," + component.getLongitudinalUnitInertia());
                             });
                         }
 
@@ -656,7 +663,7 @@ public class NoseConeConfig extends RocketComponentConfig {
         }
 
         { // Whole MOI calculate:
-            panel.add(new JLabel(trans.get("NoseConeCfg.lbl.WholeMOICalc") + ":"),"gapleft 15px");
+            panel.add(new JLabel(trans.get("NoseConeCfg.lbl.WholeMOICalc") + ":"), "gapleft 15px");
             JButton button = new JButton(trans.get("NoseConeCfg.lbl.MOIEnter"));
             panel.add(button, "span");
             button.addActionListener(e -> {
@@ -668,14 +675,13 @@ public class NoseConeConfig extends RocketComponentConfig {
                 final WholeMOIRequest request = new WholeMOIRequest();
 
 
-
                 try {
                     FlightConfiguration configuration = document.getSelectedConfiguration();
 
                     RocketComponent rocket = document.getSelectedConfiguration().getRocket();
                     WholeMOIDTO rootComponent = new WholeMOIDTO();
                     //copy field
-                    rootComponent.copyValues(rocket,document.getSelectedConfiguration());
+                    rootComponent.copyValues(rocket, document.getSelectedConfiguration());
 
                     request.setWholeMOIDTO(rootComponent);
 
@@ -685,10 +691,10 @@ public class NoseConeConfig extends RocketComponentConfig {
                     method.setAccessible(true);
                     method.invoke(calculation);
                     RigidBody rigidBody = MassCalculator.calculateLaunch(configuration);
-                    request.setAnswer(new Double[]{rigidBody.Ixx,rigidBody.Iyy});
+                    request.setAnswer(new Double[]{rigidBody.Ixx, rigidBody.Iyy});
 
-                    int i=1;
-                    for (RocketComponent component1:rocket.getAllChildren()){
+                    int i = 1;
+                    for (RocketComponent component1 : rocket.getAllChildren()) {
                         if (component1.getComponentName().equals("火箭") || component1.getComponentName().equals("火箭级"))
                             continue;
                         String labelText = component1.getComponentName() + " 组件重心: " + component1.getComponentCG().x;
@@ -718,8 +724,8 @@ public class NoseConeConfig extends RocketComponentConfig {
                             Result2 result = response.body();
                             if (result == null) return;
                             SwingUtilities.invokeLater(() -> {
-                                checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult()[0]+","+result.getResult()[1]);
-                                answerLabel.setText(trans.get("NoseConeCfg.lbl.answer") + ": " + rigidBody.Ixx+","+rigidBody.Iyy);
+                                checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult()[0] + "," + result.getResult()[1]);
+                                answerLabel.setText(trans.get("NoseConeCfg.lbl.answer") + ": " + rigidBody.Ixx + "," + rigidBody.Iyy);
                             });
                         }
 
@@ -732,7 +738,6 @@ public class NoseConeConfig extends RocketComponentConfig {
 
                 } catch (Exception ex) {
                     //ignored
-                    ex.printStackTrace();
                 }
                 dialog.setVisible(true);
             });
@@ -826,5 +831,19 @@ public class NoseConeConfig extends RocketComponentConfig {
         }
     }
 
+    public static Double[] arange(double start, double end, double step) {
+        // 计算数组的大小
+        int size = (int) ((end - start) / step);
+
+        // 创建数组
+        Double[] rangeArray = new Double[size];
+
+        // 填充数组
+        for (int i = 0; i < size; i++) {
+            rangeArray[i] = start + i * step;
+        }
+
+        return rangeArray;
+    }
 
 }

@@ -8,15 +8,15 @@ import java.util.List;
 
 public class WholeCpDTO {
     String componentName;
-    Coordinate cp;
+    Coordinate cp[];
     Boolean rocketComponentCalc;
 
 
-    public Coordinate getCp() {
+    public Coordinate[] getCp() {
         return cp;
     }
 
-    public void setCp(Coordinate cp) {
+    public void setCp(Coordinate[] cp) {
         this.cp = cp;
     }
 
