@@ -5,6 +5,7 @@ import Pods_cp_helper
 import Pods_moi_helper
 import Transition_cp_helper
 import body_tube_moi_helper
+import demo
 import inner_component_cg_helper
 import inner_component_moi_helper
 import inner_tube_cg_helper
@@ -75,6 +76,26 @@ def calculateNoseConeCG():
         with open(os.path.join("step1", "error.txt"), 'w') as f:
             f.write( traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
+
+@app.route('/Demo/calculate', methods=['POST'])
+def testDemo():
+    app.logger.info(f"{request.json}")
+    try:
+        # 自己的逻辑，返回值进行结果校验
+        cg = demo.calculate(request.json)
+        #下面的一般不用动
+        error_file_path = "/data/workspace/myshixun/step1/error.txt"
+        if os.path.exists(error_file_path):
+            os.remove(error_file_path)
+        check(cg, request.json['answer'], os.path.join(os.getcwd(), "step1"))
+        return {"code": 200, "msg": "ok", "result": cg}
+    #异常处理
+    except Exception:
+        with open(os.path.join("step1", "error.txt"), 'w') as f:
+            f.write( traceback.format_exc())
+        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
 
 
 @app.route('/NoseCone/calculateCP', methods=['POST'])
