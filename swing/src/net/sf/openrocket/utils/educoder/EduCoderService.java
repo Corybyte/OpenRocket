@@ -14,6 +14,10 @@ public interface EduCoderService {
     @POST("NoseCone/calculateCG")
     Call<Result> calculateCG(@Body NoseConeCgRequest request);
 
+    @POST("Demo/calculateCG")
+    Call<Result> calculateDemo(@Body DemoRequest request);
+
+
     /***
      * 计算头锥组件转动惯量
      * @param request request

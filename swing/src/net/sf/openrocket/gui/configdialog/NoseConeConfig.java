@@ -279,6 +279,55 @@ public class NoseConeConfig extends RocketComponentConfig {
                 dialog.setVisible(true);
             });
         }
+        ////test
+        {
+            //// CG calculation demonstration
+            //// 头椎重心计算
+            panel.add(new JLabel(trans.get("NoseConeCfg.lbl.CgCalc") + ":"));
+            JButton button = new JButton(trans.get("NoseConeCfg.lbl.CgEnter"));
+            panel.add(button);
+            button.addActionListener(e -> {
+                JDialog dialog = new JDialog(this.parent, trans.get("NoseConeCfg.lbl.CgCalc"));
+                dialog.setSize(this.parent.getSize());
+                dialog.setLocationRelativeTo(null);
+                dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
+
+                final DemoRequest request = new DemoRequest();
+                request.age=10;
+                request.name="张三";
+                try {
+                    JButton checkButton = new JButton(trans.get("NoseConeCfg.lbl.check"));
+                    JLabel checkResult = new JLabel(trans.get("NoseConeCfg.lbl.checkResult") + ": ");
+                    JLabel answerLabel = new JLabel(trans.get("NoseConeCfg.lbl.answer") + ": ");
+                    dialog.add(checkButton, "newline, height 30!");
+                    dialog.add(checkResult, "height 30!");
+                    dialog.add(answerLabel, "height 30!");
+                    // Do not use UI thread to get the answer
+                    checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateDemo(request).enqueue(new Callback<>() {
+
+                        @Override
+                        public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
+                            Result result = response.body();
+                            if (result == null) return;
+                            SwingUtilities.invokeLater(() -> {
+                                checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult());
+                                answerLabel.setText(trans.get("NoseConeCfg.lbl.answer") + ": " + component.getComponentCG().x);
+                            });
+                        }
+
+
+                        @Override
+                        public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
+                            SwingUtilities.invokeLater(() ->
+                                    JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
+                        }
+                    }));
+                } catch (Exception ex) {
+                    // ignored
+                }
+                dialog.setVisible(true);
+            });
+        }
         {//// whole CG calculation demonstration
             panel.add(new JLabel(trans.get("NoseConeCfg.lbl.WholeCgCalc") + ":"), "gapleft 15px");
             JButton button = new JButton(trans.get("NoseConeCfg.lbl.WholeCgEnter"));
@@ -380,7 +429,17 @@ public class NoseConeConfig extends RocketComponentConfig {
 
                 SymmetricComponentCalc componentCalc = new SymmetricComponentCalc(component);
                 String[] fieldNames = {"foreRadius", "aftRadius", "length", "fullVolume", "planformCenter", "planformArea"};
+                AerodynamicForces forces2 = new AerodynamicForces().zero();
 
+//                Double[] aoa = arange(-90, 90, 1);
+//                List<Double> result = new ArrayList<>();
+//                for (Double eachAoA : aoa) {
+//                    conditions.setAOA(eachAoA * (Math.PI / 180));
+////                    System.out.println(conditions);
+//                    componentCalc.calculateNonaxialForces(conditions, new Transformation(0, 0, 0), forces2, new WarningSet());
+//                    result.add(forces2.getCP().x);
+//                }
+////                System.out.println(result);
                 AerodynamicForces forces = new AerodynamicForces().zero();
                 componentCalc.calculateNonaxialForces(conditions, new Transformation(0, 0, 0), forces, new WarningSet());
                 request.setAnswer(forces.getCP().x);
@@ -457,6 +516,7 @@ public class NoseConeConfig extends RocketComponentConfig {
                 //				get calcMap  可以计算cp的组件
                 HashMap<RocketComponent, RocketComponentCalc> calcMap = null;
                 BarrowmanCalculator aerodynamicCalculator = new BarrowmanCalculator();
+
                 try {
                     Method method = BarrowmanCalculator.class.getDeclaredMethod("buildCalcMap", FlightConfiguration.class);
                     method.setAccessible(true);
@@ -471,16 +531,21 @@ public class NoseConeConfig extends RocketComponentConfig {
                     InstanceMap imap = curConfig.getActiveInstances();
                     int i = 1;
                     Double[] machs = arange(0, 1, 0.01);
-                    FlightConditions conditions_mach = new FlightConditions(document.getSelectedConfiguration());
+                    Double[] aoa = arange(-90, 90, 1);
+                    FlightConditions conditions_mach = conditions.clone();
+                    FlightConditions conditions_aoa = conditions.clone();
                     Double initMach = conditions.getMach();
+                    //获取有cp的组件
                     for (Map.Entry<RocketComponent, ArrayList<InstanceContext>> mapEntry : imap.entrySet()) {
                         Coordinate[] cps = new Coordinate[machs.length];
+                        Coordinate[] cps2 = new Coordinate[aoa.length];
                         WholeCpDTO wholeCpDTO = new WholeCpDTO();
-
+                        WholeCpDTO wholeCpDTO2 = new WholeCpDTO();
+                        //循环传入mach
                         for (int j = 0; j < machs.length; j++) {
                             final RocketComponent comp = mapEntry.getKey();
                             final List<InstanceContext> contextList = mapEntry.getValue();
-                            conditions_mach.setMach(machs[i]);
+                            conditions_mach.setMach(machs[j]);
 
                             RocketComponentCalc calcObj = calcMap.get(comp);
                             AerodynamicForces componentForces = null;
@@ -488,9 +553,9 @@ public class NoseConeConfig extends RocketComponentConfig {
                                 Method method2 = BarrowmanCalculator.class.getDeclaredMethod("calculateComponentNonAxialForces",
                                         FlightConditions.class, RocketComponent.class, RocketComponentCalc.class, List.class, WarningSet.class);
                                 method2.setAccessible(true);
-                                componentForces = (AerodynamicForces) method2.invoke(aerodynamicCalculator, conditions, comp, calcObj, contextList, new WarningSet());
+                                componentForces = (AerodynamicForces) method2.invoke(aerodynamicCalculator, conditions_mach, comp, calcObj, contextList, new WarningSet());
                                 Coordinate np = new Coordinate(componentForces.getCP().x, componentForces.getCP().y, componentForces.getCP().z);
-                                cps[j]=componentForces.getCP();
+                                cps[j] = componentForces.getCP();
                                 //set ui
                                 if (initMach == conditions.getMach()) {
                                     String labelText = comp.getComponentName() + " 组件压心: " + np;
@@ -506,22 +571,52 @@ public class NoseConeConfig extends RocketComponentConfig {
                                 }
 
                             }
-
                         }
-                            //set request
-                            wholeCpDTO.setComponentName(mapEntry.getKey().getComponentName());
-                            wholeCpDTO.setCp(cps);
-                            wholeCpDTO.setRocketComponentCalc(calcMap.get(mapEntry.getKey()) == null ? Boolean.FALSE : Boolean.TRUE);
-                            wholeCpDTOList.add(wholeCpDTO);
+                        //set request
+                        wholeCpDTO.setComponentName(mapEntry.getKey().getComponentName());
+                        wholeCpDTO.setCp(cps);
+                        wholeCpDTO.setRocketComponentCalc(calcMap.get(mapEntry.getKey()) == null ? Boolean.FALSE : Boolean.TRUE);
+                        wholeCpDTOList.add(wholeCpDTO);
+                        // 循环传入aoa
+                        for (int j = 0; j < aoa.length; j++) {
+                            final RocketComponent comp = mapEntry.getKey();
+                            final List<InstanceContext> contextList = mapEntry.getValue();
+                            conditions_aoa.setAOA(aoa[j] * (Math.PI / 180));
+
+                            RocketComponentCalc calcObj = calcMap.get(comp);
+                            AerodynamicForces componentForces = null;
+                            if (null != calcObj) {
+                                //reflect
+                                Method method2 = BarrowmanCalculator.class.getDeclaredMethod("calculateComponentNonAxialForces",
+                                        FlightConditions.class, RocketComponent.class, RocketComponentCalc.class, List.class, WarningSet.class);
+                                method2.setAccessible(true);
+                                componentForces = (AerodynamicForces) method2.invoke(aerodynamicCalculator, conditions_aoa, comp, calcObj, contextList, new WarningSet());
+                                cps2[j] = componentForces.getCP();
+
+                            }
+                        }
+                        //set request
+                        wholeCpDTO2.setComponentName(mapEntry.getKey().getComponentName());
+                        wholeCpDTO2.setCp(cps2);
+                        wholeCpDTO2.setRocketComponentCalc(calcMap.get(mapEntry.getKey()) == null ? Boolean.FALSE : Boolean.TRUE);
+                        wholeCpDTOList.add(wholeCpDTO2);
 
                     }
 
 
+                    ///////////////////////////////////////////////bb//////////////////////////////////////////////////////////////////////////
                     request.setList(wholeCpDTOList);
+
+                    List<Double> list = new ArrayList<>();
+                    for (Double aDouble : machs) {
+                        FlightConditions conditions1 = new FlightConditions(document.getSelectedConfiguration());
+                        conditions1.setMach(aDouble);
+                        Coordinate cp = aerodynamicCalculator.getCP(document.getSelectedConfiguration(), conditions1, new WarningSet());
+                        list.add(cp.x);
+                    }
                     Coordinate cp = aerodynamicCalculator.getCP(document.getSelectedConfiguration(),
                             new FlightConditions(document.getSelectedConfiguration()), new WarningSet());
                     request.setAnswer(cp.x);
-
 
                     JButton checkButton = new JButton(trans.get("NoseConeCfg.lbl.check"));
                     JLabel checkResult = new JLabel(trans.get("NoseConeCfg.lbl.checkResult") + ": ");
@@ -551,6 +646,7 @@ public class NoseConeConfig extends RocketComponentConfig {
                     }));
                 } catch (Exception ex) {
                     //ignore
+                    ex.printStackTrace();
                 }
                 dialog.setVisible(true);
 
@@ -738,6 +834,7 @@ public class NoseConeConfig extends RocketComponentConfig {
 
                 } catch (Exception ex) {
                     //ignored
+                    ex.printStackTrace();
                 }
                 dialog.setVisible(true);
             });
