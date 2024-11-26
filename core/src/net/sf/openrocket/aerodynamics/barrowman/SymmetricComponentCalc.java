@@ -13,8 +13,16 @@ import net.sf.openrocket.rocketcomponent.SymmetricComponent;
 import net.sf.openrocket.rocketcomponent.Transition;
 import net.sf.openrocket.util.*;
 
+import net.sf.openrocket.utils.educoder.EduCoderService;
+import net.sf.openrocket.utils.educoder.HullCGRequest;
+import net.sf.openrocket.utils.educoder.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
  * Calculates the aerodynamic properties of a <code>SymmetricComponent</code>.
@@ -27,6 +35,12 @@ import org.slf4j.LoggerFactory;
  * @author Sampo Niskanen <sampo.niskanen@iki.fi>
  */
 public class SymmetricComponentCalc extends RocketComponentCalc {
+	public static final Retrofit retrofit = new Retrofit.Builder()
+			.baseUrl("http://127.0.0.1:8080/")
+			.addConverterFactory(GsonConverterFactory.create())
+			.build();
+
+	public static final EduCoderService eduCoderService = retrofit.create(EduCoderService.class);
 
 	public static final double BODY_LIFT_K = 1.1;
 	private final double length;
@@ -39,8 +53,7 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 	private final double planformArea, planformCenter;
 	private final double wetArea;
 	private final double sinphi;
-	public static ArrayList edu_cn = new ArrayList();
-	
+
 	public SymmetricComponentCalc(RocketComponent c) {
 		super(c);
 		if (!(c instanceof SymmetricComponent)) {
@@ -98,11 +111,42 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 	 * The CP and CNa at supersonic speeds are assumed to be the same as those at
 	 * subsonic speeds.
 	 */
+
+
+
 	@Override
 	public void calculateNonaxialForces(FlightConditions conditions, Transformation transform,
 			AerodynamicForces forces, WarningSet warnings) {
-		
-		// Pre-calculate and store the results
+		/**
+		 *
+		 *
+		 */
+		HullCGRequest hullCGRequest = new HullCGRequest();
+		hullCGRequest.client_CnaCache=cnaCache;
+		hullCGRequest.client_ForeRadius=foreRadius;
+		hullCGRequest.client_AftRadius=aftRadius;
+		hullCGRequest.client_FullVolume=fullVolume;
+		hullCGRequest.client_Mach=conditions.getMach();
+		hullCGRequest.client_AOA=conditions.getAOA();
+		hullCGRequest.client_RefArea= conditions.getRefArea();
+
+		eduCoderService.demo(hullCGRequest).enqueue(new Callback<Result>() {
+			@Override
+			public void onResponse(Call<Result> call, Response<Result> response) {
+				System.out.println(response.body());
+			}
+
+			@Override
+			public void onFailure(Call<Result> call, Throwable throwable) {
+				System.out.println(throwable.getMessage());
+			}
+		});
+
+
+
+
+
+
 		if (Double.isNaN(cnaCache)) {
 			final double r0 = foreRadius;
 			final double r1 = aftRadius;
@@ -137,10 +181,10 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 		forces.setCP(cp);
 		forces.setCNa(cp.weight);
 		forces.setCN(forces.getCNa() * conditions.getAOA());
+
 		if (forces.getCNa() * conditions.getAOA() != 0 ) {
-			edu_cn.add(forces.getCNa() * conditions.getAOA());
+			//HullCGRequest.client_cn.add(forces.getCNa() * conditions.getAOA());
 		}
-		System.out.println(edu_cn.toString());
 
 		forces.setCm(forces.getCN() * cp.x / conditions.getRefLength());
 		forces.setCroll(0);

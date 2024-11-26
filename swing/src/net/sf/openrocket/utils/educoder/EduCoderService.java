@@ -18,6 +18,11 @@ public interface EduCoderService {
     Call<Result> calculateDemo(@Body DemoRequest request);
 
 
+    @POST("Demo/demo")
+    Call<Result> demo(@Body HullCGRequest request);
+
+
+
     /***
      * 计算头锥组件转动惯量
      * @param request request
