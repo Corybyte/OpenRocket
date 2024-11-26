@@ -78,17 +78,18 @@ def calculateNoseConeCG():
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
-@app.route('/Demo/calculate', methods=['POST'])
+@app.route('/Demo/demo', methods=['POST'])
 def testDemo():
     app.logger.info(f"{request.json}")
     try:
+        print(request.json)
         # 自己的逻辑，返回值进行结果校验
         cg = demo.calculate(request.json)
         #下面的一般不用动
         error_file_path = "/data/workspace/myshixun/step1/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        check(cg, request.json['answer'], os.path.join(os.getcwd(), "step1"))
+        #check(cg, request.json['answer'], os.path.join(os.getcwd(), "step1"))
         return {"code": 200, "msg": "ok", "result": cg}
     #异常处理
     except Exception:

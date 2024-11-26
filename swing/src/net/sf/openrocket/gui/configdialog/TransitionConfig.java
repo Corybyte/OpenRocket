@@ -208,7 +208,7 @@ public class TransitionConfig extends RocketComponentConfig {
 			panel.add(button);
 			button.addActionListener(e -> {
 				JDialog dialog = new JDialog(this.parent, trans.get("NoseConeCfg.lbl.CgCalc"));
-				System.out.println(component.getComponentCG());
+				//System.out.println(component.getComponentCG());
 				dialog.setSize(this.parent.getSize());
 				dialog.setLocationRelativeTo(null);
 				dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
