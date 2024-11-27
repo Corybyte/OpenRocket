@@ -11,6 +11,7 @@ import net.sf.openrocket.rocketcomponent.BodyTube;
 import net.sf.openrocket.rocketcomponent.RocketComponent;
 import net.sf.openrocket.rocketcomponent.SymmetricComponent;
 import net.sf.openrocket.rocketcomponent.Transition;
+import net.sf.openrocket.startup.OpenRocket;
 import net.sf.openrocket.util.*;
 
 import net.sf.openrocket.utils.educoder.EduCoderService;
@@ -35,12 +36,6 @@ import retrofit2.converter.gson.GsonConverterFactory;
  * @author Sampo Niskanen <sampo.niskanen@iki.fi>
  */
 public class SymmetricComponentCalc extends RocketComponentCalc {
-	public static final Retrofit retrofit = new Retrofit.Builder()
-			.baseUrl("http://127.0.0.1:8080/")
-			.addConverterFactory(GsonConverterFactory.create())
-			.build();
-
-	public static final EduCoderService eduCoderService = retrofit.create(EduCoderService.class);
 
 	public static final double BODY_LIFT_K = 1.1;
 	private final double length;
@@ -130,7 +125,7 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 		hullCGRequest.client_AOA=conditions.getAOA();
 		hullCGRequest.client_RefArea= conditions.getRefArea();
 
-		eduCoderService.demo(hullCGRequest).enqueue(new Callback<Result>() {
+		OpenRocket.eduCoderService.demo(hullCGRequest).enqueue(new Callback<Result>() {
 			@Override
 			public void onResponse(Call<Result> call, Response<Result> response) {
 				System.out.println(response.body());
