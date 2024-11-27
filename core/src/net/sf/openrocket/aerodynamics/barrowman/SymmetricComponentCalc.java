@@ -116,7 +116,7 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 		 *
 		 */
 		HullCGRequest hullCGRequest = new HullCGRequest();
-		hullCGRequest.client_CnaCache=cnaCache;
+		hullCGRequest.client_CnaCache=0;
 		hullCGRequest.client_ForeRadius=foreRadius;
 		hullCGRequest.client_AftRadius=aftRadius;
 		hullCGRequest.client_FullVolume=fullVolume;
@@ -178,6 +178,7 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 
 		if (forces.getCNa() * conditions.getAOA() != 0 ) {
 			//HullCGRequest.client_cn.add(forces.getCNa() * conditions.getAOA());
+			System.out.println(forces.getCNa() * conditions.getAOA());
 		}
 
 		forces.setCm(forces.getCN() * cp.x / conditions.getRefLength());
