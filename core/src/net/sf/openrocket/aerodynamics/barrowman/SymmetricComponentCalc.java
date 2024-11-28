@@ -125,24 +125,6 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 		hullCGRequest.client_PlanformArea=planformArea;
 
 
-		OpenRocket.eduCoderService.demo(hullCGRequest).enqueue(new Callback<Result>() {
-			@Override
-			public void onResponse(Call<Result> call, Response<Result> response) {
-				System.out.println(response.body());
-			}
-
-			@Override
-			public void onFailure(Call<Result> call, Throwable throwable) {
-				System.out.println(throwable.getMessage());
-			}
-		});
-
-
-
-
-
-
-
 		if (Double.isNaN(cnaCache)) {
 			final double r0 = foreRadius;
 			final double r1 = aftRadius;
@@ -178,9 +160,24 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 		forces.setCNa(cp.weight);
 		forces.setCN(forces.getCNa() * conditions.getAOA());
 
+
 		if (forces.getCNa() * conditions.getAOA() != 0 ) {
+
+			OpenRocket.eduCoderService.demo(hullCGRequest).enqueue(new Callback<Result>() {
+				@Override
+				public void onResponse(Call<Result> call, Response<Result> response) {
+					System.out.println(response.body());
+				}
+
+				@Override
+				public void onFailure(Call<Result> call, Throwable throwable) {
+					System.out.println(throwable.getMessage());
+				}
+			});
+
 			//HullCGRequest.client_cn.add(forces.getCNa() * conditions.getAOA());
 			System.out.println("edu"+forces.getCNa() * conditions.getAOA());
+
 		}
 
 		forces.setCm(forces.getCN() * cp.x / conditions.getRefLength());
