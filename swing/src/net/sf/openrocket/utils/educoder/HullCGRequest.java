@@ -11,7 +11,12 @@ public class HullCGRequest {
     public  double client_RefArea;
     public  double client_FullVolume;
     public  double client_Length;
+    public  double client_SinAOA;
+    public  double client_SincAOA;
+    public  double client_PlanformCenter;
+    public  double client_PlanformArea;
     public  final double client_BODY_LIFT_K = 1.1;
+
     public  ArrayList client_cn;
     public  ArrayList server_cn;
 }

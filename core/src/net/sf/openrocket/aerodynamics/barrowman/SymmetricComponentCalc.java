@@ -111,10 +111,6 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 	@Override
 	public void calculateNonaxialForces(FlightConditions conditions, Transformation transform,
 			AerodynamicForces forces, WarningSet warnings) {
-		/**
-		 *
-		 *
-		 */
 		HullCGRequest hullCGRequest = new HullCGRequest();
 		hullCGRequest.client_CnaCache=0;
 		hullCGRequest.client_ForeRadius=foreRadius;
@@ -124,6 +120,10 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 		hullCGRequest.client_AOA=conditions.getAOA();
 		hullCGRequest.client_RefArea= conditions.getRefArea();
 		hullCGRequest.client_Length=length;
+		hullCGRequest.client_SinAOA= conditions.getSinAOA();
+		hullCGRequest.client_PlanformCenter=planformCenter;
+		hullCGRequest.client_PlanformArea=planformArea;
+
 
 		OpenRocket.eduCoderService.demo(hullCGRequest).enqueue(new Callback<Result>() {
 			@Override
@@ -136,6 +136,7 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 				System.out.println(throwable.getMessage());
 			}
 		});
+
 
 
 
@@ -179,7 +180,7 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 
 		if (forces.getCNa() * conditions.getAOA() != 0 ) {
 			//HullCGRequest.client_cn.add(forces.getCNa() * conditions.getAOA());
-			System.out.println(forces.getCNa() * conditions.getAOA());
+			System.out.println("edu"+forces.getCNa() * conditions.getAOA());
 		}
 
 		forces.setCm(forces.getCN() * cp.x / conditions.getRefLength());
@@ -188,6 +189,9 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 		forces.setCrollForce(0);
 		forces.setCside(0);
 		forces.setCyaw(0);
+
+
+
 		
 
 		// Add warning on supersonic flight
