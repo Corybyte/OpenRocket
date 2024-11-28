@@ -123,6 +123,7 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 		hullCGRequest.client_Mach=conditions.getMach();
 		hullCGRequest.client_AOA=conditions.getAOA();
 		hullCGRequest.client_RefArea= conditions.getRefArea();
+		hullCGRequest.client_Length=length;
 
 		OpenRocket.eduCoderService.demo(hullCGRequest).enqueue(new Callback<Result>() {
 			@Override
