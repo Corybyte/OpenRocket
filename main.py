@@ -5,7 +5,7 @@ import Pods_cp_helper
 import Pods_moi_helper
 import Transition_cp_helper
 import body_tube_moi_helper
-import demo
+from demo_dir import demo
 import inner_component_cg_helper
 import inner_component_moi_helper
 import inner_tube_cg_helper
@@ -74,29 +74,28 @@ def calculateNoseConeCG():
         return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
         with open(os.path.join("step1", "error.txt"), 'w') as f:
-            f.write( traceback.format_exc())
+            f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
 @app.route('/Demo/demo', methods=['POST'])
 def testDemo():
-    app.logger.info(f"{request.json}")
+    # app.logger.info(f"{request.json}")
     try:
-        print(request.json)
+        # print(request.json)
         # 自己的逻辑，返回值进行结果校验
         cg = demo.calculate(request.json)
-        #下面的一般不用动
+        # 下面的一般不用动
         error_file_path = "/data/workspace/myshixun/step1/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        #check(cg, request.json['answer'], os.path.join(os.getcwd(), "step1"))
+        # check(cg, request.json['answer'], os.path.join(os.getcwd(), "step1"))
         return {"code": 200, "msg": "ok", "result": cg}
-    #异常处理
+    # 异常处理
     except Exception:
         with open(os.path.join("step1", "error.txt"), 'w') as f:
-            f.write( traceback.format_exc())
+            f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
-
 
 
 @app.route('/NoseCone/calculateCP', methods=['POST'])
@@ -111,7 +110,7 @@ def calculateNoseConeCP():
         return {"code": 200, "msg": "ok", "result": cp}
     except Exception:
         with open(os.path.join("step2", "error.txt"), 'w') as f:
-            f.write( traceback.format_exc())
+            f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
@@ -127,7 +126,7 @@ def calculateNoseConeMOI():
         return {"code": 200, "msg": "ok", "result": moi}
     except Exception:
         with open(os.path.join("step3", "error.txt"), 'w') as f:
-            f.write( traceback.format_exc())
+            f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
@@ -144,7 +143,7 @@ def calculateBodyTubeCG():
         return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
         with open(os.path.join("step4", "error.txt"), 'w') as f:
-            f.write( traceback.format_exc())
+            f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
@@ -160,7 +159,7 @@ def calculateBodyTubeCP():
         return {"code": 200, "msg": "ok", "result": cp}
     except Exception:
         with open(os.path.join("step5", "error.txt"), 'w') as f:
-            f.write( traceback.format_exc())
+            f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
@@ -176,7 +175,7 @@ def calculateBodyTubeMOI():
         return {"code": 200, "msg": "ok", "result": moi}
     except Exception:
         with open(os.path.join("step6", "error.txt"), 'w') as f:
-            f.write( traceback.format_exc())
+            f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
@@ -193,7 +192,7 @@ def calculateFinSetCG():
         return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
         with open(os.path.join("step7", "error.txt"), 'w') as f:
-            f.write( traceback.format_exc())
+            f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
@@ -209,7 +208,7 @@ def calculateFinSetCP():
         return {"code": 200, "msg": "ok", "result": cp}
     except Exception:
         with open(os.path.join("step8", "error.txt"), 'w') as f:
-            f.write( traceback.format_exc())
+            f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
@@ -225,7 +224,7 @@ def calculateFinSetMOI():
         return {"code": 200, "msg": "ok", "result": moi}
     except Exception:
         with open(os.path.join("step9", "error.txt"), 'w') as f:
-            f.write( traceback.format_exc())
+            f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
@@ -242,7 +241,7 @@ def calculateTransitionCG():
         return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
         with open(os.path.join("step10", "error.txt"), 'w') as f:
-            f.write( traceback.format_exc())
+            f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
@@ -258,7 +257,7 @@ def calculateTransitionCP():
         return {"code": 200, "msg": "ok", "result": cp}
     except Exception:
         with open(os.path.join("step11", "error.txt"), 'w') as f:
-            f.write( traceback.format_exc())
+            f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
@@ -274,7 +273,7 @@ def calculateTransitionMOI():
         return {"code": 200, "msg": "ok", "result": moi}
     except Exception:
         with open(os.path.join("step12", "error.txt"), 'w') as f:
-            f.write( traceback.format_exc())
+            f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
@@ -290,7 +289,7 @@ def calculateTubeFinSetCG():
         return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
         with open(os.path.join("step13", "error.txt"), 'w') as f:
-            f.write( traceback.format_exc())
+            f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
@@ -306,7 +305,7 @@ def calculateTubeFinSetCP():
         return {"code": 200, "msg": "ok", "result": cp}
     except Exception:
         with open(os.path.join("step14", "error.txt"), 'w') as f:
-            f.write( traceback.format_exc())
+            f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
@@ -322,7 +321,7 @@ def calculateTubeFinSetMOI():
         return {"code": 200, "msg": "ok", "result": moi}
     except Exception:
         with open(os.path.join("step15", "error.txt"), 'w') as f:
-            f.write( traceback.format_exc())
+            f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
@@ -338,7 +337,7 @@ def calculateLaunchLugCG():
         return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
         with open(os.path.join("step16", "error.txt"), 'w') as f:
-            f.write( traceback.format_exc())
+            f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
@@ -354,7 +353,7 @@ def calculateLaunchLugCP():
         return {"code": 200, "msg": "ok", "result": cp}
     except Exception:
         with open(os.path.join("step17", "error.txt"), 'w') as f:
-            f.write( traceback.format_exc())
+            f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
@@ -370,7 +369,7 @@ def calculateLaunchLugMOI():
         return {"code": 200, "msg": "ok", "result": moi}
     except Exception:
         with open(os.path.join("step18", "error.txt"), 'w') as f:
-            f.write( traceback.format_exc())
+            f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
@@ -386,7 +385,7 @@ def calculateRailButtonCG():
         return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
         with open(os.path.join("step19", "error.txt"), 'w') as f:
-            f.write( traceback.format_exc())
+            f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
@@ -402,7 +401,7 @@ def calculateRailButtonCP():
         return {"code": 200, "msg": "ok", "result": cp}
     except Exception:
         with open(os.path.join("step20", "error.txt"), 'w') as f:
-            f.write( traceback.format_exc())
+            f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
@@ -418,7 +417,7 @@ def calculateRailButtonMOI():
         return {"code": 200, "msg": "ok", "result": moi}
     except Exception:
         with open(os.path.join("step21", "error.txt"), 'w') as f:
-            f.write( traceback.format_exc())
+            f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
@@ -434,7 +433,7 @@ def calculateInnerTubeCG():
         return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
         with open(os.path.join("step22", "error.txt"), 'w') as f:
-            f.write( traceback.format_exc())
+            f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
@@ -450,7 +449,7 @@ def calculateInnerTubeMOI():
         return {"code": 200, "msg": "ok", "result": moi}
     except Exception:
         with open(os.path.join("step24", "error.txt"), 'w') as f:
-            f.write( traceback.format_exc())
+            f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
@@ -466,7 +465,7 @@ def calculateInnerComponentCG():
         return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
         with open(os.path.join("step25", "error.txt"), 'w') as f:
-            f.write( traceback.format_exc())
+            f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
@@ -482,7 +481,7 @@ def calculateInnerComponentMOI():
         return {"code": 200, "msg": "ok", "result": moi}
     except Exception:
         with open(os.path.join("step27", "error.txt"), 'w') as f:
-            f.write( traceback.format_exc())
+            f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
@@ -498,7 +497,7 @@ def calculateParachuteCG():
         return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
         with open(os.path.join("step28", "error.txt"), 'w') as f:
-            f.write( traceback.format_exc())
+            f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
@@ -514,7 +513,7 @@ def calculateParachuteMOI():
         return {"code": 200, "msg": "ok", "result": moi}
     except Exception:
         with open(os.path.join("step30", "error.txt"), 'w') as f:
-            f.write( traceback.format_exc())
+            f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
@@ -530,7 +529,7 @@ def calculateShockCordCG():
         return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
         with open(os.path.join("step31", "error.txt"), 'w') as f:
-            f.write( traceback.format_exc())
+            f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
@@ -546,7 +545,7 @@ def calculateShockCordMOI():
         return {"code": 200, "msg": "ok", "result": moi}
     except Exception:
         with open(os.path.join("step33", "error.txt"), 'w') as f:
-            f.write( traceback.format_exc())
+            f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
@@ -562,7 +561,7 @@ def calculateMassComponentCG():
         return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
         with open(os.path.join("step34", "error.txt"), 'w') as f:
-            f.write( traceback.format_exc())
+            f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
@@ -578,7 +577,7 @@ def calculateMassComponentMOI():
         return {"code": 200, "msg": "ok", "result": moi}
     except Exception:
         with open(os.path.join("step36", "error.txt"), 'w') as f:
-            f.write( traceback.format_exc())
+            f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
@@ -594,7 +593,7 @@ def calculateStreamerCG():
         return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
         with open(os.path.join("step37", "error.txt"), 'w') as f:
-            f.write( traceback.format_exc())
+            f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
@@ -610,7 +609,7 @@ def calculateStreamerMOI():
         return {"code": 200, "msg": "ok", "result": moi}
     except Exception:
         with open(os.path.join("step39", "error.txt"), 'w') as f:
-            f.write( traceback.format_exc())
+            f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
@@ -626,7 +625,7 @@ def calculateStageCG():
         return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
         with open(os.path.join("step49", "error.txt"), 'w') as f:
-            f.write( traceback.format_exc())
+            f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
@@ -642,7 +641,7 @@ def calculateStageCP():
         return {"code": 200, "msg": "ok", "result": cp}
     except Exception:
         with open(os.path.join("step50", "error.txt"), 'w') as f:
-            f.write( traceback.format_exc())
+            f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
@@ -658,7 +657,7 @@ def calculateStageMOI():
         return {"code": 200, "msg": "ok", "result": moi}
     except Exception:
         with open(os.path.join("step51", "error.txt"), 'w') as f:
-            f.write( traceback.format_exc())
+            f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
@@ -674,7 +673,7 @@ def calculatePodsCG():
         return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
         with open(os.path.join("step52", "error.txt"), 'w') as f:
-            f.write( traceback.format_exc())
+            f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
@@ -690,7 +689,7 @@ def calculatePodsCP():
         return {"code": 200, "msg": "ok", "result": cp}
     except Exception:
         with open(os.path.join("step53", "error.txt"), 'w') as f:
-            f.write( traceback.format_exc())
+            f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
@@ -706,8 +705,9 @@ def calculatePodsMOI():
         return {"code": 200, "msg": "ok", "result": moi}
     except Exception:
         with open(os.path.join("step54", "error.txt"), 'w') as f:
-            f.write( traceback.format_exc())
+            f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
 
 @app.route('/Whole/calculateCG', methods=['POST'])
 def calculateWholeCG():
@@ -721,8 +721,10 @@ def calculateWholeCG():
         return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
         with open(os.path.join("step55", "error.txt"), 'w') as f:
-            f.write( traceback.format_exc())
+            f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
+
 @app.route('/Whole/calculateCP', methods=['POST'])
 def calculateWholeCP():
     app.logger.info(f"{request.json}")
@@ -735,7 +737,7 @@ def calculateWholeCP():
         return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
         with open(os.path.join("step56", "error.txt"), 'w') as f:
-            f.write( traceback.format_exc())
+            f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
@@ -751,8 +753,9 @@ def calculateWholeMOI():
         return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
         with open(os.path.join("step57", "error.txt"), 'w') as f:
-            f.write( traceback.format_exc())
+            f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
 
 @app.route('/Motor/point', methods=['POST'])
 def calculatePoint():
@@ -766,6 +769,8 @@ def calculatePoint():
         with open(os.path.join("calculatePoint", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
+
 @app.route('/Motor/function', methods=['POST'])
 def calculateFunction():
     app.logger.info(f"{request.json}")
@@ -778,6 +783,7 @@ def calculateFunction():
         with open(os.path.join("calculatePoint", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
 
 if __name__ == '__main__':
     app.run(host="127.0.0.1", port=8080, debug=True)

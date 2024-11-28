@@ -1,0 +1,15 @@
+{
+  "client_AOA": 0.0,
+  "client_AftRadius": 0.0125,
+  "client_BODY_LIFT_K": 1.1,
+  "client_CnaCache": 0.0,
+  "client_ForeRadius": 0.0,
+  "client_FullVolume": 2.6295840871837907e-05,
+  "client_Length": 0.1,
+  "client_Mach": 0.3,
+  "client_PlanformArea": 0.0016718375993988843,
+  "client_PlanformCenter": 0.06242206245134539,
+  "client_RefArea": 0.0004908738521234052,
+  "client_SinAOA": 0.0,
+  "client_SincAOA": 0.0
+}

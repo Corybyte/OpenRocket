@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "C:\Users\QQ320\Desktop\work\开发\pyweb\openrocket\main.py", line 87, in testDemo
+    cg = demo.calculate(request.json)
+  File "C:\Users\QQ320\Desktop\work\开发\pyweb\openrocket\demo_dir\demo.py", line 13, in calculate
+    ) = utils.get_required_params(
+  File "C:\Users\QQ320\Desktop\work\开发\pyweb\openrocket\demo_dir\utils\custom_utils.py", line 29, in get_required_params
+    raise ValueError(f"Missing required parameter: {key}")
+ValueError: Missing required parameter: client_SincAOA
