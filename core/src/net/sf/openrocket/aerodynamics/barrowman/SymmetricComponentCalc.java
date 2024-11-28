@@ -162,6 +162,7 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 
 
 		if (forces.getCNa() * conditions.getAOA() != 0 ) {
+			System.out.println("edu"+forces.getCNa() * conditions.getAOA());
 
 			OpenRocket.eduCoderService.demo(hullCGRequest).enqueue(new Callback<Result>() {
 				@Override
@@ -176,7 +177,6 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 			});
 
 			//HullCGRequest.client_cn.add(forces.getCNa() * conditions.getAOA());
-			System.out.println("edu"+forces.getCNa() * conditions.getAOA());
 
 		}
 
