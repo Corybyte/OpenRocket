@@ -111,19 +111,7 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 	@Override
 	public void calculateNonaxialForces(FlightConditions conditions, Transformation transform,
 			AerodynamicForces forces, WarningSet warnings) {
-		HullCGRequest hullCGRequest = new HullCGRequest();
-		hullCGRequest.client_CnaCache=0;
-		hullCGRequest.client_ForeRadius=foreRadius;
-		hullCGRequest.client_AftRadius=aftRadius;
-		hullCGRequest.client_FullVolume=fullVolume;
-		hullCGRequest.client_Mach=conditions.getMach();
-		hullCGRequest.client_AOA=conditions.getAOA();
-		hullCGRequest.client_RefArea= conditions.getRefArea();
-		hullCGRequest.client_Length=length;
-		hullCGRequest.client_SinAOA= conditions.getSinAOA();
-		hullCGRequest.client_SincAOA = conditions.getSincAOA();
-		hullCGRequest.client_PlanformCenter=planformCenter;
-		hullCGRequest.client_PlanformArea=planformArea;
+
 
 
 		if (Double.isNaN(cnaCache)) {
@@ -158,25 +146,36 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 		forces.setCP(cp);
 		forces.setCNa(cp.weight);
 		forces.setCN(forces.getCNa() * conditions.getAOA());
-		if (forces.getCNa() * conditions.getAOA() != 0) {
-			System.out.println(conditions);
-			System.out.println(forces.getCN() * conditions.getAOA());
-		}
-
 		forces.setCm(forces.getCN() * cp.x / conditions.getRefLength());
 		forces.setCroll(0);
 		forces.setCrollDamp(0);
 		forces.setCrollForce(0);
 		forces.setCside(0);
 		forces.setCyaw(0);
+
 		// Add warning on supersonic flight
 		if (conditions.getMach() > 1.1) {
 			warnings.add(Warning.SUPERSONIC);
 		}
 
 
+		HullCGRequest hullCGRequest = new HullCGRequest();
+		hullCGRequest.client_CnaCache=0;
+		hullCGRequest.client_ForeRadius=foreRadius;
+		hullCGRequest.client_AftRadius=aftRadius;
+		hullCGRequest.client_FullVolume=fullVolume;
+		hullCGRequest.client_Mach=conditions.getMach();
+		hullCGRequest.client_AOA=conditions.getAOA();
+		hullCGRequest.client_RefArea= conditions.getRefArea();
+		hullCGRequest.client_Length=length;
+		hullCGRequest.client_SinAOA= conditions.getSinAOA();
+		hullCGRequest.client_SincAOA = conditions.getSincAOA();
+		hullCGRequest.client_PlanformCenter=planformCenter;
+		hullCGRequest.client_PlanformArea=planformArea;
+		hullCGRequest.result_cn=forces.getCN() * conditions.getAOA();
+		hullCGRequest.result_cna=cp.weight;
+
 		if (forces.getCNa() * conditions.getAOA() != 0) {
-			System.out.println(conditions);
 			OpenRocket.eduCoderService.demo(hullCGRequest).enqueue(new Callback<Result>() {
 				@Override
 				public void onResponse(Call<Result> call, Response<Result> response) {
@@ -185,11 +184,11 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 
 				@Override
 				public void onFailure(Call<Result> call, Throwable throwable) {
+					System.out.println(hullCGRequest);
 					System.out.println(throwable.getMessage());
 				}
 
 			});
-			//HullCGRequest.client_cn.add(forces.getCNa() * conditions.getAOA());
 		}
 		
 	}

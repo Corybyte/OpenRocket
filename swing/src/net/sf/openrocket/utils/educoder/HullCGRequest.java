@@ -16,6 +16,8 @@ public class HullCGRequest {
     public  double client_PlanformCenter;
     public  double client_PlanformArea;
     public  final double client_BODY_LIFT_K = 1.1;
+    public  double result_cn;
+    public  double result_cna;
 
     public  ArrayList client_cn;
     public  ArrayList server_cn;
