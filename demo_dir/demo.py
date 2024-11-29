@@ -62,5 +62,11 @@ def calculate(param):
                 SincAOA=client_SincAOA,
             )
         )
-
-    return cp.to_dict()
+    print(cp.to_dict())
+    ret_cn = cp.to_dict()['weight'] * client_AOA
+    ret_json = {
+        'weight': cp.to_dict()['weight'],
+        'aoa': client_AOA,
+        'ret_cn': ret_cn
+    }
+    return ret_json
