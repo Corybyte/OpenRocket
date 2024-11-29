@@ -162,7 +162,6 @@ public class SimulationExportPanel extends JPanel {
 		});
 		panel.add(button, "growx 1, sizegroup selectbutton, wrap");
 
-		final  HullCGRequest request = new HullCGRequest();
 		edu_button = new SelectColorButton(trans.get("SimExpPan.but.Edu"));
 		edu_button.addActionListener(e -> {
 					// 创建一个模态对话框，父窗口为当前组件的顶层窗口
@@ -179,7 +178,7 @@ public class SimulationExportPanel extends JPanel {
 					leftTextArea.setLineWrap(true); // 自动换行
 					leftTextArea.setWrapStyleWord(true); // 仅在单词边界处换行
 					leftTextArea.setFont(new Font("Monospaced", Font.PLAIN, 14)); // 设置字体
-					leftTextArea.setText(request.server_cn.toString());
+					leftTextArea.setText(HullCGRequest.server_cn.toString());
 					JScrollPane leftScrollPane = new JScrollPane(leftTextArea);
 					mainPanel.add(leftScrollPane);
 
@@ -188,7 +187,7 @@ public class SimulationExportPanel extends JPanel {
 					rightTextArea.setLineWrap(true); // 自动换行
 					rightTextArea.setWrapStyleWord(true); // 仅在单词边界处换行
 					rightTextArea.setFont(new Font("Monospaced", Font.PLAIN, 14)); // 设置字体
-					rightTextArea.setText("右侧文本框的内容...");
+					rightTextArea.setText(HullCGRequest.client_cn.toString());
 					JScrollPane rightScrollPane = new JScrollPane(rightTextArea);
 					mainPanel.add(rightScrollPane);
 
@@ -201,17 +200,6 @@ public class SimulationExportPanel extends JPanel {
 
 					// 创建一个新的按钮
 					JButton newButton = new JButton("评测");
-					newButton.addActionListener(ev ->OpenRocket.eduCoderService.calculateCN(request).enqueue(new Callback<DataResult>() {
-						@Override
-						public void onResponse(Call<DataResult> call, Response<DataResult> response) {
-							//System.out.println(response.toString());
-						}
-
-						@Override
-						public void onFailure(Call<DataResult> call, Throwable throwable) {
-
-						}
-					}));
 
 					// 创建按钮面板
 					JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0)); // 水平间距 10

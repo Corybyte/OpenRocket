@@ -19,6 +19,6 @@ public class HullCGRequest {
     public  double result_cn;
     public  double result_cna;
 
-    public  ArrayList client_cn;
-    public  ArrayList server_cn;
+    public static   ArrayList client_cn = new ArrayList();
+    public  static ArrayList server_cn = new ArrayList();
 }
