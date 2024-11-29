@@ -121,6 +121,7 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 		hullCGRequest.client_RefArea= conditions.getRefArea();
 		hullCGRequest.client_Length=length;
 		hullCGRequest.client_SinAOA= conditions.getSinAOA();
+		hullCGRequest.client_SincAOA = conditions.getSincAOA();
 		hullCGRequest.client_PlanformCenter=planformCenter;
 		hullCGRequest.client_PlanformArea=planformArea;
 
@@ -154,16 +155,28 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 					conditions.getRefArea()).average(getLiftCP(conditions, warnings));
 		}
 		//mul * BODY_LIFT_K * planformArea / conditions.getRefArea() * conditions.getSinAOA() * conditions.getSincAOA()  /2 *  conditions.getAOA()
-
-
 		forces.setCP(cp);
 		forces.setCNa(cp.weight);
 		forces.setCN(forces.getCNa() * conditions.getAOA());
+		if (forces.getCNa() * conditions.getAOA() != 0) {
+			System.out.println(conditions);
+			System.out.println(forces.getCN() * conditions.getAOA());
+		}
+
+		forces.setCm(forces.getCN() * cp.x / conditions.getRefLength());
+		forces.setCroll(0);
+		forces.setCrollDamp(0);
+		forces.setCrollForce(0);
+		forces.setCside(0);
+		forces.setCyaw(0);
+		// Add warning on supersonic flight
+		if (conditions.getMach() > 1.1) {
+			warnings.add(Warning.SUPERSONIC);
+		}
 
 
-		if (forces.getCNa() * conditions.getAOA() != 0 ) {
-			System.out.println("edu"+forces.getCNa() * conditions.getAOA());
-
+		if (forces.getCNa() * conditions.getAOA() != 0) {
+			System.out.println(conditions);
 			OpenRocket.eduCoderService.demo(hullCGRequest).enqueue(new Callback<Result>() {
 				@Override
 				public void onResponse(Call<Result> call, Response<Result> response) {
@@ -174,26 +187,9 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 				public void onFailure(Call<Result> call, Throwable throwable) {
 					System.out.println(throwable.getMessage());
 				}
+
 			});
-
 			//HullCGRequest.client_cn.add(forces.getCNa() * conditions.getAOA());
-
-		}
-
-		forces.setCm(forces.getCN() * cp.x / conditions.getRefLength());
-		forces.setCroll(0);
-		forces.setCrollDamp(0);
-		forces.setCrollForce(0);
-		forces.setCside(0);
-		forces.setCyaw(0);
-
-
-
-		
-
-		// Add warning on supersonic flight
-		if (conditions.getMach() > 1.1) {
-			warnings.add(Warning.SUPERSONIC);
 		}
 		
 	}
@@ -204,7 +200,6 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 	 * Calculate the body lift effect according to Galejs.
 	 */
 	protected Coordinate getLiftCP(FlightConditions conditions, WarningSet warnings) {
-		
 		/*
 		 * Without this extra multiplier the rocket may become unstable at apogee
 		 * when turning around, and begin oscillating horizontally.  During the flight
@@ -217,7 +212,9 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 		if ((conditions.getMach() < 0.05) && (conditions.getAOA() > Math.PI / 4)) {
 			mul = pow2(conditions.getMach() / 0.05);
 		}
-		
+
+		System.out.println("edu"+mul * BODY_LIFT_K * planformArea / conditions.getRefArea() *
+				conditions.getSinAOA() * conditions.getSincAOA());
 		return new Coordinate(planformCenter, 0, 0, mul * BODY_LIFT_K * planformArea / conditions.getRefArea() *
 				conditions.getSinAOA() * conditions.getSincAOA()); // sin(aoa)^2 / aoa
 	}
