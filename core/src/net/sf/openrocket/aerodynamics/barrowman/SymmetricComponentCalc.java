@@ -146,6 +146,7 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 		forces.setCP(cp);
 		forces.setCNa(cp.weight);
 		forces.setCN(forces.getCNa() * conditions.getAOA());
+
 		forces.setCm(forces.getCN() * cp.x / conditions.getRefLength());
 		forces.setCroll(0);
 		forces.setCrollDamp(0);
@@ -172,7 +173,7 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 		hullCGRequest.client_SincAOA = conditions.getSincAOA();
 		hullCGRequest.client_PlanformCenter=planformCenter;
 		hullCGRequest.client_PlanformArea=planformArea;
-		hullCGRequest.result_cn=forces.getCN() * conditions.getAOA();
+		hullCGRequest.result_cn=forces.getCNa() * conditions.getAOA();
 		hullCGRequest.result_cna=cp.weight;
 
 		if (forces.getCNa() * conditions.getAOA() != 0) {
