@@ -334,7 +334,5 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="module" module-name="OpenRocket Swing" />
-    <orderEntry type="library" name="retrofit-2.11.0" level="project" />
   </component>
 </module>
