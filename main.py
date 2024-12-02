@@ -5,7 +5,7 @@ import Pods_cp_helper
 import Pods_moi_helper
 import Transition_cp_helper
 import body_tube_moi_helper
-from demo_dir import demo
+from demo_dir import calculateCN
 import inner_component_cg_helper
 import inner_component_moi_helper
 import inner_tube_cg_helper
@@ -78,14 +78,12 @@ def calculateNoseConeCG():
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
-@app.route('/Demo/demo', methods=['POST'])
-def testDemo():
+@app.route('/Projectile/calculateCN', methods=['POST'])
+def calculateCN():
     # app.logger.info(f"{request.json}")
     try:
-        # print(request.json)
-        # 自己的逻辑，返回值进行结果校验
-        cg = demo.calculate(request.json)
-        # 下面的一般不用动
+        print(request.json)
+        cg = calculateCN.calculate(request.json)
         error_file_path = "/data/workspace/myshixun/step1/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)

@@ -69,4 +69,4 @@ def calculate(param):
         'aoa': client_AOA,
         'ret_cn': ret_cn
     }
-    return ret_json
+    return ret_cn
