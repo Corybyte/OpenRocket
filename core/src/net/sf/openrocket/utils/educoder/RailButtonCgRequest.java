@@ -1,6 +1,8 @@
 package net.sf.openrocket.utils.educoder;
 
-public class RailButtonCgRequest extends Request{
+import net.sf.openrocket.utils.educoder.Request;
+
+public class RailButtonCgRequest extends Request {
     public Double getInstanceSeparation() {
         return instanceSeparation;
     }

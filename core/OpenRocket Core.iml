@@ -334,6 +334,24 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="module-library">
+          <library>
+            <CLASSES>
+              <root url="jar://$MODULE_DIR$/lib/retrofit-2.11.0.jar!/" />
+            </CLASSES>
+            <JAVADOC />
+            <SOURCES />
+          </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+              <library>
+                <CLASSES>
+                  <root url="jar://$MODULE_DIR$/lib/gson-2.10.1.jar!/" />
+                </CLASSES>
+                <JAVADOC />
+                <SOURCES />
+              </library>
+     </orderEntry>
     <orderEntry type="module" module-name="OpenRocket Swing" />
     <orderEntry type="library" name="retrofit-2.11.0" level="project" />
   </component>

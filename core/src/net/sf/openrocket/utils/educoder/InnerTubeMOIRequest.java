@@ -1,7 +1,5 @@
 package net.sf.openrocket.utils.educoder;
 
-import java.util.Arrays;
-
 public class InnerTubeMOIRequest  {
     Double outerRadius; //getOuterRadius
     Double innerRadius; //getInnerRadius

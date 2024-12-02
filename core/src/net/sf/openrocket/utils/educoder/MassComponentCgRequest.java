@@ -1,6 +1,8 @@
 package net.sf.openrocket.utils.educoder;
 
-public class ParachuteCgRequest extends Request{
+import net.sf.openrocket.utils.educoder.Request;
+
+public class MassComponentCgRequest extends Request {
     private Double length;
 
     public Double getLength() {

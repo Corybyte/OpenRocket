@@ -1,5 +1,7 @@
 package net.sf.openrocket.utils.educoder;
 
+import net.sf.openrocket.utils.educoder.Request;
+
 public class LaunchLugCgRequest extends Request {
     private Double length;
     private Double instanceSeparation;

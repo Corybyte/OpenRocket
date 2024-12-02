@@ -1,8 +1,10 @@
 package net.sf.openrocket.utils.educoder;
 
+import net.sf.openrocket.utils.educoder.Request;
+
 import java.util.Arrays;
 
-public class InnerComponentCgRequest extends Request {
+public class InnerTubeCgRequest extends Request {
     Integer instanceCount; //getInstanceCount
     Double outerRadius; //getOuterRadius
     Double innerRadius; //getInnerRadius
@@ -11,6 +13,14 @@ public class InnerComponentCgRequest extends Request {
 
     Double[][] instanceOffsets;
 
+    public Double[][] getInstanceOffsets() {
+        return instanceOffsets;
+    }
+
+    public void setInstanceOffsets(Double[][] instanceOffsets) {
+        this.instanceOffsets = instanceOffsets;
+    }
+
     public Integer getInstanceCount() {
         return instanceCount;
     }
@@ -18,7 +28,6 @@ public class InnerComponentCgRequest extends Request {
     public void setInstanceCount(Integer instanceCount) {
         this.instanceCount = instanceCount;
     }
-
     public Double getOuterRadius() {
         return outerRadius;
     }
@@ -51,17 +60,9 @@ public class InnerComponentCgRequest extends Request {
         this.density = density;
     }
 
-    public Double[][] getInstanceOffsets() {
-        return instanceOffsets;
-    }
-
-    public void setInstanceOffsets(Double[][] instanceOffsets) {
-        this.instanceOffsets = instanceOffsets;
-    }
-
     @Override
     public String toString() {
-        return "InnerComponentCgRequest{" +
+        return "InnerTubeCgRequest{" +
                 "instanceCount=" + instanceCount +
                 ", outerRadius=" + outerRadius +
                 ", innerRadius=" + innerRadius +

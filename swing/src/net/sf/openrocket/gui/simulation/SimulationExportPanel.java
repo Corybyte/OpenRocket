@@ -16,7 +16,6 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
 import net.miginfocom.swing.MigLayout;
-import net.sf.openrocket.aerodynamics.barrowman.SymmetricComponentCalc;
 import net.sf.openrocket.document.Simulation;
 import net.sf.openrocket.gui.components.CsvOptionPanel;
 import net.sf.openrocket.gui.components.UnitCellEditor;
@@ -31,16 +30,10 @@ import net.sf.openrocket.simulation.FlightData;
 import net.sf.openrocket.simulation.FlightDataBranch;
 import net.sf.openrocket.simulation.FlightDataType;
 import net.sf.openrocket.startup.Application;
-import net.sf.openrocket.startup.OpenRocket;
 import net.sf.openrocket.unit.Unit;
 import net.sf.openrocket.unit.UnitGroup;
 import net.sf.openrocket.gui.widgets.SelectColorButton;
-import net.sf.openrocket.utils.educoder.DataResult;
 import net.sf.openrocket.utils.educoder.HullCGRequest;
-import net.sf.openrocket.utils.educoder.NoseConeCgRequest;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class SimulationExportPanel extends JPanel {
 	

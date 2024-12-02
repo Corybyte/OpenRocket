@@ -2,8 +2,9 @@ package net.sf.openrocket.utils.educoder;
 
 import com.google.gson.annotations.SerializedName;
 import net.sf.openrocket.rocketcomponent.Transition;
+import net.sf.openrocket.utils.educoder.Request;
 
-public class TransitionCgRequest extends Request{
+public class TransitionCgRequest extends Request {
     /**
      * 组件长度
      */

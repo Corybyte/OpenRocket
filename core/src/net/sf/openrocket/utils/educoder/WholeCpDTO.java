@@ -1,10 +1,6 @@
 package net.sf.openrocket.utils.educoder;
 
-import net.sf.openrocket.rocketcomponent.InstanceContext;
 import net.sf.openrocket.util.Coordinate;
-import net.sf.openrocket.util.Transformation;
-
-import java.util.List;
 
 public class WholeCpDTO {
     String componentName;

@@ -18,7 +18,7 @@ import net.sf.openrocket.startup.Application;
 import net.sf.openrocket.startup.OpenRocket;
 import net.sf.openrocket.unit.UnitGroup;
 import net.sf.openrocket.util.Coordinate;
-import net.sf.openrocket.utils.educoder.*;
+import net.sf.openrocket.utils.educoder.Result;
 import org.jetbrains.annotations.NotNull;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -151,7 +151,7 @@ public class RingComponentConfig extends RocketComponentConfig {
 				dialog.setLocationRelativeTo(null);
 				dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
 
-				final InnerComponentCgRequest request = new InnerComponentCgRequest();
+				final net.sf.openrocket.utils.educoder.InnerComponentCgRequest request = new net.sf.openrocket.utils.educoder.InnerComponentCgRequest();
 				request.setAnswer(component.getComponentCG().x);
 				request.setLength(component.getLength());
 				component.getComponentCG();
@@ -180,7 +180,7 @@ public class RingComponentConfig extends RocketComponentConfig {
 				try {
 					for (String methodName : methodNames) {
 						Method method = RingComponent.class.getDeclaredMethod(methodName);
-						Method reqMethod = InnerComponentCgRequest.class.getDeclaredMethod(methodName.replaceFirst("get", "set"),Double.class);
+						Method reqMethod = net.sf.openrocket.utils.educoder.InnerComponentCgRequest.class.getDeclaredMethod(methodName.replaceFirst("get", "set"),Double.class);
 						method.setAccessible(true);
 						reqMethod.setAccessible(true);
 						Double value = (Double) method.invoke(component);
@@ -203,8 +203,8 @@ public class RingComponentConfig extends RocketComponentConfig {
 				// Do not use UI thread to get the answer
 				checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateCG(request).enqueue(new Callback<>() {
 					@Override
-					public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
-						Result result = response.body();
+					public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result> response) {
+						net.sf.openrocket.utils.educoder.Result result = response.body();
 						if (result == null) return;
 						SwingUtilities.invokeLater(() -> {
 							checkResult.setText(trans.get("InnerComponent.lbl.checkResult") + ": " + result.getResult());
@@ -233,14 +233,14 @@ public class RingComponentConfig extends RocketComponentConfig {
 				dialog.setLocationRelativeTo(null);
 				dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
 
-				final InnerComponentMOIRequest request = new InnerComponentMOIRequest();
+				final net.sf.openrocket.utils.educoder.InnerComponentMOIRequest request = new net.sf.openrocket.utils.educoder.InnerComponentMOIRequest();
 				request.setAnswer(new Double[]{component.getRotationalUnitInertia(),component.getLongitudinalUnitInertia()});
 				request.setLength(component.getLength());
 				String[] methodNames = { "getOuterRadius", "getInnerRadius"};
 				try {
 					for (String methodName : methodNames) {
 						Method method = RingComponent.class.getDeclaredMethod(methodName);
-						Method reqMethod = InnerComponentMOIRequest.class.getDeclaredMethod(methodName.replaceFirst("get", "set"),Double.class);
+						Method reqMethod = net.sf.openrocket.utils.educoder.InnerComponentMOIRequest.class.getDeclaredMethod(methodName.replaceFirst("get", "set"),Double.class);
 						method.setAccessible(true);
 						reqMethod.setAccessible(true);
 						Double value = (Double) method.invoke(component);
@@ -261,8 +261,8 @@ public class RingComponentConfig extends RocketComponentConfig {
 				// Do not use UI thread to get the answer
 				checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateMOI(request).enqueue(new Callback<>() {
 					@Override
-					public void onResponse(@NotNull Call<Result2> call, @NotNull Response<Result2> response) {
-						Result2 result = response.body();
+					public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result2> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result2> response) {
+						net.sf.openrocket.utils.educoder.Result2 result = response.body();
 						if (result == null) return;
 						SwingUtilities.invokeLater(() -> {
 							checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult()[0]+","+result.getResult()[1]);
@@ -271,7 +271,7 @@ public class RingComponentConfig extends RocketComponentConfig {
 					}
 
 					@Override
-					public void onFailure(@NotNull Call<Result2> call, @NotNull Throwable throwable) {
+					public void onFailure(@NotNull Call<net.sf.openrocket.utils.educoder.Result2> call, @NotNull Throwable throwable) {
 						SwingUtilities.invokeLater(() ->
 								JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
 					}

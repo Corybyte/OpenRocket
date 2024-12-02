@@ -1,6 +1,8 @@
 package net.sf.openrocket.utils.educoder;
 
-public class TubeFinsetCGRequest extends Request{
+import net.sf.openrocket.utils.educoder.Request;
+
+public class TubeFinsetCGRequest extends Request {
     private Double length;
 
     private Double volume;

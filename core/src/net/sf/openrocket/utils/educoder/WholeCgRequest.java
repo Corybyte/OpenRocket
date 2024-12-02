@@ -1,11 +1,12 @@
 package net.sf.openrocket.utils.educoder;
 
-import java.util.Collection;
+import net.sf.openrocket.utils.educoder.MyComponent;
+import net.sf.openrocket.utils.educoder.Request;
 
-public class WholeCgRequest extends Request{
-    private MyComponent myComponent;
+public class WholeCgRequest extends Request {
+    private net.sf.openrocket.utils.educoder.MyComponent myComponent;
 
-    public MyComponent getMyComponent() {
+    public net.sf.openrocket.utils.educoder.MyComponent getMyComponent() {
         return myComponent;
     }
 

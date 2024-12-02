@@ -5,27 +5,24 @@ import javax.swing.*;
 import net.miginfocom.swing.MigLayout;
 import net.sf.openrocket.aerodynamics.AerodynamicForces;
 import net.sf.openrocket.aerodynamics.FlightConditions;
-import net.sf.openrocket.aerodynamics.barrowman.LaunchLugCalc;
 import net.sf.openrocket.aerodynamics.barrowman.RailButtonCalc;
 import net.sf.openrocket.document.OpenRocketDocument;
 import net.sf.openrocket.gui.SpinnerEditor;
 import net.sf.openrocket.gui.adaptors.CustomFocusTraversalPolicy;
 import net.sf.openrocket.gui.adaptors.DoubleModel;
-import net.sf.openrocket.gui.adaptors.IntegerModel;
 import net.sf.openrocket.gui.components.BasicSlider;
 import net.sf.openrocket.gui.components.UnitSelector;
 import net.sf.openrocket.l10n.Translator;
 import net.sf.openrocket.logging.WarningSet;
 import net.sf.openrocket.material.Material;
 import net.sf.openrocket.rocketcomponent.FlightConfiguration;
-import net.sf.openrocket.rocketcomponent.LaunchLug;
 import net.sf.openrocket.rocketcomponent.RailButton;
 import net.sf.openrocket.rocketcomponent.RocketComponent;
 import net.sf.openrocket.startup.Application;
 import net.sf.openrocket.startup.OpenRocket;
 import net.sf.openrocket.unit.UnitGroup;
 import net.sf.openrocket.util.Transformation;
-import net.sf.openrocket.utils.educoder.*;
+import net.sf.openrocket.utils.educoder.Result;
 import org.jetbrains.annotations.NotNull;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -179,7 +176,7 @@ public class RailButtonConfig extends RocketComponentConfig {
 				dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
 
 
-				RailButtonCgRequest request = new RailButtonCgRequest();
+				net.sf.openrocket.utils.educoder.RailButtonCgRequest request = new net.sf.openrocket.utils.educoder.RailButtonCgRequest();
 				request.setAnswer(component.getComponentCG().x);
 
 				try {
@@ -211,8 +208,8 @@ public class RailButtonConfig extends RocketComponentConfig {
 				// Do not use UI thread to get the answer
 				checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateCG(request).enqueue(new Callback<>() {
 					@Override
-					public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
-						Result result = response.body();
+					public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result> response) {
+						net.sf.openrocket.utils.educoder.Result result = response.body();
 						if (result == null) return;
 						SwingUtilities.invokeLater(() -> {
 							checkResult.setText(trans.get("RailButton.lbl.checkResult") + ": " + result.getResult());
@@ -221,7 +218,7 @@ public class RailButtonConfig extends RocketComponentConfig {
 					}
 
 					@Override
-					public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
+					public void onFailure(@NotNull Call<net.sf.openrocket.utils.educoder.Result> call, @NotNull Throwable throwable) {
 						SwingUtilities.invokeLater(() ->
 								JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
 					}
@@ -240,7 +237,7 @@ public class RailButtonConfig extends RocketComponentConfig {
 				dialog.setLocationRelativeTo(null);
 				dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
 
-				final RailButtonCpRequest request = new RailButtonCpRequest();
+				final net.sf.openrocket.utils.educoder.RailButtonCpRequest request = new net.sf.openrocket.utils.educoder.RailButtonCpRequest();
 
 
 				FlightConfiguration curConfig = document.getSelectedConfiguration();
@@ -262,8 +259,8 @@ public class RailButtonConfig extends RocketComponentConfig {
 				// Do not use UI thread to get the answer
 				checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateCP(request).enqueue(new Callback<>() {
 					@Override
-					public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
-						Result result = response.body();
+					public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result> response) {
+						net.sf.openrocket.utils.educoder.Result result = response.body();
 						if (result == null) return;
 						SwingUtilities.invokeLater(() -> {
 							checkResult.setText(trans.get("RailButton.lbl.checkResult") + ": " + result.getResult());
@@ -291,7 +288,7 @@ public class RailButtonConfig extends RocketComponentConfig {
 				dialog.setLocationRelativeTo(null);
 				dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
 
-				final RailButtonMOIRequest request = new RailButtonMOIRequest();
+				final net.sf.openrocket.utils.educoder.RailButtonMOIRequest request = new net.sf.openrocket.utils.educoder.RailButtonMOIRequest();
 				request.setAnswer(new Double[]{component.getRotationalUnitInertia(),component.getLongitudinalUnitInertia()});
 
 				JButton checkButton = new JButton(trans.get("RailButton.lbl.check"));
@@ -303,8 +300,8 @@ public class RailButtonConfig extends RocketComponentConfig {
 				// Do not use UI thread to get the answer
 				checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateMOI(request).enqueue(new Callback<>() {
 					@Override
-					public void onResponse(@NotNull Call<Result2> call, @NotNull Response<Result2> response) {
-						Result2 result = response.body();
+					public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result2> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result2> response) {
+						net.sf.openrocket.utils.educoder.Result2 result = response.body();
 						if (result == null) return;
 						SwingUtilities.invokeLater(() -> {
 							checkResult.setText(trans.get("TubeFinSet.lbl.checkResult") + ": " + result.getResult()[0]+","+result.getResult()[1]);
@@ -313,7 +310,7 @@ public class RailButtonConfig extends RocketComponentConfig {
 					}
 
 					@Override
-					public void onFailure(@NotNull Call<Result2> call, @NotNull Throwable throwable) {
+					public void onFailure(@NotNull Call<net.sf.openrocket.utils.educoder.Result2> call, @NotNull Throwable throwable) {
 						SwingUtilities.invokeLater(() ->
 								JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
 					}

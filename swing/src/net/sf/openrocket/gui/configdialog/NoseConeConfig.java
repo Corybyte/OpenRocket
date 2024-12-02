@@ -1,7 +1,6 @@
 package net.sf.openrocket.gui.configdialog;
 
 
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -14,7 +13,6 @@ import java.util.List;
 import javax.swing.*;
 
 import net.miginfocom.swing.MigLayout;
-import net.sf.openrocket.aerodynamics.AerodynamicCalculator;
 import net.sf.openrocket.aerodynamics.AerodynamicForces;
 import net.sf.openrocket.aerodynamics.BarrowmanCalculator;
 import net.sf.openrocket.aerodynamics.FlightConditions;
@@ -29,7 +27,6 @@ import net.sf.openrocket.gui.adaptors.TransitionShapeModel;
 import net.sf.openrocket.gui.components.BasicSlider;
 import net.sf.openrocket.gui.components.DescriptionArea;
 import net.sf.openrocket.gui.components.UnitSelector;
-import net.sf.openrocket.gui.figureelements.RocketInfo;
 import net.sf.openrocket.l10n.Translator;
 import net.sf.openrocket.logging.WarningSet;
 import net.sf.openrocket.masscalc.MassCalculation;
@@ -37,15 +34,15 @@ import net.sf.openrocket.masscalc.MassCalculator;
 import net.sf.openrocket.masscalc.RigidBody;
 import net.sf.openrocket.material.Material;
 import net.sf.openrocket.motor.Motor;
-import net.sf.openrocket.motor.MotorConfiguration;
 import net.sf.openrocket.rocketcomponent.*;
 import net.sf.openrocket.startup.Application;
 import net.sf.openrocket.startup.OpenRocket;
 import net.sf.openrocket.unit.UnitGroup;
 import net.sf.openrocket.util.Coordinate;
-import net.sf.openrocket.util.Reflection;
 import net.sf.openrocket.util.Transformation;
-import net.sf.openrocket.utils.educoder.*;
+import net.sf.openrocket.utils.educoder.NoseConeCgRequest;
+import net.sf.openrocket.utils.educoder.WholeCpDTO;
+import net.sf.openrocket.utils.educoder.WholeCpRequest;
 import org.jetbrains.annotations.NotNull;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -257,8 +254,8 @@ public class NoseConeConfig extends RocketComponentConfig {
                     checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateCG(request).enqueue(new Callback<>() {
 
                         @Override
-                        public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
-                            Result result = response.body();
+                        public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result> response) {
+                            net.sf.openrocket.utils.educoder.Result result = response.body();
                             if (result == null) return;
                             SwingUtilities.invokeLater(() -> {
                                 checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult());
@@ -268,7 +265,7 @@ public class NoseConeConfig extends RocketComponentConfig {
 
 
                         @Override
-                        public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
+                        public void onFailure(@NotNull Call<net.sf.openrocket.utils.educoder.Result> call, @NotNull Throwable throwable) {
                             SwingUtilities.invokeLater(() ->
                                     JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
                         }
@@ -290,12 +287,12 @@ public class NoseConeConfig extends RocketComponentConfig {
                 dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
 
 
-                final WholeCgRequest request = new WholeCgRequest();
+                final net.sf.openrocket.utils.educoder.WholeCgRequest request = new net.sf.openrocket.utils.educoder.WholeCgRequest();
 
                 try {
                     //whole cg answer
                     RocketComponent rocket = document.getSelectedConfiguration().getRocket();
-                    MyComponent rootComponent = new MyComponent();
+                    net.sf.openrocket.utils.educoder.MyComponent rootComponent = new net.sf.openrocket.utils.educoder.MyComponent();
                     rootComponent.setComponentName(rocket.getComponentName());
                     rootComponent.setCg(rocket.getCG());
                     rootComponent.setPosition(rocket.getPosition());
@@ -338,8 +335,8 @@ public class NoseConeConfig extends RocketComponentConfig {
                     // Do not use UI thread to get the answer
                     checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateCG(request).enqueue(new Callback<>() {
                         @Override
-                        public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
-                            Result result = response.body();
+                        public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result> response) {
+                            net.sf.openrocket.utils.educoder.Result result = response.body();
                             if (result == null) return;
                             SwingUtilities.invokeLater(() -> {
                                 checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult());
@@ -348,7 +345,7 @@ public class NoseConeConfig extends RocketComponentConfig {
                         }
 
                         @Override
-                        public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
+                        public void onFailure(@NotNull Call<net.sf.openrocket.utils.educoder.Result> call, @NotNull Throwable throwable) {
                             SwingUtilities.invokeLater(() ->
                                     JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
                         }
@@ -371,7 +368,7 @@ public class NoseConeConfig extends RocketComponentConfig {
                 dialog.setLocationRelativeTo(null);
                 dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
 
-                final NoseConeCpRequest request = new NoseConeCpRequest();
+                final net.sf.openrocket.utils.educoder.NoseConeCpRequest request = new net.sf.openrocket.utils.educoder.NoseConeCpRequest();
 
                 FlightConfiguration curConfig = document.getSelectedConfiguration();
                 FlightConditions conditions = new FlightConditions(curConfig);
@@ -396,7 +393,7 @@ public class NoseConeConfig extends RocketComponentConfig {
                 try {
                     for (String fieldName : fieldNames) {
                         Field field = SymmetricComponentCalc.class.getDeclaredField(fieldName);
-                        Field reqField = NoseConeCpRequest.class.getDeclaredField(fieldName);
+                        Field reqField = net.sf.openrocket.utils.educoder.NoseConeCpRequest.class.getDeclaredField(fieldName);
                         field.setAccessible(true);
                         reqField.setAccessible(true);
                         Double value = (Double) field.get(componentCalc); // All values are double type
@@ -407,7 +404,7 @@ public class NoseConeConfig extends RocketComponentConfig {
                     }
                     for (String methodName : methodNames) {
                         Method method = FlightConditions.class.getDeclaredMethod(methodName);
-                        Method reqMethod = NoseConeCpRequest.class.getDeclaredMethod(methodName.replaceFirst("get", "set"), Double.class);
+                        Method reqMethod = net.sf.openrocket.utils.educoder.NoseConeCpRequest.class.getDeclaredMethod(methodName.replaceFirst("get", "set"), Double.class);
                         Double value = (Double) method.invoke(conditions); // All values are double type
                         reqMethod.invoke(request, value);
                         String labelText = trans.get("NoseConeCfg.lbl." + methodName.replaceFirst("get", "")) + ": " + value;
@@ -424,8 +421,8 @@ public class NoseConeConfig extends RocketComponentConfig {
                     // Do not use UI thread to get the answer
                     checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateCP(request).enqueue(new Callback<>() {
                         @Override
-                        public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
-                            Result result = response.body();
+                        public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result> response) {
+                            net.sf.openrocket.utils.educoder.Result result = response.body();
                             if (result == null) return;
                             SwingUtilities.invokeLater(() -> {
                                 checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult());
@@ -434,7 +431,7 @@ public class NoseConeConfig extends RocketComponentConfig {
                         }
 
                         @Override
-                        public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
+                        public void onFailure(@NotNull Call<net.sf.openrocket.utils.educoder.Result> call, @NotNull Throwable throwable) {
                             SwingUtilities.invokeLater(() ->
                                     JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
                         }
@@ -455,7 +452,7 @@ public class NoseConeConfig extends RocketComponentConfig {
                 dialog.setLocationRelativeTo(null);
                 dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
 
-                final WholeCpRequest request = new WholeCpRequest();
+                final WholeCpRequest request = new net.sf.openrocket.utils.educoder.WholeCpRequest();
                 List<WholeCpDTO> wholeCpDTOList = new ArrayList<>();
 
                 //get configuration
@@ -488,8 +485,8 @@ public class NoseConeConfig extends RocketComponentConfig {
                     for (Map.Entry<RocketComponent, ArrayList<InstanceContext>> mapEntry : imap.entrySet()) {
                         Coordinate[] cps = new Coordinate[machs.length];
                         Coordinate[] cps2 = new Coordinate[aoa.length];
-                        WholeCpDTO wholeCpDTO = new WholeCpDTO();
-                        WholeCpDTO wholeCpDTO2 = new WholeCpDTO();
+                        net.sf.openrocket.utils.educoder.WholeCpDTO wholeCpDTO = new net.sf.openrocket.utils.educoder.WholeCpDTO();
+                        net.sf.openrocket.utils.educoder.WholeCpDTO wholeCpDTO2 = new net.sf.openrocket.utils.educoder.WholeCpDTO();
                         //循环传入mach
                         for (int j = 0; j < machs.length; j++) {
                             final RocketComponent comp = mapEntry.getKey();
@@ -569,8 +566,8 @@ public class NoseConeConfig extends RocketComponentConfig {
                     // Do not use UI thread to get the answer
                     checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateCP(request).enqueue(new Callback<>() {
                         @Override
-                        public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
-                            Result result = response.body();
+                        public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result> response) {
+                            net.sf.openrocket.utils.educoder.Result result = response.body();
                             if (result == null) return;
                             SwingUtilities.invokeLater(() -> {
                                 checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult());
@@ -579,7 +576,7 @@ public class NoseConeConfig extends RocketComponentConfig {
                         }
 
                         @Override
-                        public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
+                        public void onFailure(@NotNull Call<net.sf.openrocket.utils.educoder.Result> call, @NotNull Throwable throwable) {
                             SwingUtilities.invokeLater(() ->
                                     JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
                         }
@@ -604,7 +601,7 @@ public class NoseConeConfig extends RocketComponentConfig {
                 dialog.setLocationRelativeTo(null);
                 dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
 
-                final NoseConeMOIRequest request = new NoseConeMOIRequest();
+                final net.sf.openrocket.utils.educoder.NoseConeMOIRequest request = new net.sf.openrocket.utils.educoder.NoseConeMOIRequest();
                 // answer = rotationalUnitInertia
                 request.setAnswer(new Double[]{component.getRotationalUnitInertia(), component.getLongitudinalUnitInertia()});
                 String[] transitionMethodNames = {"getForeRadius", "getAftRadius"};
@@ -615,7 +612,7 @@ public class NoseConeConfig extends RocketComponentConfig {
                     //get and set  properties
                     for (String fieldName : fieldNames) {
                         Field field = SymmetricComponent.class.getDeclaredField(fieldName);
-                        Field reqField = NoseConeMOIRequest.class.getDeclaredField(fieldName);
+                        Field reqField = net.sf.openrocket.utils.educoder.NoseConeMOIRequest.class.getDeclaredField(fieldName);
                         field.setAccessible(true);
                         reqField.setAccessible(true);
                         Object value = field.get(component);
@@ -636,7 +633,7 @@ public class NoseConeConfig extends RocketComponentConfig {
                     for (String fieldName : transitionFieldNames) {
                         Field field = Transition.class.getDeclaredField(fieldName);
                         String reqFieldName = "transition" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
-                        Field reqField = NoseConeMOIRequest.class.getDeclaredField(reqFieldName);
+                        Field reqField = net.sf.openrocket.utils.educoder.NoseConeMOIRequest.class.getDeclaredField(reqFieldName);
                         field.setAccessible(true);
                         reqField.setAccessible(true);
                         Object value = field.get(component);
@@ -658,7 +655,7 @@ public class NoseConeConfig extends RocketComponentConfig {
                     // AftRadius
                     for (String methodName : transitionMethodNames) {
                         Method method = Transition.class.getDeclaredMethod(methodName);
-                        Method reqMethod = NoseConeMOIRequest.class
+                        Method reqMethod = net.sf.openrocket.utils.educoder.NoseConeMOIRequest.class
                                 .getDeclaredMethod(methodName.replaceFirst("get", "setTransition"), Double.class);
                         Double value = (Double) method.invoke(component); // All values are double type
                         reqMethod.invoke(request, value);
@@ -675,8 +672,8 @@ public class NoseConeConfig extends RocketComponentConfig {
 
                     checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateMOI(request).enqueue(new Callback<>() {
                         @Override
-                        public void onResponse(@NotNull Call<Result2> call, @NotNull Response<Result2> response) {
-                            Result2 result = response.body();
+                        public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result2> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result2> response) {
+                            net.sf.openrocket.utils.educoder.Result2 result = response.body();
                             if (result == null) return;
                             SwingUtilities.invokeLater(() -> {
                                 checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult()[0] + "," + result.getResult()[1]);
@@ -685,7 +682,7 @@ public class NoseConeConfig extends RocketComponentConfig {
                         }
 
                         @Override
-                        public void onFailure(@NotNull Call<Result2> call, @NotNull Throwable throwable) {
+                        public void onFailure(@NotNull Call<net.sf.openrocket.utils.educoder.Result2> call, @NotNull Throwable throwable) {
                             SwingUtilities.invokeLater(() ->
                                     JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
                         }
@@ -708,14 +705,14 @@ public class NoseConeConfig extends RocketComponentConfig {
                 dialog.setLocationRelativeTo(null);
                 dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
 
-                final WholeMOIRequest request = new WholeMOIRequest();
+                final net.sf.openrocket.utils.educoder.WholeMOIRequest request = new net.sf.openrocket.utils.educoder.WholeMOIRequest();
 
 
                 try {
                     FlightConfiguration configuration = document.getSelectedConfiguration();
 
                     RocketComponent rocket = document.getSelectedConfiguration().getRocket();
-                    WholeMOIDTO rootComponent = new WholeMOIDTO();
+                    net.sf.openrocket.utils.educoder.WholeMOIDTO rootComponent = new net.sf.openrocket.utils.educoder.WholeMOIDTO();
                     //copy field
                     rootComponent.copyValues(rocket, document.getSelectedConfiguration());
 
@@ -756,8 +753,8 @@ public class NoseConeConfig extends RocketComponentConfig {
                     // Do not use UI thread to get the answer
                     checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateMOI(request).enqueue(new Callback<>() {
                         @Override
-                        public void onResponse(@NotNull Call<Result2> call, @NotNull Response<Result2> response) {
-                            Result2 result = response.body();
+                        public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result2> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result2> response) {
+                            net.sf.openrocket.utils.educoder.Result2 result = response.body();
                             if (result == null) return;
                             SwingUtilities.invokeLater(() -> {
                                 checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult()[0] + "," + result.getResult()[1]);
@@ -766,7 +763,7 @@ public class NoseConeConfig extends RocketComponentConfig {
                         }
 
                         @Override
-                        public void onFailure(@NotNull Call<Result2> call, @NotNull Throwable throwable) {
+                        public void onFailure(@NotNull Call<net.sf.openrocket.utils.educoder.Result2> call, @NotNull Throwable throwable) {
                             SwingUtilities.invokeLater(() ->
                                     JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
                         }

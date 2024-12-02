@@ -1,6 +1,8 @@
 package net.sf.openrocket.utils.educoder;
 
-public class StreamerCgRequest extends Request{
+import net.sf.openrocket.utils.educoder.Request;
+
+public class ShockCordCgRequest extends Request {
     private Double length;
 
     public Double getLength() {

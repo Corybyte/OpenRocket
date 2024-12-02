@@ -1,13 +1,11 @@
 package net.sf.openrocket.utils.educoder;
 
-import net.sf.openrocket.util.Coordinate;
-
-import java.util.List;
+import net.sf.openrocket.utils.educoder.WholeMOIDTO;
 
 public class WholeMOIRequest {
-    private WholeMOIDTO wholeMOIDTO;
+    private net.sf.openrocket.utils.educoder.WholeMOIDTO wholeMOIDTO;
     private Double[] answer;
-    public WholeMOIDTO getWholeMOIDTO() {
+    public net.sf.openrocket.utils.educoder.WholeMOIDTO getWholeMOIDTO() {
         return wholeMOIDTO;
     }
 

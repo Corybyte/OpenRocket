@@ -1,15 +1,15 @@
 package net.sf.openrocket.utils.educoder;
 
-import net.sf.openrocket.rocketcomponent.RocketComponent;
+import net.sf.openrocket.utils.educoder.Request;
+import net.sf.openrocket.utils.educoder.WholeCpDTO;
 
 import java.util.List;
-import java.util.Map;
 
-public class WholeCpRequest extends Request{
+public class WholeCpRequest extends Request {
 
-    List<WholeCpDTO> list;
+    List<net.sf.openrocket.utils.educoder.WholeCpDTO> list;
 
-    public List<WholeCpDTO> getList() {
+    public List<net.sf.openrocket.utils.educoder.WholeCpDTO> getList() {
         return list;
     }
 

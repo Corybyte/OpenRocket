@@ -7,7 +7,6 @@ import net.miginfocom.swing.MigLayout;
 import net.sf.openrocket.aerodynamics.AerodynamicForces;
 import net.sf.openrocket.aerodynamics.FlightConditions;
 import net.sf.openrocket.aerodynamics.barrowman.LaunchLugCalc;
-import net.sf.openrocket.aerodynamics.barrowman.SymmetricComponentCalc;
 import net.sf.openrocket.document.OpenRocketDocument;
 import net.sf.openrocket.gui.SpinnerEditor;
 import net.sf.openrocket.gui.adaptors.CustomFocusTraversalPolicy;
@@ -25,7 +24,7 @@ import net.sf.openrocket.startup.OpenRocket;
 import net.sf.openrocket.unit.UnitGroup;
 
 import net.sf.openrocket.util.Transformation;
-import net.sf.openrocket.utils.educoder.*;
+import net.sf.openrocket.utils.educoder.LaunchLugCgRequest;
 import org.jetbrains.annotations.NotNull;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -132,7 +131,7 @@ public class LaunchLugConfig extends RocketComponentConfig {
 				dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
 
 
-				LaunchLugCgRequest request = new LaunchLugCgRequest();
+				net.sf.openrocket.utils.educoder.LaunchLugCgRequest request = new LaunchLugCgRequest();
 				request.setLength(component.getLength());
 				request.setAnswer(component.getComponentCG().x);
 
@@ -166,8 +165,8 @@ public class LaunchLugConfig extends RocketComponentConfig {
 				// Do not use UI thread to get the answer
 				checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateCG(request).enqueue(new Callback<>() {
 					@Override
-					public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
-						Result result = response.body();
+					public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result> response) {
+						net.sf.openrocket.utils.educoder.Result result = response.body();
 						if (result == null) return;
 						SwingUtilities.invokeLater(() -> {
 							checkResult.setText(trans.get("LaunchLug.lbl.checkResult") + ": " + result.getResult());
@@ -176,7 +175,7 @@ public class LaunchLugConfig extends RocketComponentConfig {
 					}
 
 					@Override
-					public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
+					public void onFailure(@NotNull Call<net.sf.openrocket.utils.educoder.Result> call, @NotNull Throwable throwable) {
 						SwingUtilities.invokeLater(() ->
 								JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
 					}
@@ -195,7 +194,7 @@ public class LaunchLugConfig extends RocketComponentConfig {
 				dialog.setLocationRelativeTo(null);
 				dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
 
-				LaunchLugCpRequest request = new LaunchLugCpRequest();
+				net.sf.openrocket.utils.educoder.LaunchLugCpRequest request = new net.sf.openrocket.utils.educoder.LaunchLugCpRequest();
 				FlightConfiguration curConfig = document.getSelectedConfiguration();
 				FlightConditions conditions = new FlightConditions(curConfig);
 				LaunchLugCalc componentCalc = new LaunchLugCalc(component);
@@ -213,8 +212,8 @@ public class LaunchLugConfig extends RocketComponentConfig {
 				// Do not use UI thread to get the answer
 				checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateCP(request).enqueue(new Callback<>() {
 					@Override
-					public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
-						Result result = response.body();
+					public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result> response) {
+						net.sf.openrocket.utils.educoder.Result result = response.body();
 						if (result == null) return;
 						SwingUtilities.invokeLater(() -> {
 							checkResult.setText(trans.get("LaunchLug.lbl.checkResult") + ": " + result.getResult());
@@ -223,7 +222,7 @@ public class LaunchLugConfig extends RocketComponentConfig {
 					}
 
 					@Override
-					public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
+					public void onFailure(@NotNull Call<net.sf.openrocket.utils.educoder.Result> call, @NotNull Throwable throwable) {
 						SwingUtilities.invokeLater(() ->
 								JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
 					}
@@ -242,14 +241,14 @@ public class LaunchLugConfig extends RocketComponentConfig {
 				dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
 
 
-				LaunchLugMOIRequest request = new LaunchLugMOIRequest();
+				net.sf.openrocket.utils.educoder.LaunchLugMOIRequest request = new net.sf.openrocket.utils.educoder.LaunchLugMOIRequest();
 				request.setAnswer(new Double[]{component.getRotationalUnitInertia(),component.getLongitudinalUnitInertia()});
 				request.setLength(c.getLength());
 				String[] methodNames = {"getOuterRadius","getInnerRadius"};
 				try {
 					for (String methodName:methodNames){
 						Method declaredMethod = LaunchLug.class.getDeclaredMethod(methodName);
-						Method reqMethod = LaunchLugMOIRequest.class.getDeclaredMethod(
+						Method reqMethod = net.sf.openrocket.utils.educoder.LaunchLugMOIRequest.class.getDeclaredMethod(
 								methodName.replaceFirst("get", "set"), Double.class);
 						declaredMethod.setAccessible(true);
 						reqMethod.setAccessible(true);
@@ -270,8 +269,8 @@ public class LaunchLugConfig extends RocketComponentConfig {
 				// Do not use UI thread to get the answer
 				checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateMOI(request).enqueue(new Callback<>() {
 					@Override
-					public void onResponse(@NotNull Call<Result2> call, @NotNull Response<Result2> response) {
-						Result2 result = response.body();
+					public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result2> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result2> response) {
+						net.sf.openrocket.utils.educoder.Result2 result = response.body();
 						if (result == null) return;
 						SwingUtilities.invokeLater(() -> {
 							checkResult.setText(trans.get("TubeFinSet.lbl.checkResult") + ": " + result.getResult()[0]+","+result.getResult()[1]);
@@ -280,7 +279,7 @@ public class LaunchLugConfig extends RocketComponentConfig {
 					}
 
 					@Override
-					public void onFailure(@NotNull Call<Result2> call, @NotNull Throwable throwable) {
+					public void onFailure(@NotNull Call<net.sf.openrocket.utils.educoder.Result2> call, @NotNull Throwable throwable) {
 						SwingUtilities.invokeLater(() ->
 								JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
 					}

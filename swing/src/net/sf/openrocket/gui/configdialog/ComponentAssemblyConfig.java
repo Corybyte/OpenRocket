@@ -21,7 +21,7 @@ import net.sf.openrocket.rocketcomponent.position.RadiusMethod;
 import net.sf.openrocket.startup.Application;
 import net.sf.openrocket.startup.OpenRocket;
 import net.sf.openrocket.unit.UnitGroup;
-import net.sf.openrocket.utils.educoder.*;
+import net.sf.openrocket.utils.educoder.Result;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -139,7 +139,7 @@ public class ComponentAssemblyConfig extends RocketComponentConfig {
 				dialog.setLocationRelativeTo(null);
 				dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
 
-				final PodsCgRequest request = new PodsCgRequest();
+				final net.sf.openrocket.utils.educoder.PodsCgRequest request = new net.sf.openrocket.utils.educoder.PodsCgRequest();
 				request.setAnswer(component.getComponentCG().x);
 
 				JButton checkButton = new JButton(trans.get("common.lbl.check"));
@@ -151,8 +151,8 @@ public class ComponentAssemblyConfig extends RocketComponentConfig {
 				// Do not use UI thread to get the answer
 				checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateCG(request).enqueue(new Callback<>() {
 					@Override
-					public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
-						Result result = response.body();
+					public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result> response) {
+						net.sf.openrocket.utils.educoder.Result result = response.body();
 						if (result == null) return;
 						SwingUtilities.invokeLater(() -> {
 							checkResult.setText(trans.get("common.lbl.checkResult") + ": " + result.getResult());
@@ -161,7 +161,7 @@ public class ComponentAssemblyConfig extends RocketComponentConfig {
 					}
 
 					@Override
-					public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
+					public void onFailure(@NotNull Call<net.sf.openrocket.utils.educoder.Result> call, @NotNull Throwable throwable) {
 						SwingUtilities.invokeLater(() ->
 								JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
 					}
@@ -180,7 +180,7 @@ public class ComponentAssemblyConfig extends RocketComponentConfig {
 				dialog.setLocationRelativeTo(null);
 				dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
 
-				final PodsCpRequest request = new PodsCpRequest();
+				final net.sf.openrocket.utils.educoder.PodsCpRequest request = new net.sf.openrocket.utils.educoder.PodsCpRequest();
 
 				request.setAnswer(0.0);
 
@@ -196,8 +196,8 @@ public class ComponentAssemblyConfig extends RocketComponentConfig {
 					// Do not use UI thread to get the answer
 					checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateCP(request).enqueue(new Callback<>() {
 						@Override
-						public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
-							Result result = response.body();
+						public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result> response) {
+							net.sf.openrocket.utils.educoder.Result result = response.body();
 							if (result == null) return;
 							SwingUtilities.invokeLater(() -> {
 								checkResult.setText(trans.get("common.lbl.checkResult") + ": " + result.getResult());
@@ -228,7 +228,7 @@ public class ComponentAssemblyConfig extends RocketComponentConfig {
 				dialog.setLocationRelativeTo(null);
 				dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
 
-				final PodsMOIRequest request = new PodsMOIRequest();
+				final net.sf.openrocket.utils.educoder.PodsMOIRequest request = new net.sf.openrocket.utils.educoder.PodsMOIRequest();
 				request.setAnswer(new Double[]{component.getRotationalUnitInertia(),component.getLongitudinalUnitInertia()});
 
 				JButton checkButton = new JButton(trans.get("common.lbl.check"));
@@ -240,8 +240,8 @@ public class ComponentAssemblyConfig extends RocketComponentConfig {
 				// Do not use UI thread to get the answer
 				checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateMOI(request).enqueue(new Callback<>() {
 					@Override
-					public void onResponse(@NotNull Call<Result2> call, @NotNull Response<Result2> response) {
-						Result2 result = response.body();
+					public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result2> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result2> response) {
+						net.sf.openrocket.utils.educoder.Result2 result = response.body();
 						if (result == null) return;
 						SwingUtilities.invokeLater(() -> {
 							checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult()[0]+","+result.getResult()[1]);
@@ -251,7 +251,7 @@ public class ComponentAssemblyConfig extends RocketComponentConfig {
 					}
 
 					@Override
-					public void onFailure(@NotNull Call<Result2> call, @NotNull Throwable throwable) {
+					public void onFailure(@NotNull Call<net.sf.openrocket.utils.educoder.Result2> call, @NotNull Throwable throwable) {
 						SwingUtilities.invokeLater(() ->
 								JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
 					}

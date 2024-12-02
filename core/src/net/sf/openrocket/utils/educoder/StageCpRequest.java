@@ -1,6 +1,8 @@
 package net.sf.openrocket.utils.educoder;
 
-public class StageCgRequest extends Request{
+import net.sf.openrocket.utils.educoder.Request;
+
+public class StageCpRequest extends Request {
 
     @Override
     public String toString() {

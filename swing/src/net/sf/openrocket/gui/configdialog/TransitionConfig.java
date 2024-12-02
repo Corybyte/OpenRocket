@@ -5,11 +5,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.*;
-import javax.swing.plaf.synth.SynthOptionPaneUI;
 
 import net.miginfocom.swing.MigLayout;
 import net.sf.openrocket.aerodynamics.AerodynamicForces;
@@ -31,9 +28,8 @@ import net.sf.openrocket.rocketcomponent.*;
 import net.sf.openrocket.startup.Application;
 import net.sf.openrocket.startup.OpenRocket;
 import net.sf.openrocket.unit.UnitGroup;
-import net.sf.openrocket.util.Coordinate;
 import net.sf.openrocket.util.Transformation;
-import net.sf.openrocket.utils.educoder.*;
+import net.sf.openrocket.utils.educoder.Result;
 import org.jetbrains.annotations.NotNull;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -213,7 +209,7 @@ public class TransitionConfig extends RocketComponentConfig {
 				dialog.setLocationRelativeTo(null);
 				dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
 
-				final TransitionCgRequest request = new TransitionCgRequest();
+				final net.sf.openrocket.utils.educoder.TransitionCgRequest request = new net.sf.openrocket.utils.educoder.TransitionCgRequest();
 				request.setAnswer(component.getComponentCG().x);
 
 				String[] transitionMethodNames = {"getForeRadius", "getAftRadius"};
@@ -224,7 +220,7 @@ public class TransitionConfig extends RocketComponentConfig {
 				try {
 					for (String fieldName : fieldNames) {
 						Field field = SymmetricComponent.class.getDeclaredField(fieldName);
-						Field reqField = TransitionCgRequest.class.getDeclaredField(fieldName);
+						Field reqField = net.sf.openrocket.utils.educoder.TransitionCgRequest.class.getDeclaredField(fieldName);
 						field.setAccessible(true);
 						reqField.setAccessible(true);
 						Object value = field.get(component);
@@ -247,7 +243,7 @@ public class TransitionConfig extends RocketComponentConfig {
 					for (String fieldName : transitionFieldNames) {
 						Field field = Transition.class.getDeclaredField(fieldName);
 						String reqFieldName = "transition" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
-						Field reqField = TransitionCgRequest.class.getDeclaredField(reqFieldName);
+						Field reqField = net.sf.openrocket.utils.educoder.TransitionCgRequest.class.getDeclaredField(reqFieldName);
 						field.setAccessible(true);
 						reqField.setAccessible(true);
 						Object value = field.get(component);
@@ -259,7 +255,7 @@ public class TransitionConfig extends RocketComponentConfig {
 					}
 					for (String methodName : transitionMethodNames) {
 						Method method = Transition.class.getDeclaredMethod(methodName);
-						Method reqMethod = TransitionCgRequest.class
+						Method reqMethod = net.sf.openrocket.utils.educoder.TransitionCgRequest.class
 								.getDeclaredMethod(methodName.replaceFirst("get", "setTransition"), Double.class);
 						Double value = (Double) method.invoke(component); // All values are double type
 						reqMethod.invoke(request, value);
@@ -275,8 +271,8 @@ public class TransitionConfig extends RocketComponentConfig {
 					// Do not use UI thread to get the answer
 					checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateCG(request).enqueue(new Callback<>() {
 						@Override
-						public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
-							Result result = response.body();
+						public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result> response) {
+							net.sf.openrocket.utils.educoder.Result result = response.body();
 							if (result == null) return;
 							SwingUtilities.invokeLater(() -> {
 								checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult());
@@ -285,7 +281,7 @@ public class TransitionConfig extends RocketComponentConfig {
 						}
 
 						@Override
-						public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
+						public void onFailure(@NotNull Call<net.sf.openrocket.utils.educoder.Result> call, @NotNull Throwable throwable) {
 							SwingUtilities.invokeLater(() ->
 									JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
 						}
@@ -307,7 +303,7 @@ public class TransitionConfig extends RocketComponentConfig {
 				dialog.setLocationRelativeTo(null);
 				dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
 
-				final TransitionCpRequest request = new TransitionCpRequest();
+				final net.sf.openrocket.utils.educoder.TransitionCpRequest request = new net.sf.openrocket.utils.educoder.TransitionCpRequest();
 
 				FlightConfiguration curConfig = document.getSelectedConfiguration();
 				FlightConditions conditions = new FlightConditions(curConfig);
@@ -323,7 +319,7 @@ public class TransitionConfig extends RocketComponentConfig {
 				try {
 					for (String fieldName : fieldNames) {
 						Field field = SymmetricComponentCalc.class.getDeclaredField(fieldName);
-						Field reqField = TransitionCpRequest.class.getDeclaredField(fieldName);
+						Field reqField = net.sf.openrocket.utils.educoder.TransitionCpRequest.class.getDeclaredField(fieldName);
 						field.setAccessible(true);
 						reqField.setAccessible(true);
 						Double value = (Double) field.get(componentCalc); // All values are double type
@@ -334,7 +330,7 @@ public class TransitionConfig extends RocketComponentConfig {
 					}
 					for (String methodName : methodNames) {
 						Method method = FlightConditions.class.getDeclaredMethod(methodName);
-						Method reqMethod = TransitionCpRequest.class.getDeclaredMethod(methodName.replaceFirst("get", "set"), Double.class);
+						Method reqMethod = net.sf.openrocket.utils.educoder.TransitionCpRequest.class.getDeclaredMethod(methodName.replaceFirst("get", "set"), Double.class);
 						Double value = (Double) method.invoke(conditions); // All values are double type
 						reqMethod.invoke(request, value);
 						String labelText = trans.get("NoseConeCfg.lbl." + methodName.replaceFirst("get", "")) + ": " + value;
@@ -351,8 +347,8 @@ public class TransitionConfig extends RocketComponentConfig {
 					// Do not use UI thread to get the answer
 					checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateCP(request).enqueue(new Callback<>() {
 						@Override
-						public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
-							Result result = response.body();
+						public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result> response) {
+							net.sf.openrocket.utils.educoder.Result result = response.body();
 							if (result == null) return;
 							SwingUtilities.invokeLater(() -> {
 								checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult());
@@ -383,7 +379,7 @@ public class TransitionConfig extends RocketComponentConfig {
 				dialog.setLocationRelativeTo(null);
 				dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
 
-				final TransitionMOIRequest request = new TransitionMOIRequest();
+				final net.sf.openrocket.utils.educoder.TransitionMOIRequest request = new net.sf.openrocket.utils.educoder.TransitionMOIRequest();
 				// answer = rotationalUnitInertia
 				request.setAnswer(new Double[]{component.getRotationalUnitInertia(),component.getLongitudinalUnitInertia()});
 
@@ -396,7 +392,7 @@ public class TransitionConfig extends RocketComponentConfig {
 					//get and set  properties
 					for (String fieldName:fieldNames){
 						Field field = SymmetricComponent.class.getDeclaredField(fieldName);
-						Field reqField = TransitionMOIRequest.class.getDeclaredField(fieldName);
+						Field reqField = net.sf.openrocket.utils.educoder.TransitionMOIRequest.class.getDeclaredField(fieldName);
 						field.setAccessible(true);
 						reqField.setAccessible(true);
 						Object value = field.get(component);
@@ -415,7 +411,7 @@ public class TransitionConfig extends RocketComponentConfig {
 					for (String fieldName : transitionFieldNames) {
 						Field field = Transition.class.getDeclaredField(fieldName);
 						String reqFieldName = "transition" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
-						Field reqField = TransitionMOIRequest.class.getDeclaredField(reqFieldName);
+						Field reqField = net.sf.openrocket.utils.educoder.TransitionMOIRequest.class.getDeclaredField(reqFieldName);
 						field.setAccessible(true);
 						reqField.setAccessible(true);
 						Object value = field.get(component);
@@ -428,7 +424,7 @@ public class TransitionConfig extends RocketComponentConfig {
 					// AftRadius
 					for (String methodName : transitionMethodNames) {
 						Method method = Transition.class.getDeclaredMethod(methodName);
-						Method reqMethod = TransitionMOIRequest.class
+						Method reqMethod = net.sf.openrocket.utils.educoder.TransitionMOIRequest.class
 								.getDeclaredMethod(methodName.replaceFirst("get", "setTransition"), Double.class);
 						Double value = (Double) method.invoke(component); // All values are double type
 						reqMethod.invoke(request, value);
@@ -444,8 +440,8 @@ public class TransitionConfig extends RocketComponentConfig {
 					// Do not use UI thread to get the answer
 					checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateMOI(request).enqueue(new Callback<>() {
 						@Override
-						public void onResponse(@NotNull Call<Result2> call, @NotNull Response<Result2> response) {
-							Result2 result = response.body();
+						public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result2> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result2> response) {
+							net.sf.openrocket.utils.educoder.Result2 result = response.body();
 							if (result == null) return;
 							SwingUtilities.invokeLater(() -> {
 								checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult()[0]+","+result.getResult()[1]);
@@ -454,7 +450,7 @@ public class TransitionConfig extends RocketComponentConfig {
 						}
 
 						@Override
-						public void onFailure(@NotNull Call<Result2> call, @NotNull Throwable throwable) {
+						public void onFailure(@NotNull Call<net.sf.openrocket.utils.educoder.Result2> call, @NotNull Throwable throwable) {
 							SwingUtilities.invokeLater(() ->
 									JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
 						}

@@ -21,16 +21,14 @@ import net.sf.openrocket.rocketcomponent.*;
 import net.sf.openrocket.startup.Application;
 import net.sf.openrocket.startup.OpenRocket;
 import net.sf.openrocket.unit.UnitGroup;
-import net.sf.openrocket.util.MathUtil;
 import net.sf.openrocket.util.Transformation;
-import net.sf.openrocket.utils.educoder.*;
+import net.sf.openrocket.utils.educoder.BodyTubeCgRequest;
 import org.jetbrains.annotations.NotNull;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 @SuppressWarnings("serial")
@@ -130,7 +128,7 @@ public class BodyTubeConfig extends RocketComponentConfig {
 				dialog.setLocationRelativeTo(null);
 				dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
 
-				final BodyTubeCgRequest request = new BodyTubeCgRequest(component.getLength());
+				final net.sf.openrocket.utils.educoder.BodyTubeCgRequest request = new BodyTubeCgRequest(component.getLength());
 				request.setAnswer(component.getComponentCG().x);
 				String labelText = trans.get("BodyTube.lbl.length") + ": " + request.getLength();
 				String constraints = "newline, height 30!";
@@ -145,8 +143,8 @@ public class BodyTubeConfig extends RocketComponentConfig {
 				// Do not use UI thread to get the answer
 				checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateCG(request).enqueue(new Callback<>() {
 					@Override
-					public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
-						Result result = response.body();
+					public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result> response) {
+						net.sf.openrocket.utils.educoder.Result result = response.body();
 						if (result == null) return;
 						SwingUtilities.invokeLater(() -> {
 							checkResult.setText(trans.get("BodyTube.lbl.checkResult") + ": " + result.getResult());
@@ -155,7 +153,7 @@ public class BodyTubeConfig extends RocketComponentConfig {
 					}
 
 					@Override
-					public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
+					public void onFailure(@NotNull Call<net.sf.openrocket.utils.educoder.Result> call, @NotNull Throwable throwable) {
 						SwingUtilities.invokeLater(() ->
 								JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
 					}
@@ -174,7 +172,7 @@ public class BodyTubeConfig extends RocketComponentConfig {
 				dialog.setLocationRelativeTo(null);
 				dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
 
-				final BodyTubeCpRequest request = new BodyTubeCpRequest();
+				final net.sf.openrocket.utils.educoder.BodyTubeCpRequest request = new net.sf.openrocket.utils.educoder.BodyTubeCpRequest();
 				request.setLength(c.getLength());
 				request.setDivisions(128);
 				try {
@@ -199,7 +197,7 @@ public class BodyTubeConfig extends RocketComponentConfig {
 				try {
 					for (String fieldName : fieldNames) {
 						Field field = SymmetricComponentCalc.class.getDeclaredField(fieldName);
-						Field reqField = BodyTubeCpRequest.class.getDeclaredField(fieldName);
+						Field reqField = net.sf.openrocket.utils.educoder.BodyTubeCpRequest.class.getDeclaredField(fieldName);
 						field.setAccessible(true);
 						reqField.setAccessible(true);
 						Double value = (Double) field.get(componentCalc); // All values are double type
@@ -210,7 +208,7 @@ public class BodyTubeConfig extends RocketComponentConfig {
 					}
 					for (String methodName : methodNames) {
 						Method method = FlightConditions.class.getDeclaredMethod(methodName);
-						Method reqMethod = BodyTubeCpRequest.class.getDeclaredMethod(methodName.replaceFirst("get", "set"), Double.class);
+						Method reqMethod = net.sf.openrocket.utils.educoder.BodyTubeCpRequest.class.getDeclaredMethod(methodName.replaceFirst("get", "set"), Double.class);
 						Double value = (Double) method.invoke(conditions); // All values are double type
 						reqMethod.invoke(request, value);
 						String labelText = trans.get("BodyTube.lbl." + methodName.replaceFirst("get", "")) + ": " + value;
@@ -226,8 +224,8 @@ public class BodyTubeConfig extends RocketComponentConfig {
 					// Do not use UI thread to get the answer
 					checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateCP(request).enqueue(new Callback<>() {
 						@Override
-						public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
-							Result result = response.body();
+						public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result> response) {
+							net.sf.openrocket.utils.educoder.Result result = response.body();
 							if (result == null) return;
 							SwingUtilities.invokeLater(() -> {
 								checkResult.setText(trans.get("BodyTube.lbl.checkResult") + ": " + result.getResult());
@@ -236,7 +234,7 @@ public class BodyTubeConfig extends RocketComponentConfig {
 						}
 
 						@Override
-						public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
+						public void onFailure(@NotNull Call<net.sf.openrocket.utils.educoder.Result> call, @NotNull Throwable throwable) {
 							SwingUtilities.invokeLater(() ->
 									JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
 						}
@@ -258,7 +256,7 @@ public class BodyTubeConfig extends RocketComponentConfig {
 				dialog.setLocationRelativeTo(null);
 				dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
 
-				final BodyTubeMOIRequest request = new BodyTubeMOIRequest();
+				final net.sf.openrocket.utils.educoder.BodyTubeMOIRequest request = new net.sf.openrocket.utils.educoder.BodyTubeMOIRequest();
 				// answer = rotationalUnitInertia
 				request.setAnswer(new Double[]{component.getRotationalUnitInertia(),component.getLongitudinalUnitInertia()});
 
@@ -270,7 +268,7 @@ public class BodyTubeConfig extends RocketComponentConfig {
 					//get and set  properties
 					for (String fieldName:fieldNames){
 						Field field = SymmetricComponent.class.getDeclaredField(fieldName);
-						Field reqField = BodyTubeMOIRequest.class.getDeclaredField(fieldName);
+						Field reqField = net.sf.openrocket.utils.educoder.BodyTubeMOIRequest.class.getDeclaredField(fieldName);
 						field.setAccessible(true);
 						reqField.setAccessible(true);
 						Object value = field.get(component);
@@ -282,7 +280,7 @@ public class BodyTubeConfig extends RocketComponentConfig {
 					// AftRadius
 					for (String methodName : MethodNames) {
 						Method method = BodyTube.class.getDeclaredMethod(methodName);
-						Method reqMethod = BodyTubeMOIRequest.class.getDeclaredMethod(methodName.replaceFirst("get","set"), Double.class);
+						Method reqMethod = net.sf.openrocket.utils.educoder.BodyTubeMOIRequest.class.getDeclaredMethod(methodName.replaceFirst("get","set"), Double.class);
 						Double value = (Double) method.invoke(component); // All values are double type
 						reqMethod.invoke(request, value);
 						String labelText = methodName.replaceFirst("get","") + ": " + value;
@@ -297,8 +295,8 @@ public class BodyTubeConfig extends RocketComponentConfig {
 					// Do not use UI thread to get the answer
 					checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateMOI(request).enqueue(new Callback<>() {
 						@Override
-						public void onResponse(@NotNull Call<Result2> call, @NotNull Response<Result2> response) {
-							Result2 result = response.body();
+						public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result2> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result2> response) {
+							net.sf.openrocket.utils.educoder.Result2 result = response.body();
 							if (result == null) return;
 							SwingUtilities.invokeLater(() -> {
 								checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult()[0]+","+result.getResult()[1]);
@@ -307,7 +305,7 @@ public class BodyTubeConfig extends RocketComponentConfig {
 						}
 
 						@Override
-						public void onFailure(@NotNull Call<Result2> call, @NotNull Throwable throwable) {
+						public void onFailure(@NotNull Call<net.sf.openrocket.utils.educoder.Result2> call, @NotNull Throwable throwable) {
 							SwingUtilities.invokeLater(() ->
 									JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
 						}

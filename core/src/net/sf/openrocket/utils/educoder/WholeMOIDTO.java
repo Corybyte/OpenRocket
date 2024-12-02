@@ -10,7 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class WholeMOIDTO {
-    List<WholeMOIDTO> children;
+    List<net.sf.openrocket.utils.educoder.WholeMOIDTO> children;
 
     Coordinate cg;
     Coordinate position;
@@ -160,7 +160,7 @@ public class WholeMOIDTO {
         // Recursively copy children
         this.children = new ArrayList<>();
         for (RocketComponent child : other.getChildren()) {
-            WholeMOIDTO newChild = new WholeMOIDTO();
+            net.sf.openrocket.utils.educoder.WholeMOIDTO newChild = new net.sf.openrocket.utils.educoder.WholeMOIDTO();
             newChild.copyValues(child, configuration); // Recursive call to copy child components
             this.children.add(newChild);
         }
@@ -176,7 +176,7 @@ public class WholeMOIDTO {
 
     String componentName;
 
-    public void setChildren(List<WholeMOIDTO> children) {
+    public void setChildren(List<net.sf.openrocket.utils.educoder.WholeMOIDTO> children) {
         this.children = children;
     }
 
@@ -197,7 +197,7 @@ public class WholeMOIDTO {
         this.position = position;
     }
 
-    public List<WholeMOIDTO> getChildren() {
+    public List<net.sf.openrocket.utils.educoder.WholeMOIDTO> getChildren() {
         return children;
     }
 

@@ -2,13 +2,10 @@ package net.sf.openrocket.gui.configdialog;
 
 
 import javax.swing.*;
-import javax.swing.plaf.synth.SynthOptionPaneUI;
 
 import net.miginfocom.swing.MigLayout;
 import net.sf.openrocket.aerodynamics.AerodynamicForces;
 import net.sf.openrocket.aerodynamics.FlightConditions;
-import net.sf.openrocket.aerodynamics.barrowman.FinSetCalc;
-import net.sf.openrocket.aerodynamics.barrowman.SymmetricComponentCalc;
 import net.sf.openrocket.aerodynamics.barrowman.TubeFinSetCalc;
 import net.sf.openrocket.document.OpenRocketDocument;
 import net.sf.openrocket.gui.SpinnerEditor;
@@ -25,7 +22,7 @@ import net.sf.openrocket.startup.Application;
 import net.sf.openrocket.startup.OpenRocket;
 import net.sf.openrocket.unit.UnitGroup;
 import net.sf.openrocket.util.Transformation;
-import net.sf.openrocket.utils.educoder.*;
+import net.sf.openrocket.utils.educoder.Result;
 import org.jetbrains.annotations.NotNull;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -33,7 +30,6 @@ import retrofit2.Response;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 
 public class TubeFinSetConfig extends RocketComponentConfig {
     private static final long serialVersionUID = 508482875624928676L;
@@ -135,7 +131,7 @@ public class TubeFinSetConfig extends RocketComponentConfig {
                 dialog.setLocationRelativeTo(null);
                 dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
 
-                final TubeFinsetCGRequest request = new TubeFinsetCGRequest();
+                final net.sf.openrocket.utils.educoder.TubeFinsetCGRequest request = new net.sf.openrocket.utils.educoder.TubeFinsetCGRequest();
                 request.setAnswer(component.getComponentCG().x);
 
                 String[] MethodNames = {"getOuterRadius", "getBodyRadius", "getInnerRadius"};
@@ -145,7 +141,7 @@ public class TubeFinSetConfig extends RocketComponentConfig {
                 try {
                     for (String fieldName : fieldNames) {
                         Field field = TubeFinSet.class.getDeclaredField(fieldName);
-                        Field reqField = TubeFinsetCGRequest.class.getDeclaredField(fieldName);
+                        Field reqField = net.sf.openrocket.utils.educoder.TubeFinsetCGRequest.class.getDeclaredField(fieldName);
                         field.setAccessible(true);
                         reqField.setAccessible(true);
                         Object value = field.get(component);
@@ -167,7 +163,7 @@ public class TubeFinSetConfig extends RocketComponentConfig {
 
                     for (String methodName : MethodNames) {
                         Method method = TubeFinSet.class.getDeclaredMethod(methodName);
-                        Method reqMethod = TubeFinsetCGRequest.class
+                        Method reqMethod = net.sf.openrocket.utils.educoder.TubeFinsetCGRequest.class
                                 .getDeclaredMethod(methodName.replaceFirst("get", "set"), Double.class);
                         Double value = (Double) method.invoke(component); // All values are double type
                         reqMethod.invoke(request, value);
@@ -183,8 +179,8 @@ public class TubeFinSetConfig extends RocketComponentConfig {
                     // Do not use UI thread to get the answer
                     checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateCG(request).enqueue(new Callback<>() {
                         @Override
-                        public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
-                            Result result = response.body();
+                        public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result> response) {
+                            net.sf.openrocket.utils.educoder.Result result = response.body();
                             if (result == null) return;
                             SwingUtilities.invokeLater(() -> {
                                 checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult());
@@ -193,7 +189,7 @@ public class TubeFinSetConfig extends RocketComponentConfig {
                         }
 
                         @Override
-                        public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
+                        public void onFailure(@NotNull Call<net.sf.openrocket.utils.educoder.Result> call, @NotNull Throwable throwable) {
                             SwingUtilities.invokeLater(() ->
                                     JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
                         }
@@ -215,7 +211,7 @@ public class TubeFinSetConfig extends RocketComponentConfig {
                 dialog.setLocationRelativeTo(null);
                 dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
 
-                final TubeFinSetCpRequest request = new TubeFinSetCpRequest();
+                final net.sf.openrocket.utils.educoder.TubeFinSetCpRequest request = new net.sf.openrocket.utils.educoder.TubeFinSetCpRequest();
 
                 FlightConfiguration curConfig = document.getSelectedConfiguration();
                 FlightConditions conditions = new FlightConditions(curConfig);
@@ -247,7 +243,7 @@ public class TubeFinSetConfig extends RocketComponentConfig {
 
                     for (String fieldName : fieldNames) {
                         Field field = TubeFinSetCalc.class.getDeclaredField(fieldName);
-                        Field reqField = TubeFinSetCpRequest.class.getDeclaredField(fieldName);
+                        Field reqField = net.sf.openrocket.utils.educoder.TubeFinSetCpRequest.class.getDeclaredField(fieldName);
                         field.setAccessible(true);
                         reqField.setAccessible(true);
                         Double value = (Double) field.get(componentCalc); // All values are double type
@@ -258,7 +254,7 @@ public class TubeFinSetConfig extends RocketComponentConfig {
                     }
                     for (String methodName : methodNames) {
                         Method method = FlightConditions.class.getDeclaredMethod(methodName);
-                        Method reqMethod = TubeFinSetCpRequest.class.getDeclaredMethod(methodName.replaceFirst("get", "set"), Double.class);
+                        Method reqMethod = net.sf.openrocket.utils.educoder.TubeFinSetCpRequest.class.getDeclaredMethod(methodName.replaceFirst("get", "set"), Double.class);
                         Double value = (Double) method.invoke(conditions); // All values are double type
                         reqMethod.invoke(request, value);
                         String labelText = trans.get("TubeFinSet.lbl." + methodName.replaceFirst("get", "")) + ": " + value;
@@ -275,8 +271,8 @@ public class TubeFinSetConfig extends RocketComponentConfig {
                     // Do not use UI thread to get the answer
                     checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateCP(request).enqueue(new Callback<>() {
                         @Override
-                        public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
-                            Result result = response.body();
+                        public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result> response) {
+                            net.sf.openrocket.utils.educoder.Result result = response.body();
                             if (result == null) return;
                             SwingUtilities.invokeLater(() -> {
                                 checkResult.setText(trans.get("TubeFinSet.lbl.checkResult") + ": " + result.getResult());
@@ -308,7 +304,7 @@ public class TubeFinSetConfig extends RocketComponentConfig {
                 dialog.setLocationRelativeTo(null);
                 dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
 
-                final TubeFinSetMOIRequest request = new TubeFinSetMOIRequest();
+                final net.sf.openrocket.utils.educoder.TubeFinSetMOIRequest request = new net.sf.openrocket.utils.educoder.TubeFinSetMOIRequest();
                 // answer = rotationalUnitInertia
                 component.getRotationalUnitInertia();
                 request.setAnswer(new Double[]{component.getRotationalUnitInertia(),component.getLongitudinalUnitInertia()});
@@ -319,7 +315,7 @@ public class TubeFinSetConfig extends RocketComponentConfig {
                     //get and set  properties
                     for (String fieldName:fieldNames){
                         Field field = TubeFinSet.class.getDeclaredField(fieldName);
-                        Field reqField = TubeFinSetMOIRequest.class.getDeclaredField(fieldName);
+                        Field reqField = net.sf.openrocket.utils.educoder.TubeFinSetMOIRequest.class.getDeclaredField(fieldName);
                         field.setAccessible(true);
                         reqField.setAccessible(true);
                         Object value = field.get(component);
@@ -331,7 +327,7 @@ public class TubeFinSetConfig extends RocketComponentConfig {
                     // AftRadius
                     for (String methodName : MethodNames) {
                         Method method = TubeFinSet.class.getDeclaredMethod(methodName);
-                        Method reqMethod = TubeFinSetMOIRequest.class
+                        Method reqMethod = net.sf.openrocket.utils.educoder.TubeFinSetMOIRequest.class
                                 .getDeclaredMethod(methodName.replaceFirst("get", "set"), Double.class);
                         Double value = (Double) method.invoke(component); // All values are double type
                         reqMethod.invoke(request, value);
@@ -349,8 +345,8 @@ public class TubeFinSetConfig extends RocketComponentConfig {
                     // Do not use UI thread to get the answer
                     checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateMOI(request).enqueue(new Callback<>() {
                         @Override
-                        public void onResponse(@NotNull Call<Result2> call, @NotNull Response<Result2> response) {
-                            Result2 result = response.body();
+                        public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result2> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result2> response) {
+                            net.sf.openrocket.utils.educoder.Result2 result = response.body();
                             if (result == null) return;
                             SwingUtilities.invokeLater(() -> {
                                 checkResult.setText(trans.get("TubeFinSet.lbl.checkResult") + ": " + result.getResult()[0]+","+result.getResult()[1]);
@@ -359,7 +355,7 @@ public class TubeFinSetConfig extends RocketComponentConfig {
                         }
 
                         @Override
-                        public void onFailure(@NotNull Call<Result2> call, @NotNull Throwable throwable) {
+                        public void onFailure(@NotNull Call<net.sf.openrocket.utils.educoder.Result2> call, @NotNull Throwable throwable) {
                             SwingUtilities.invokeLater(() ->
                                     JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
                         }

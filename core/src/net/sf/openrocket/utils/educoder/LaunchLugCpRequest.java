@@ -1,10 +1,11 @@
 package net.sf.openrocket.utils.educoder;
 
-public class StageCpRequest extends Request{
+import net.sf.openrocket.utils.educoder.Request;
 
+public class LaunchLugCpRequest extends Request {
     @Override
     public String toString() {
-        return "StageCgRequest{" +
+        return "LaunchLugCpRequest{" +
                 "answer=" + answer +
                 '}';
     }

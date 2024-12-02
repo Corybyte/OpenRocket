@@ -14,14 +14,12 @@ import net.sf.openrocket.l10n.Translator;
 import net.sf.openrocket.material.Material;
 import net.sf.openrocket.gui.widgets.SelectColorButton;
 import net.sf.openrocket.rocketcomponent.MassObject;
-import net.sf.openrocket.rocketcomponent.RingComponent;
 import net.sf.openrocket.rocketcomponent.RocketComponent;
 import net.sf.openrocket.rocketcomponent.ShockCord;
 import net.sf.openrocket.startup.Application;
 import net.sf.openrocket.startup.OpenRocket;
 import net.sf.openrocket.unit.UnitGroup;
-import net.sf.openrocket.util.Coordinate;
-import net.sf.openrocket.utils.educoder.*;
+import net.sf.openrocket.utils.educoder.Result;
 import org.jetbrains.annotations.NotNull;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -81,7 +79,7 @@ public class ShockCordConfig extends RocketComponentConfig {
 				dialog.setLocationRelativeTo(null);
 				dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
 
-				final ShockCordCgRequest request = new ShockCordCgRequest();
+				final net.sf.openrocket.utils.educoder.ShockCordCgRequest request = new net.sf.openrocket.utils.educoder.ShockCordCgRequest();
 				request.setAnswer(component.getComponentCG().x);
 				request.setLength(component.getLength());
 				String labelText = trans.get("Parachute.lbl.length") + ": " + request.getLength();
@@ -97,8 +95,8 @@ public class ShockCordConfig extends RocketComponentConfig {
 				// Do not use UI thread to get the answer
 				checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateCG(request).enqueue(new Callback<>() {
 					@Override
-					public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
-						Result result = response.body();
+					public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result> response) {
+						net.sf.openrocket.utils.educoder.Result result = response.body();
 						if (result == null) return;
 						SwingUtilities.invokeLater(() -> {
 							checkResult.setText(trans.get("InnerTube.lbl.checkResult") + ": " + result.getResult());
@@ -126,7 +124,7 @@ public class ShockCordConfig extends RocketComponentConfig {
 				dialog.setLocationRelativeTo(null);
 				dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
 
-				final ShockCordMOIRequest request = new ShockCordMOIRequest();
+				final net.sf.openrocket.utils.educoder.ShockCordMOIRequest request = new net.sf.openrocket.utils.educoder.ShockCordMOIRequest();
 				request.setAnswer(new Double[]{component.getRotationalUnitInertia(),component.getLongitudinalUnitInertia()});
 				request.setLength(component.getLength());
 
@@ -134,7 +132,7 @@ public class ShockCordConfig extends RocketComponentConfig {
 				try {
 					for (String methodName : methodNames) {
 						Method method = MassObject.class.getDeclaredMethod(methodName);
-						Method reqMethod = ShockCordMOIRequest.class.getDeclaredMethod(methodName.replaceFirst("get", "set"),Double.class);
+						Method reqMethod = net.sf.openrocket.utils.educoder.ShockCordMOIRequest.class.getDeclaredMethod(methodName.replaceFirst("get", "set"),Double.class);
 						method.setAccessible(true);
 						reqMethod.setAccessible(true);
 						Double value = (Double) method.invoke(component);
@@ -156,8 +154,8 @@ public class ShockCordConfig extends RocketComponentConfig {
 				// Do not use UI thread to get the answer
 				checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateMOI(request).enqueue(new Callback<>() {
 					@Override
-					public void onResponse(@NotNull Call<Result2> call, @NotNull Response<Result2> response) {
-						Result2 result = response.body();
+					public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result2> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result2> response) {
+						net.sf.openrocket.utils.educoder.Result2 result = response.body();
 						if (result == null) return;
 						SwingUtilities.invokeLater(() -> {
 							checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult()[0]+","+result.getResult()[1]);
@@ -166,7 +164,7 @@ public class ShockCordConfig extends RocketComponentConfig {
 					}
 
 					@Override
-					public void onFailure(@NotNull Call<Result2> call, @NotNull Throwable throwable) {
+					public void onFailure(@NotNull Call<net.sf.openrocket.utils.educoder.Result2> call, @NotNull Throwable throwable) {
 						SwingUtilities.invokeLater(() ->
 								JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
 					}

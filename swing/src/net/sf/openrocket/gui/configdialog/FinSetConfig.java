@@ -27,7 +27,6 @@ import net.miginfocom.swing.MigLayout;
 import net.sf.openrocket.aerodynamics.AerodynamicForces;
 import net.sf.openrocket.aerodynamics.FlightConditions;
 import net.sf.openrocket.aerodynamics.barrowman.FinSetCalc;
-import net.sf.openrocket.aerodynamics.barrowman.SymmetricComponentCalc;
 import net.sf.openrocket.document.OpenRocketDocument;
 import net.sf.openrocket.file.svg.export.SVGBuilder;
 import net.sf.openrocket.gui.SpinnerEditor;
@@ -56,7 +55,7 @@ import net.sf.openrocket.util.MathUtil;
 import net.sf.openrocket.gui.widgets.SelectColorButton;
 
 import net.sf.openrocket.util.Transformation;
-import net.sf.openrocket.utils.educoder.*;
+import net.sf.openrocket.utils.educoder.Result;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -339,10 +338,10 @@ public abstract class FinSetConfig extends RocketComponentConfig {
                     field.setAccessible(true);
                     Integer finCount = (Integer) field.get(component);
 
-                    final FinSetCgRequest request = new FinSetCgRequest(centroids.get(0), centroids.get(1),
+                    final net.sf.openrocket.utils.educoder.FinSetCgRequest request = new net.sf.openrocket.utils.educoder.FinSetCgRequest(centroids.get(0), centroids.get(1),
                             centroids.get(2), thickness, crossSection, material.getDensity(),
                             filletMaterial.getDensity(), finCount, component.getComponentCG().x);
-                    Field[] fields = FinSetCgRequest.class.getDeclaredFields();
+                    Field[] fields = net.sf.openrocket.utils.educoder.FinSetCgRequest.class.getDeclaredFields();
                     for (Field f : fields) {
                         f.setAccessible(true);
                         String labelText = trans.get("FinSet.lbl." + f.getName()) + ": " + f.get(request);
@@ -360,8 +359,8 @@ public abstract class FinSetConfig extends RocketComponentConfig {
                     // Do not use UI thread to get the answer
                     checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateCG(request).enqueue(new Callback<>() {
                         @Override
-                        public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
-                            Result result = response.body();
+                        public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result> response) {
+                            net.sf.openrocket.utils.educoder.Result result = response.body();
                             if (result == null) return;
                             SwingUtilities.invokeLater(() -> {
                                 checkResult.setText(trans.get("FinSet.lbl.checkResult") + ": " + result.getResult());
@@ -370,7 +369,7 @@ public abstract class FinSetConfig extends RocketComponentConfig {
                         }
 
                         @Override
-                        public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
+                        public void onFailure(@NotNull Call<net.sf.openrocket.utils.educoder.Result> call, @NotNull Throwable throwable) {
                             SwingUtilities.invokeLater(() ->
                                     JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
                         }
@@ -392,7 +391,7 @@ public abstract class FinSetConfig extends RocketComponentConfig {
                 dialog.setLocationRelativeTo(null);
                 dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
 
-                final FinSetCpRequest request = new FinSetCpRequest();
+                final net.sf.openrocket.utils.educoder.FinSetCpRequest request = new net.sf.openrocket.utils.educoder.FinSetCpRequest();
 
                 FlightConfiguration curConfig = document.getSelectedConfiguration();
                 FlightConditions conditions = new FlightConditions(curConfig);
@@ -408,7 +407,7 @@ public abstract class FinSetConfig extends RocketComponentConfig {
                 try {
                     for (String fieldName : fieldNames) {
                         Field field = FinSetCalc.class.getDeclaredField(fieldName);
-                        Field reqField = FinSetCpRequest.class.getDeclaredField(fieldName);
+                        Field reqField = net.sf.openrocket.utils.educoder.FinSetCpRequest.class.getDeclaredField(fieldName);
                         field.setAccessible(true);
                         reqField.setAccessible(true);
                         Double value = (Double) field.get(componentCalc); // All values are double type
@@ -419,7 +418,7 @@ public abstract class FinSetConfig extends RocketComponentConfig {
                     }
                     for (String methodName : methodNames) {
                         Method method = FlightConditions.class.getDeclaredMethod(methodName);
-                        Method reqMethod = FinSetCpRequest.class.getDeclaredMethod(methodName.replaceFirst("get", "set"), Double.class);
+                        Method reqMethod = net.sf.openrocket.utils.educoder.FinSetCpRequest.class.getDeclaredMethod(methodName.replaceFirst("get", "set"), Double.class);
                         Double value = (Double) method.invoke(conditions); // All values are double type
                         reqMethod.invoke(request, value);
                         String labelText = trans.get("FinSet.lbl." + methodName.replaceFirst("get", "")) + ": " + value;
@@ -435,8 +434,8 @@ public abstract class FinSetConfig extends RocketComponentConfig {
                     // Do not use UI thread to get the answer
                     checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateCP(request).enqueue(new Callback<>() {
                         @Override
-                        public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
-                            Result result = response.body();
+                        public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result> response) {
+                            net.sf.openrocket.utils.educoder.Result result = response.body();
                             if (result == null) return;
                             SwingUtilities.invokeLater(() -> {
                                 checkResult.setText(trans.get("FinSet.lbl.checkResult") + ": " + result.getResult());
@@ -466,7 +465,7 @@ public abstract class FinSetConfig extends RocketComponentConfig {
                 dialog.setSize(this.parent.getSize());
                 dialog.setLocationRelativeTo(null);
                 dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
-                final FinSetMOIRequest request = new FinSetMOIRequest();
+                final net.sf.openrocket.utils.educoder.FinSetMOIRequest request = new net.sf.openrocket.utils.educoder.FinSetMOIRequest();
                 request.setAnswer(new Double[]{component.getRotationalUnitInertia(),component.getLongitudinalUnitInertia()});
                 String[] methodNames = {"getBodyRadius"};
                 String[] fieldNames = { "span", "finArea"};
@@ -475,7 +474,7 @@ public abstract class FinSetConfig extends RocketComponentConfig {
                 try {
                     for (String methodName : methodNames) {
                         Method declaredMethod = FinSet.class.getDeclaredMethod(methodName);
-						Method requestMethod = FinSetMOIRequest.class.getDeclaredMethod(methodName.replaceFirst("get", "set"),Double.class);
+						Method requestMethod = net.sf.openrocket.utils.educoder.FinSetMOIRequest.class.getDeclaredMethod(methodName.replaceFirst("get", "set"),Double.class);
 						declaredMethod.setAccessible(true);
 						requestMethod.setAccessible(true);
 						Double value = (Double) declaredMethod.invoke(component);
@@ -489,7 +488,7 @@ public abstract class FinSetConfig extends RocketComponentConfig {
 
 					for (String fieldName:fieldNames) {
 						Field declaredField = FinSetCalc.class.getDeclaredField(fieldName);
-						Field reqField = FinSetMOIRequest.class.getDeclaredField(fieldName);
+						Field reqField = net.sf.openrocket.utils.educoder.FinSetMOIRequest.class.getDeclaredField(fieldName);
 						declaredField.setAccessible(true);
 						reqField.setAccessible(true);
 						Double value = (Double) declaredField.get(componentCalc);
@@ -515,8 +514,8 @@ public abstract class FinSetConfig extends RocketComponentConfig {
                     dialog.add(answerLabel, "height 30!");
                     checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateMOI(request).enqueue(new Callback<>() {
                         @Override
-                        public void onResponse(@NotNull Call<Result2> call, @NotNull Response<Result2> response) {
-                            Result2 result = response.body();
+                        public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result2> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result2> response) {
+                            net.sf.openrocket.utils.educoder.Result2 result = response.body();
                             if (result == null) return;
                             SwingUtilities.invokeLater(() -> {
                                 checkResult.setText(trans.get("FinSet.lbl.checkResult") + ": " + result.getResult()[0]+","+result.getResult()[1]);
@@ -525,7 +524,7 @@ public abstract class FinSetConfig extends RocketComponentConfig {
                         }
 
                         @Override
-                        public void onFailure(@NotNull Call<Result2> call, @NotNull Throwable throwable) {
+                        public void onFailure(@NotNull Call<net.sf.openrocket.utils.educoder.Result2> call, @NotNull Throwable throwable) {
                             SwingUtilities.invokeLater(() ->
                                     JOptionPane.showMessageDialog(parent, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
                         }

@@ -1,8 +1,10 @@
 package net.sf.openrocket.utils.educoder;
 
+import net.sf.openrocket.utils.educoder.Request;
+
 import java.util.Arrays;
 
-public class TubeFinSetCpRequest extends Request{
+public class TubeFinSetCpRequest extends Request {
     private Double outerRadius;
     private  Double chord;
     private Double ar;
