@@ -11,11 +11,16 @@ import net.sf.openrocket.rocketcomponent.BodyTube;
 import net.sf.openrocket.rocketcomponent.RocketComponent;
 import net.sf.openrocket.rocketcomponent.SymmetricComponent;
 import net.sf.openrocket.rocketcomponent.Transition;
-//import net.sf.openrocket.startup.OpenRocket;
+import net.sf.openrocket.startup.OpenRocket;
 import net.sf.openrocket.util.*;
 
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
+import net.sf.openrocket.utils.educoder.HullCGRequest;
+import net.sf.openrocket.utils.educoder.Result;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 //
 /**
@@ -105,7 +110,7 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 	@Override
 	public void calculateNonaxialForces(FlightConditions conditions, Transformation transform,
 			AerodynamicForces forces, WarningSet warnings) {
-//		HullCGRequest hullCGRequest = new HullCGRequest();
+		HullCGRequest hullCGRequest = new HullCGRequest();
 
 
 
@@ -143,7 +148,7 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 		forces.setCNa(cp.weight);
 		if (forces.getCNa() * conditions.getAOA() != 0) {
 			forces.setCN(forces.getCNa() * conditions.getAOA());
-//			HullCGRequest.server_cn.add(forces.getCNa() * conditions.getAOA());
+			HullCGRequest.server_cn.add(forces.getCNa() * conditions.getAOA());
 		}
 
 		forces.setCm(forces.getCN() * cp.x / conditions.getRefLength());
@@ -158,36 +163,36 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 			warnings.add(Warning.SUPERSONIC);
 		}
 
-//
-//		hullCGRequest.client_CnaCache=0;
-//		hullCGRequest.client_ForeRadius=foreRadius;
-//		hullCGRequest.client_AftRadius=aftRadius;
-//		hullCGRequest.client_FullVolume=fullVolume;
-//		hullCGRequest.client_Mach=conditions.getMach();
-//		hullCGRequest.client_AOA=conditions.getAOA();
-//		hullCGRequest.client_RefArea= conditions.getRefArea();
-//		hullCGRequest.client_Length=length;
-//		hullCGRequest.client_SinAOA= conditions.getSinAOA();
-//		hullCGRequest.client_SincAOA = conditions.getSincAOA();
-//		hullCGRequest.client_PlanformCenter=planformCenter;
-//		hullCGRequest.client_PlanformArea=planformArea;
-//		hullCGRequest.result_cn=forces.getCNa() * conditions.getAOA();
-//		hullCGRequest.result_cna=cp.weight;
-//
-//		if (forces.getCNa() * conditions.getAOA() != 0) {
-//			OpenRocket.eduCoderService.demo(hullCGRequest).enqueue(new Callback<Result>() {
-//				@Override
-//				public void onResponse(Call<Result> call, Response<Result> response) {
-//					hullCGRequest.client_cn.add(response.body().getResult());
-//				}
-//
-//				@Override
-//				public void onFailure(Call<Result> call, Throwable throwable) {
-//					System.out.println(hullCGRequest);
-//				}
-//
-//			});
-//		}
+
+		hullCGRequest.client_CnaCache=0;
+		hullCGRequest.client_ForeRadius=foreRadius;
+		hullCGRequest.client_AftRadius=aftRadius;
+		hullCGRequest.client_FullVolume=fullVolume;
+		hullCGRequest.client_Mach=conditions.getMach();
+		hullCGRequest.client_AOA=conditions.getAOA();
+		hullCGRequest.client_RefArea= conditions.getRefArea();
+		hullCGRequest.client_Length=length;
+		hullCGRequest.client_SinAOA= conditions.getSinAOA();
+		hullCGRequest.client_SincAOA = conditions.getSincAOA();
+		hullCGRequest.client_PlanformCenter=planformCenter;
+		hullCGRequest.client_PlanformArea=planformArea;
+		hullCGRequest.result_cn=forces.getCNa() * conditions.getAOA();
+		hullCGRequest.result_cna=cp.weight;
+
+		if (forces.getCNa() * conditions.getAOA() != 0) {
+			OpenRocket.eduCoderService.demo(hullCGRequest).enqueue(new Callback<Result>() {
+				@Override
+				public void onResponse(Call<Result> call, Response<Result> response) {
+					hullCGRequest.client_cn.add(response.body().getResult());
+				}
+
+				@Override
+				public void onFailure(Call<Result> call, Throwable throwable) {
+					System.out.println(hullCGRequest);
+				}
+
+			});
+		}
 		
 	}
 	
