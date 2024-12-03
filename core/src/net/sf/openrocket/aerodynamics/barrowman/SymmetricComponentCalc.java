@@ -16,8 +16,6 @@ import net.sf.openrocket.util.*;
 
 import net.sf.openrocket.utils.educoder.HullCGRequest;
 import net.sf.openrocket.utils.educoder.Result;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -180,7 +178,8 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 		hullCGRequest.result_cna=cp.weight;
 
 		if (forces.getCNa() * conditions.getAOA() != 0) {
-			OpenRocket.eduCoderService.demo(hullCGRequest).enqueue(new Callback<Result>() {
+			OpenRocket.eduCoderService.calculateCN(hullCGRequest).enqueue(new Callback<Result>() {
+
 				@Override
 				public void onResponse(Call<Result> call, Response<Result> response) {
 					hullCGRequest.client_cn.add(response.body().getResult());
@@ -188,9 +187,8 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 
 				@Override
 				public void onFailure(Call<Result> call, Throwable throwable) {
-					System.out.println(hullCGRequest);
-				}
 
+				}
 			});
 		}
 		
