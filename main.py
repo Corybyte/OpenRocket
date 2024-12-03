@@ -48,6 +48,8 @@ import body_tube_cg_helper
 import body_tube_cp_helper
 import traceback
 
+from demo_dir import demo
+
 app = Flask(__name__)
 
 
@@ -95,11 +97,11 @@ def calculateCN():
     # app.logger.info(f"{request.json}")
     try:
         print(request.json)
-        cg = calculateCN.calculate(request.json)
+        cg =demo.calculate(request.json)
         error_file_path = "/data/workspace/myshixun/step1/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        # check(cg, request.json['answer'], os.path.join(os.getcwd(), "step1"))
+        check(cg, request.json['answer'], os.path.join(os.getcwd(), "step1"))
         return {"code": 200, "msg": "ok", "result": cg}
     # 异常处理
     except Exception:
