@@ -1,5 +1,5 @@
-from flask import Flask, request
-
+from flask import Flask, request, jsonify
+from utils import *
 import Pods_cg_helper
 import Pods_cp_helper
 import Pods_moi_helper
@@ -97,7 +97,7 @@ def calculateCN():
     # app.logger.info(f"{request.json}")
     try:
         print(request.json)
-        cg =demo.calculate(request.json)
+        cg = demo.calculate(request.json)
         error_file_path = "/data/workspace/myshixun/step1/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
@@ -108,6 +108,15 @@ def calculateCN():
         with open(os.path.join("step1", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
+
+@app.route('/Projectile/checkJson', methods=['POST'])
+def check_json_api():
+    data = request.json
+    json_a = data.get('a', {})
+    json_b = data.get('b', {})
+    ret = check_json(json_a, json_b)
+    return jsonify({"code": 200, "msg": ret})
 
 
 ###NoseCone
