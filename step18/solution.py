@@ -1,8 +1,13 @@
 import math
 
 
-def calculateMOI(outerRadius: float, innerRadius: float) -> float:
-    ############### Begin ###############
+def calculate_unit_rot_moi(outerRadius, innerRadius):
+    ############### Begin #############
     pass
     ############### End ###############
 
+
+def calculate_Long_moi(outerRadius, innerRadius, length):
+    ############### Begin #############
+    pass
+    ############### End ###############

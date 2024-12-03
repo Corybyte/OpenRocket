@@ -1,9 +1,12 @@
 import math
 import step8.solution
+from common_helper import save_params
+
 
 def calculateCP(param):
+    save_params(param, "/data/workspace/myshixun/step8/params.json")
     ar = param['ar']
-    denom = math.pow(1 - 3.4641 * ar, 2) # common denominator
+    denom = math.pow(1 - 3.4641 * ar, 2)  # common denominator
     poly = [0] * 6
     poly[5] = (-1.58025 * (-0.728769 + ar) * (-0.192105 + ar)) / denom
     poly[4] = (12.8395 * (-0.725688 + ar) * (-0.19292 + ar)) / denom

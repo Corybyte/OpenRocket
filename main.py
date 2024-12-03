@@ -5,7 +5,6 @@ import Pods_cp_helper
 import Pods_moi_helper
 import Transition_cp_helper
 import body_tube_moi_helper
-from demo_dir import calculateCN
 import inner_component_cg_helper
 import inner_component_moi_helper
 import inner_tube_cg_helper
@@ -52,30 +51,43 @@ import traceback
 app = Flask(__name__)
 
 
+# def check(result, answer, dir):
+#     if equals(result, answer):
+#         with open(os.path.join(dir, "result.txt"), 'w') as f:
+#             f.write("Yes")
+#     else:
+#         with open(os.path.join(dir, "result.txt"), 'w') as f:
+#             f.write("No")
+
+
 def check(result, answer, dir):
-    if equals(result, answer):
-        with open(os.path.join(dir, "result.txt"), 'w') as f:
-            f.write("Yes")
+    # 判断是否为元组
+    if isinstance(result, list):
+        flag = True
+        flag2 = True
+        if not equals(round(result[0], 5), round(answer[0], 5)):
+            flag = False
+        if not equals(round(result[1], 5), round(answer[1], 5)):
+            flag2 = False
+        if flag and flag2:
+            with open(os.path.join(dir, "result.txt"), 'w') as f:
+                f.write("Yes")
+        elif flag and not flag2:
+            with open(os.path.join(dir, "result.txt"), 'w') as f:
+                f.write(" longitudinalUnitInertia Error")
+        elif flag and not flag2:
+            with open(os.path.join(dir, "result.txt"), 'w') as f:
+                f.write("rotationalUnitInertia Error")
+        else:
+            with open(os.path.join(dir, "result.txt"), 'w') as f:
+                f.write("rotationalUnitInertia and longitudinalUnitInertia Error")
     else:
-        with open(os.path.join(dir, "result.txt"), 'w') as f:
-            f.write("No")
-
-
-###NoseCone
-@app.route('/NoseCone/calculateCG', methods=['POST'])
-def calculateNoseConeCG():
-    app.logger.info(f"{request.json}")
-    try:
-        cg = nose_cone_cg_helper.calculateCG(request.json)
-        error_file_path = "/data/workspace/myshixun/step1/error.txt"
-        if os.path.exists(error_file_path):
-            os.remove(error_file_path)
-        check(cg, request.json['answer'], os.path.join(os.getcwd(), "step1"))
-        return {"code": 200, "msg": "ok", "result": cg}
-    except Exception:
-        with open(os.path.join("step1", "error.txt"), 'w') as f:
-            f.write(traceback.format_exc())
-        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+        if equals(round(result, 5), round(answer, 5)):
+            with open(os.path.join(dir, "result.txt"), 'w') as f:
+                f.write("Yes")
+        else:
+            with open(os.path.join(dir, "result.txt"), 'w') as f:
+                f.write("No")
 
 
 @app.route('/Projectile/calculateCN', methods=['POST'])
@@ -90,6 +102,23 @@ def calculateCN():
         # check(cg, request.json['answer'], os.path.join(os.getcwd(), "step1"))
         return {"code": 200, "msg": "ok", "result": cg}
     # 异常处理
+    except Exception:
+        with open(os.path.join("step1", "error.txt"), 'w') as f:
+            f.write(traceback.format_exc())
+        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
+
+###NoseCone
+@app.route('/NoseCone/calculateCG', methods=['POST'])
+def calculateNoseConeCG():
+    app.logger.info(f"{request.json}")
+    try:
+        cg = nose_cone_cg_helper.calculateNoseConeCG(request.json)
+        error_file_path = "/data/workspace/myshixun/step1/error.txt"
+        if os.path.exists(error_file_path):
+            os.remove(error_file_path)
+        check(cg, request.json['answer'], os.path.join(os.getcwd(), "step1"))
+        return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
         with open(os.path.join("step1", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
@@ -166,6 +195,7 @@ def calculateBodyTubeMOI():
     app.logger.info(f"{request.json}")
     try:
         moi = body_tube_moi_helper.calculate_moi(request.json)
+        print(moi)
         error_file_path = "/data/workspace/myshixun/step6/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
@@ -264,6 +294,7 @@ def calculateTransitionMOI():
     app.logger.info(f"{request.json}")
     try:
         moi = transition_moi_helper.calculateMOI(request.json)
+        print(moi)
         error_file_path = "/data/workspace/myshixun/step12/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
@@ -312,6 +343,7 @@ def calculateTubeFinSetMOI():
     app.logger.info(f"{request.json}")
     try:
         moi = tube_fine_set_moi_helper.calculateMOI(request.json)
+        print(moi)
         error_file_path = "/data/workspace/myshixun/step15/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
@@ -744,6 +776,7 @@ def calculateWholeMOI():
     app.logger.info(f"{request.json}")
     try:
         cg = whole_moi_helper.calculateMOI(request.json)
+        print(cg)
         error_file_path = "/data/workspace/myshixun/step57/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)

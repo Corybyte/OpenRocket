@@ -1,7 +1,7 @@
-import common_helper
 import step51.solution
 
 
 def calculateMOI(param):
-    return step51.solution.calculateMOI()
-
+    moi1 = step51.solution.calculate_unit_rot_moi()
+    moi2 = step51.solution.calculate_Long_moi()
+    return [moi1, moi2]

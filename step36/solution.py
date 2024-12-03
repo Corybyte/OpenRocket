@@ -1,4 +1,10 @@
-def calculateMOI(radius: float,) -> float:
-    ############### Begin ###############
+def calculate_unit_rot_moi(outerRadius):
+    ############### Begin #############
     pass
-    ############### End #################
+    ############### End ###############
+
+
+def calculate_Long_moi(outerRadius, length):
+    ############### Begin #############
+    pass
+    ############### End ###############

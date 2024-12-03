@@ -1,5 +1,12 @@
 import math
 
+
+def calculateLongMOICone(h, r):
+    ############### Begin #############
+    pass
+
+    ############### End ###############
+
 def calculate_unit_rot_moi(r1, r2):
     """
     Calculates the unit rotational moment of inertia for a frustum or a cylinder.
@@ -12,22 +19,15 @@ def calculate_unit_rot_moi(r1, r2):
         float: The unit rotational moment of inertia.
     """
     # Define an epsilon value for floating point comparison
-    ############### Begin ###############
-    EPSILON = 0.00000001
-    
+    ############### Begin #############
     pass
+
     ############### End ###############
 
 
-def pow2(x):
-    """
-    Computes the square of a number.
+def calculate_Long_moi(l, r1, r2, cg):
+    EPSILON = 0.00000001
+    ############### Begin ############
+    pass
 
-    Args:
-        x (float): The number to be squared.
-
-    Returns:
-        float: The square of the input number.
-    """
-    return x ** 2
-
+    ############### End ###############
