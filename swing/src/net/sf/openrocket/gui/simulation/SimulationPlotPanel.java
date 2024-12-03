@@ -1,31 +1,28 @@
 package net.sf.openrocket.gui.simulation;
 
-import java.awt.Window;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.Serial;
-import java.util.Arrays;
-import java.util.EnumSet;
+import java.lang.reflect.Method;
+import java.util.*;
+import java.util.List;
 
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
+import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
+import com.oracle.truffle.js.nodes.access.LocalVarIncNode;
 import net.miginfocom.swing.MigLayout;
+import net.sf.openrocket.aerodynamics.BarrowmanCalculator;
+import net.sf.openrocket.aerodynamics.FlightConditions;
+import net.sf.openrocket.aerodynamics.barrowman.RocketComponentCalc;
+import net.sf.openrocket.document.OpenRocketDocument;
+import net.sf.openrocket.document.OpenRocketDocumentFactory;
 import net.sf.openrocket.document.Simulation;
 import net.sf.openrocket.gui.components.DescriptionArea;
 import net.sf.openrocket.gui.components.UnitSelector;
@@ -36,15 +33,24 @@ import net.sf.openrocket.gui.util.Icons;
 import net.sf.openrocket.gui.util.SwingPreferences;
 import net.sf.openrocket.gui.util.UITheme;
 import net.sf.openrocket.l10n.Translator;
+import net.sf.openrocket.logging.WarningSet;
+import net.sf.openrocket.rocketcomponent.*;
 import net.sf.openrocket.simulation.FlightDataBranch;
 import net.sf.openrocket.simulation.FlightDataType;
 import net.sf.openrocket.simulation.FlightDataTypeGroup;
 import net.sf.openrocket.simulation.FlightEvent;
 import net.sf.openrocket.startup.Application;
+import net.sf.openrocket.startup.OpenRocket;
 import net.sf.openrocket.startup.Preferences;
 import net.sf.openrocket.unit.Unit;
 import net.sf.openrocket.util.Utils;
 import net.sf.openrocket.gui.widgets.SelectColorButton;
+import net.sf.openrocket.utils.educoder.Result;
+import net.sf.openrocket.utils.educoder.TotalBasalResistanceRequest;
+import org.jetbrains.annotations.NotNull;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 /**
  * Panel that displays the simulation plot options to the user.
@@ -470,12 +476,134 @@ public class SimulationPlotPanel extends JPanel {
 			
 			typeSelectorPanel.add(new PlotTypeSelector(i, type, unit, axis), "wrap");
 		}
+		//总体基底阻力ui
+		JButton jButton = new JButton("总体基底阻力计算");
+		typeSelectorPanel.add(jButton);
+		jButton.addActionListener(e -> {
+			JDialog dialog = new JDialog((Frame) null,"总体基底阻力计算");
+			dialog.setSize(SimulationPlotPanel.this.getSize());
+			dialog.setLocationRelativeTo(null);
+			dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
+			dialog.setVisible(true);
+			TotalBasalResistanceRequest request = new TotalBasalResistanceRequest();
+			OpenRocketDocument document = OpenRocketDocumentFactory.mydoc;
+			//get configuration
+			FlightConfiguration curConfig = document.getSelectedConfiguration();
+			FlightConditions conditions = new FlightConditions(curConfig);
+
+			BarrowmanCalculator aerodynamicCalculator = new BarrowmanCalculator();
+			Method method = null;
+
+			try {
+				//set answer
+				method = BarrowmanCalculator.class.getDeclaredMethod("calculateBaseCD", FlightConfiguration.class, FlightConditions.class, Map.class, WarningSet.class);
+				method.setAccessible(true);
+				double result = (double) method.invoke(aerodynamicCalculator,curConfig, conditions, null, new WarningSet());
+				request.setAnswer(result);
+				//set param
+				request.setMach(conditions.getMach());
+				request.setRefArea(conditions.getRefArea());
+
+				List<Double> foreRadiuss = new ArrayList<>();
+				List<Double> aftRadiuss = new ArrayList<>();
+				List<Double> lengths = new ArrayList<>();
+				List<Integer> instanceCounts = new ArrayList<>();
+				List<Double> nextRadiuss = new ArrayList<>();
+				List<Boolean> isComponentActives = new ArrayList<>();
+				List<Boolean> nextComponents = new ArrayList<>();
+
+				InstanceMap imap = curConfig.getActiveInstances();
+				String constraints = "newline, height 30!";
+				String constraints2 = "height 30!";
+
+				int num = 0;
+				for(Map.Entry<RocketComponent, ArrayList<InstanceContext>> entry: imap.entrySet() ){
+					RocketComponent c =entry.getKey();
+					if (!(c instanceof SymmetricComponent)) {
+						continue;
+					}
+					if (c.isCDOverridden() ||
+							c.isCDOverriddenByAncestor()) {
+						continue;
+					}
+					SymmetricComponent s = (SymmetricComponent)c;
+					String name = s.getName();
+					String instanceCount =  String.valueOf(entry.getValue().size());
+					String foreRadius = String.valueOf(s.getForeRadius());
+					String aftRadius =  String.valueOf(s.getAftRadius());
+					foreRadiuss.add(s.getForeRadius());
+					aftRadiuss.add(s.getAftRadius());
+					lengths.add(s.getLength());
+					instanceCounts.add(entry.getValue().size());
+
+					final SymmetricComponent nextComponent = s.getNextSymmetricComponent();
+					if (nextComponent!=null){
+						nextComponents.add(true);
+						nextRadiuss.add(nextComponent.getForeRadius());
+						isComponentActives.add(curConfig.isComponentActive(nextComponent));
+					}else {
+						nextComponents.add(false);
+						nextRadiuss.add(0.0);
+						isComponentActives.add(null);
+
+					}
+
+					if (num<11){
+						String labelText = name + " 前半径:"+foreRadius+" 后半径:"+aftRadius;
+						String labelText2 = "实例个数:"+instanceCount;
+						dialog.add(new JLabel(labelText), constraints);
+						dialog.add(new JLabel(labelText2), constraints2);
+					}
+					num++;
+				}
+				request.setForeRadius(foreRadiuss);
+				request.setAftRadius(aftRadiuss);
+				request.setLength(lengths);
+				request.setInstanceCount(instanceCounts);
+				request.setNextRadius(nextRadiuss);
+				request.setIsComponentActives(isComponentActives);
+				request.setNextComponents(nextComponents);
+				JButton checkButton = new JButton(trans.get("NoseConeCfg.lbl.check"));
+				JLabel checkResult = new JLabel(trans.get("NoseConeCfg.lbl.checkResult") + ": ");
+				JLabel answerLabel = new JLabel(trans.get("NoseConeCfg.lbl.answer") + ": ");
+				dialog.add(checkButton, "newline, height 30!");
+				dialog.add(checkResult, "height 30!");
+				dialog.add(answerLabel, "height 30!");
+
+				checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateCD(request).enqueue(new Callback<>() {
+					@Override
+					public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
+						Result result = response.body();
+						if (result == null) return;
+						SwingUtilities.invokeLater(() -> {
+							checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult());
+							answerLabel.setText(trans.get("NoseConeCfg.lbl.answer") + ": "+request.getAnswer() );
+						});
+					}
+
+					@Override
+					public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
+						SwingUtilities.invokeLater(() ->
+								JOptionPane.showMessageDialog(null, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
+					}
+				}));
+			} catch (Exception ex) {
+				//ignore
+				ex.printStackTrace();
+				System.out.println(ex.getCause());
+
+				throw new RuntimeException(ex);
+			}
+			dialog.setVisible(true);
+
+		});
 		
 		// In order to consistantly update the ui, we need to validate before repaint.
 		typeSelectorPanel.validate();
 		typeSelectorPanel.repaint();
 		
 		eventTableModel.fireTableDataChanged();
+
 	}
 	
 	
