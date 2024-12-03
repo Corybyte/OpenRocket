@@ -1,4 +1,6 @@
 from flask import Flask, request, jsonify
+
+from openrocket.calculateCD.calculateCDHelper import calculateCD
 from utils import *
 import Pods_cg_helper
 import Pods_cp_helper
@@ -826,6 +828,21 @@ def calculateFunction():
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
+@app.route('/Whole/cd', methods=['POST'])
+def calculateCDs():
+    app.logger.info(f"{request.json}")
+    print(request.json)
+    try:
+        result = calculateCD(request.json)
+        error_file_path = "/data/workspace/myshixun/calculateCD/error.txt"
+        if os.path.exists(error_file_path):
+            os.remove(error_file_path)
+        check(result, request.json['answer'], os.path.join(os.getcwd(), "calculateCD"))
+        return {"code": 200, "msg": "ok", "result": result}
+    except Exception:
+        with open(os.path.join("step57", "error.txt"), 'w') as f:
+            f.write(traceback.format_exc())
+        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 if __name__ == '__main__':
     app.run(host="127.0.0.1", port=8080, debug=True)
