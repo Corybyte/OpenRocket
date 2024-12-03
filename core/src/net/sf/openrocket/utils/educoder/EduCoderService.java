@@ -484,5 +484,6 @@ public interface EduCoderService {
      */
     @POST("Projectile/cn")
     Call <DataResult> calculateCN  (@Body HullCGRequest status);
-
+    @POST("Whole/cd")
+    Call <Result> calculateCD  (@Body TotalBasalResistanceRequest status);
 }
