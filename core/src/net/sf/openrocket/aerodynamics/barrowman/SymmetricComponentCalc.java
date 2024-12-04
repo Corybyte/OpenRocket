@@ -14,6 +14,7 @@ import net.sf.openrocket.rocketcomponent.Transition;
 import net.sf.openrocket.startup.OpenRocket;
 import net.sf.openrocket.util.*;
 
+import net.sf.openrocket.utils.educoder.BodyPressureCDRequest;
 import net.sf.openrocket.utils.educoder.HullCGRequest;
 import net.sf.openrocket.utils.educoder.Result;
 import retrofit2.Call;
@@ -213,8 +214,8 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 			mul = pow2(conditions.getMach() / 0.05);
 		}
 
-		System.out.println("edu"+mul * BODY_LIFT_K * planformArea / conditions.getRefArea() *
-				conditions.getSinAOA() * conditions.getSincAOA());
+		//System.out.println("edu"+mul * BODY_LIFT_K * planformArea / conditions.getRefArea() *
+		//		conditions.getSinAOA() * conditions.getSincAOA());
 		return new Coordinate(planformCenter, 0, 0, mul * BODY_LIFT_K * planformArea / conditions.getRefArea() *
 				conditions.getSinAOA() * conditions.getSincAOA()); // sin(aoa)^2 / aoa
 	}
@@ -229,7 +230,15 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 	@Override
 	public double calculatePressureCD(FlightConditions conditions,
 			double stagnationCD, double baseCD, WarningSet warnings) {
-		
+		BodyPressureCDRequest request = new BodyPressureCDRequest();
+		request.setForceRadius(foreRadius);
+		request.setAftRadius(aftRadius);
+		request.setLength(length);
+		//变量
+		request.setMach(conditions.getMach());
+		request.setFrontalArea(frontalArea);
+		request.setRefArea(conditions.getRefArea());
+		request.setFineness(fineness);
 		// Check for simple cases first
 		if (MathUtil.equals(foreRadius, aftRadius))
 			return 0;
@@ -258,7 +267,30 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 		if (interpolator == null) {
 			calculateNoseInterpolator();
 		}
-		
+		// 去除自检
+		if (conditions.getAOA()!=0&&conditions.getTheta()!=0){
+			request.setInterpolatorValue(interpolator.getValue(conditions.getMach()));
+			request.server_cn.add(interpolator.getValue(conditions.getMach()) * frontalArea / conditions.getRefArea());
+			//发送请求
+
+			OpenRocket.eduCoderService.calculatePressureCD(request).enqueue(new Callback<Result>() {
+
+				@Override
+				public void onResponse(Call<Result> call, Response<Result> response) {
+					//ignore
+
+				}
+
+				@Override
+				public void onFailure(Call<Result> call, Throwable throwable) {
+					//ignore
+				}
+			});
+		}
+
+
+
+
 		return interpolator.getValue(conditions.getMach()) * frontalArea / conditions.getRefArea();
 	}
 	

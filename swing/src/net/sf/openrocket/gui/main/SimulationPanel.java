@@ -55,6 +55,9 @@ import net.sf.openrocket.gui.util.UITheme;
 import net.sf.openrocket.gui.widgets.SaveFileChooser;
 import net.sf.openrocket.logging.Message;
 import net.sf.openrocket.logging.Warning;
+import net.sf.openrocket.startup.OpenRocket;
+import net.sf.openrocket.utils.educoder.BodyPressureCDRequest;
+import net.sf.openrocket.utils.educoder.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,6 +92,9 @@ import net.sf.openrocket.unit.UnitGroup;
 import net.sf.openrocket.util.AlphanumComparator;
 import net.sf.openrocket.file.SimulationTableCSVExport;
 import net.sf.openrocket.utils.TableRowTraversalPolicy;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import static net.sf.openrocket.gui.main.BasicFrame.SHORTCUT_KEY;
 
@@ -1087,6 +1093,20 @@ public class SimulationPanel extends JPanel {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
+			//每次运行仿真后及时删除旧值
+			BodyPressureCDRequest.server_cn.clear();
+			//远程删除旧值
+			OpenRocket.eduCoderService.deletePressureCD().enqueue(new Callback<Result>() {
+				@Override
+				public void onResponse(Call<Result> call, Response<Result> response) {
+
+				}
+
+				@Override
+				public void onFailure(Call<Result> call, Throwable throwable) {
+
+				}
+			});
 			runSimulation();
 		}
 

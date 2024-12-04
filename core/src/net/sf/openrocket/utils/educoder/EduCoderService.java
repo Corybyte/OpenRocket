@@ -3,6 +3,7 @@ package net.sf.openrocket.utils.educoder;
 import net.sf.openrocket.utils.educoder.BodyTubeCgRequest;
 import net.sf.openrocket.utils.educoder.BodyTubeCpRequest;
 import net.sf.openrocket.utils.educoder.BodyTubeMOIRequest;
+import net.sf.openrocket.utils.educoder.DataResult;
 import net.sf.openrocket.utils.educoder.DemoRequest;
 import net.sf.openrocket.utils.educoder.FinSetCgRequest;
 import net.sf.openrocket.utils.educoder.FinSetCpRequest;
@@ -483,5 +484,17 @@ public interface EduCoderService {
      */
     @POST("Projectile/calculateCN")
     Call <net.sf.openrocket.utils.educoder.Result> calculateCN  (@Body HullCGRequest status);
+
+    /**
+     *  弹体压差阻力
+     */
+    @POST("Projectile/calculatePressureCD")
+    Call <net.sf.openrocket.utils.educoder.Result> calculatePressureCD  (@Body BodyPressureCDRequest status);
+    @POST("/Projectile/calculatePressureCD/delete")
+    Call <net.sf.openrocket.utils.educoder.Result> deletePressureCD();
+    @POST("/Projectile/calculatePressureCD/getList")
+    Call <net.sf.openrocket.utils.educoder.Result2> getPressureCD();
+    @POST("Whole/cd")
+    Call <Result> calculateCD  (@Body TotalBasalResistanceRequest status);
 
 }
