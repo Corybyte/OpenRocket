@@ -3,6 +3,8 @@
 
 package net.sf.openrocket.utils.educoder;
 
+import net.sf.openrocket.util.ArrayList;
+
 import java.util.List;
 
 public class TotalBasalResistanceRequest extends Request {
@@ -16,9 +18,33 @@ public class TotalBasalResistanceRequest extends Request {
     private List<Boolean> nextComponents;
     private List<Double> nextRadius;
     private List<Boolean> isComponentActives;
+    private Long timestamp;
+
+    public void setTimestamp(Long timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public static ArrayList<Double> client_cn = new ArrayList<Double>();
+    public  static ArrayList<Double> server_cn = new ArrayList<Double>();
 
     public List<Double> getNextRadius() {
         return nextRadius;
+    }
+
+    @Override
+    public String toString() {
+        return "TotalBasalResistanceRequest{" +
+                "mach=" + mach +
+                ", refArea=" + refArea +
+                ", foreRadius=" + foreRadius +
+                ", aftRadius=" + aftRadius +
+                ", length=" + length +
+                ", instanceCount=" + instanceCount +
+                ", nextComponents=" + nextComponents +
+                ", nextRadius=" + nextRadius +
+                ", isComponentActives=" + isComponentActives +
+                ", answer=" + answer +
+                '}';
     }
 
     public List<Boolean> getNextComponents() {

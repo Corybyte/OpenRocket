@@ -69,7 +69,6 @@ public interface EduCoderService {
     Call<net.sf.openrocket.utils.educoder.Result> demo(@Body net.sf.openrocket.utils.educoder.HullCGRequest request);
 
 
-
     /***
      * 计算头锥组件转动惯量
      * @param request request
@@ -86,7 +85,6 @@ public interface EduCoderService {
      */
     @POST("NoseCone/calculateCP")
     Call<net.sf.openrocket.utils.educoder.Result> calculateCP(@Body NoseConeCpRequest request);
-
 
 
     /**
@@ -124,6 +122,7 @@ public interface EduCoderService {
      */
     @POST("FinSet/calculateCG")
     Call<net.sf.openrocket.utils.educoder.Result> calculateCG(@Body FinSetCgRequest request);
+
     /**
      * 计算尾翼组件压心位置
      *
@@ -150,11 +149,12 @@ public interface EduCoderService {
      */
     @POST("Transition/calculateCG")
     Call<net.sf.openrocket.utils.educoder.Result> calculateCG(@Body TransitionCgRequest request);
+
     @POST("Transition/calculateCP")
     Call<net.sf.openrocket.utils.educoder.Result> calculateCP(@Body TransitionCpRequest request);
+
     @POST("Transition/calculateMOI")
     Call<net.sf.openrocket.utils.educoder.Result2> calculateMOI(@Body TransitionMOIRequest request);
-
 
 
     /**
@@ -165,6 +165,7 @@ public interface EduCoderService {
      */
     @POST("TubeFinSet/calculateCG")
     Call<net.sf.openrocket.utils.educoder.Result> calculateCG(@Body TubeFinsetCGRequest request);
+
     /**
      * 计算管状翼组件压心位置
      *
@@ -232,7 +233,6 @@ public interface EduCoderService {
     Call<net.sf.openrocket.utils.educoder.Result> calculateCP(@Body RailButtonCpRequest request);
 
 
-
     /**
      * 计算RailButton组件转动惯量
      *
@@ -273,7 +273,6 @@ public interface EduCoderService {
     Call<net.sf.openrocket.utils.educoder.Result> calculateCG(@Body InnerComponentCgRequest request);
 
 
-
     /**
      * 计算连接器、中心环、隔板、发动机组件转动惯量
      *
@@ -304,7 +303,6 @@ public interface EduCoderService {
     Call<net.sf.openrocket.utils.educoder.Result> calculateCP(@Body StageCpRequest request);
 
 
-
     /**
      * 计算Stage组件转动惯量
      *
@@ -313,8 +311,6 @@ public interface EduCoderService {
      */
     @POST("Stage/calculateMOI")
     Call<net.sf.openrocket.utils.educoder.Result2> calculateMOI(@Body StageMOIRequest request);
-
-
 
 
     /**
@@ -337,7 +333,6 @@ public interface EduCoderService {
     Call<net.sf.openrocket.utils.educoder.Result> calculateCP(@Body PodsCpRequest request);
 
 
-
     /**
      * 计算Pods组件转动惯量
      *
@@ -356,9 +351,6 @@ public interface EduCoderService {
      */
     @POST("Parachute/calculateCG")
     Call<net.sf.openrocket.utils.educoder.Result> calculateCG(@Body ParachuteCgRequest request);
-
-
-
 
 
     /**
@@ -381,9 +373,6 @@ public interface EduCoderService {
     Call<net.sf.openrocket.utils.educoder.Result> calculateCG(@Body StreamerCgRequest request);
 
 
-
-
-
     /**
      * 计算飘带组件转动惯量
      *
@@ -402,9 +391,6 @@ public interface EduCoderService {
      */
     @POST("ShockCord/calculateCG")
     Call<net.sf.openrocket.utils.educoder.Result> calculateCG(@Body ShockCordCgRequest request);
-
-
-
 
 
     /**
@@ -464,6 +450,7 @@ public interface EduCoderService {
      */
     @POST("Whole/calculateMOI")
     Call<Result2> calculateMOI(@Body WholeMOIRequest request);
+
     /**
      * 数据点拟合推力曲线
      *
@@ -471,6 +458,7 @@ public interface EduCoderService {
      */
     @POST("Motor/point")
     Call<net.sf.openrocket.utils.educoder.DataResult> calculatePoint(@Body Integer status);
+
     /**
      * 函数拟合推力曲线
      *
@@ -480,21 +468,30 @@ public interface EduCoderService {
     Call<net.sf.openrocket.utils.educoder.DataResult> calculateFunction(@Body Integer status);
 
     /**
-     *  弹体法向力系数
+     * 弹体法向力系数
      */
-    @POST("Projectile/calculateCN")
-    Call <net.sf.openrocket.utils.educoder.Result> calculateCN  (@Body HullCGRequest status);
+    @POST("Projectile/calculateCNs")
+    Call<net.sf.openrocket.utils.educoder.Result> calculateCN(@Body HullCGRequest status);
 
     /**
-     *  弹体压差阻力
+     * 弹体压差阻力
      */
     @POST("Projectile/calculatePressureCD")
-    Call <net.sf.openrocket.utils.educoder.Result> calculatePressureCD  (@Body BodyPressureCDRequest status);
+    Call<net.sf.openrocket.utils.educoder.Result> calculatePressureCD(@Body BodyPressureCDRequest status);
+
     @POST("/Projectile/calculatePressureCD/delete")
-    Call <net.sf.openrocket.utils.educoder.Result> deletePressureCD();
+    Call<net.sf.openrocket.utils.educoder.Result> deletePressureCD();
+
     @POST("/Projectile/calculatePressureCD/getList")
-    Call <net.sf.openrocket.utils.educoder.Result2> getPressureCD();
+    Call<net.sf.openrocket.utils.educoder.Result2> getPressureCD();
+
     @POST("Whole/cd")
-    Call <Result> calculateCD  (@Body TotalBasalResistanceRequest status);
+    Call<Result> calculateCD(@Body TotalBasalResistanceRequest status);
+
+    @POST("Whole/cd/delete")
+    Call<Result> delTotalCD();
+
+    @POST("Whole/cd/getList")
+    Call<Result2> getTotalCD();
 
 }

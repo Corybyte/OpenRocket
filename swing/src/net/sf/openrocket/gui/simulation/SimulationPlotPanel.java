@@ -480,126 +480,72 @@ public class SimulationPlotPanel extends JPanel {
             typeSelectorPanel.add(new PlotTypeSelector(i, type, unit, axis), "wrap");
         }
         //总体基底阻力ui
-        JButton jButton = new JButton("总体基底阻力计算");
-        typeSelectorPanel.add(jButton);
+        JButton jButton = new SelectColorButton("总体基底阻力计算");
+        typeSelectorPanel.add(jButton, "growx 1, sizegroup selectbutton, wrap,newline");
+
         jButton.addActionListener(e -> {
-            JDialog dialog = new JDialog((Frame) null, "总体基底阻力计算");
-            dialog.setSize(SimulationPlotPanel.this.getSize());
-            dialog.setLocationRelativeTo(null);
-            dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
-            dialog.setVisible(true);
-            TotalBasalResistanceRequest request = new TotalBasalResistanceRequest();
-            OpenRocketDocument document = OpenRocketDocumentFactory.mydoc;
-            //get configuration
-            FlightConfiguration curConfig = document.getSelectedConfiguration();
-            FlightConditions conditions = new FlightConditions(curConfig);
+            JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "总体基底阻力计算", Dialog.ModalityType.MODELESS);
+            dialog.setLayout(new BorderLayout());
+            // 创建主内容面板，使用 GridLayout 管理两部分内容
+            JPanel mainPanel = new JPanel(new GridLayout(1, 2, 10, 0)); // 1 行 2 列，水平间距 10
 
-            BarrowmanCalculator aerodynamicCalculator = new BarrowmanCalculator();
-            Method method = null;
+            // 左边的大文本框
+            JTextArea leftTextArea = new JTextArea();
+            leftTextArea.setLineWrap(true); // 自动换行
+            leftTextArea.setWrapStyleWord(true); // 仅在单词边界处换行
+            leftTextArea.setFont(new Font("Monospaced", Font.PLAIN, 14)); // 设置字体
+            leftTextArea.setText(TotalBasalResistanceRequest.server_cn.toString());
+            JScrollPane leftScrollPane = new JScrollPane(leftTextArea);
+            mainPanel.add(leftScrollPane);
 
-            try {
-                //set answer
-                method = BarrowmanCalculator.class.getDeclaredMethod("calculateBaseCD", FlightConfiguration.class, FlightConditions.class, Map.class, WarningSet.class);
-                method.setAccessible(true);
-                double result = (double) method.invoke(aerodynamicCalculator, curConfig, conditions, null, new WarningSet());
-                request.setAnswer(result);
-                //set param
-                request.setMach(conditions.getMach());
-                request.setRefArea(conditions.getRefArea());
+            // 右边的小文本框
+            JTextArea rightTextArea = new JTextArea();
+            rightTextArea.setLineWrap(true); // 自动换行
+            rightTextArea.setWrapStyleWord(true); // 仅在单词边界处换行
+            rightTextArea.setFont(new Font("Monospaced", Font.PLAIN, 14)); // 设置字体
+//			rightTextArea.setText(BodyPressureCDRequest.client_cn.toString());
+            JScrollPane rightScrollPane = new JScrollPane(rightTextArea);
+            mainPanel.add(rightScrollPane);
 
-                List<Double> foreRadiuss = new ArrayList<>();
-                List<Double> aftRadiuss = new ArrayList<>();
-                List<Double> lengths = new ArrayList<>();
-                List<Integer> instanceCounts = new ArrayList<>();
-                List<Double> nextRadiuss = new ArrayList<>();
-                List<Boolean> isComponentActives = new ArrayList<>();
-                List<Boolean> nextComponents = new ArrayList<>();
+            // 将主面板添加到对话框的中间区域
+            dialog.add(mainPanel, BorderLayout.CENTER);
 
-                InstanceMap imap = curConfig.getActiveInstances();
-                String constraints = "newline, height 30!";
-                String constraints2 = "height 30!";
+            // 创建关闭按钮
+            JButton closeButton = new JButton("关闭");
+            closeButton.addActionListener(ev -> dialog.dispose()); // 点击按钮时关闭对话框
 
-                int num = 0;
-                for (Map.Entry<RocketComponent, ArrayList<InstanceContext>> entry : imap.entrySet()) {
-                    RocketComponent c = entry.getKey();
-                    if (!(c instanceof SymmetricComponent)) {
-                        continue;
-                    }
-                    if (c.isCDOverridden() ||
-                            c.isCDOverriddenByAncestor()) {
-                        continue;
-                    }
-                    SymmetricComponent s = (SymmetricComponent) c;
-                    String name = s.getName();
-                    String instanceCount = String.valueOf(entry.getValue().size());
-                    String foreRadius = String.valueOf(s.getForeRadius());
-                    String aftRadius = String.valueOf(s.getAftRadius());
-                    foreRadiuss.add(s.getForeRadius());
-                    aftRadiuss.add(s.getAftRadius());
-                    lengths.add(s.getLength());
-                    instanceCounts.add(entry.getValue().size());
+            // 创建一个新的按钮
+            JButton newButton = new JButton("评测");
 
-                    final SymmetricComponent nextComponent = s.getNextSymmetricComponent();
-                    if (nextComponent != null) {
-                        nextComponents.add(true);
-                        nextRadiuss.add(nextComponent.getForeRadius());
-                        isComponentActives.add(curConfig.isComponentActive(nextComponent));
-                    } else {
-                        nextComponents.add(false);
-                        nextRadiuss.add(0.0);
-                        isComponentActives.add(null);
+            // 创建按钮面板
+            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0)); // 水平间距 10
+            buttonPanel.add(closeButton); // 添加关闭按钮
+            buttonPanel.add(newButton);   // 添加新按钮
+            dialog.add(buttonPanel, BorderLayout.SOUTH); // 将按钮面板放置在底部
 
-                    }
-
-                    if (num < 11) {
-                        String labelText = name + " 前半径:" + foreRadius + " 后半径:" + aftRadius;
-                        String labelText2 = "实例个数:" + instanceCount;
-                        dialog.add(new JLabel(labelText), constraints);
-                        dialog.add(new JLabel(labelText2), constraints2);
-                    }
-                    num++;
-                }
-                request.setForeRadius(foreRadiuss);
-                request.setAftRadius(aftRadiuss);
-                request.setLength(lengths);
-                request.setInstanceCount(instanceCounts);
-                request.setNextRadius(nextRadiuss);
-                request.setIsComponentActives(isComponentActives);
-                request.setNextComponents(nextComponents);
-                JButton checkButton = new JButton(trans.get("NoseConeCfg.lbl.check"));
-                JLabel checkResult = new JLabel(trans.get("NoseConeCfg.lbl.checkResult") + ": ");
-                JLabel answerLabel = new JLabel(trans.get("NoseConeCfg.lbl.answer") + ": ");
-                dialog.add(checkButton, "newline, height 30!");
-                dialog.add(checkResult, "height 30!");
-                dialog.add(answerLabel, "height 30!");
-
-                checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.calculateCD(request).enqueue(new Callback<>() {
+            // 设置对话框属性
+            dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE); // 关闭时释放对话框资源
+            dialog.setSize(800, 400); // 设置窗口宽度更大，适应两个文本框
+            dialog.setLocationRelativeTo(this); // 设置相对于父窗口居中显示
+            dialog.setVisible(true); // 显示对话框
+            //点击测评更新值
+            newButton.addActionListener(e1 -> {
+                OpenRocket.eduCoderService.getTotalCD().enqueue(new Callback<Result2>() {
                     @Override
-                    public void onResponse(@NotNull Call<Result> call, @NotNull Response<Result> response) {
-                        Result result = response.body();
-                        if (result == null) return;
-                        SwingUtilities.invokeLater(() -> {
-                            checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult());
-                            answerLabel.setText(trans.get("NoseConeCfg.lbl.answer") + ": " + request.getAnswer());
-                        });
+                    public void onResponse(Call<Result2> call, Response<Result2> response) {
+                        Double[] result = response.body().getResult();
+                        rightTextArea.setText(Arrays.toString(result));
                     }
 
                     @Override
-                    public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
-                        SwingUtilities.invokeLater(() ->
-                                JOptionPane.showMessageDialog(null, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE));
+                    public void onFailure(Call<Result2> call, Throwable throwable) {
+
                     }
-                }));
-            } catch (Exception ex) {
-                //ignore
-                ex.printStackTrace();
-                System.out.println(ex.getCause());
-
-                throw new RuntimeException(ex);
-            }
-            dialog.setVisible(true);
-
+                });
+            });
         });
+
+
 
         //
         //对称组件压差阻力ui
