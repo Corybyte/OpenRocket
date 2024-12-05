@@ -314,6 +314,8 @@ public class RK4SimulationStepper extends AbstractSimulationStepper {
 		
 		double dynP = (0.5 * store.flightConditions.getAtmosphericConditions().getDensity() *
 					MathUtil.pow2(store.flightConditions.getVelocity()));
+
+		//总体参考面积
 		double refArea = store.flightConditions.getRefArea();
 		double refLength = store.flightConditions.getRefLength();
 		

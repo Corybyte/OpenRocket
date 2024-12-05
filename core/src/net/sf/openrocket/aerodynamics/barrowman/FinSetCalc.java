@@ -146,6 +146,7 @@ public class FinSetCalc extends RocketComponentCalc {
 			warnings.add(Warning.PARALLEL_FINS);
 			break;
 		}
+
 				
 		// Body-fin interference effect
 		double r = bodyRadius;
@@ -188,6 +189,7 @@ public class FinSetCalc extends RocketComponentCalc {
 		//				conditions.getRollRate(), forces.CrollForce, forces.CrollDamp, forces.Croll);
 		
 		forces.setCNa(cna);
+		//CN:法向力系数
 		forces.setCN(cna * MathUtil.min(conditions.getAOA(), STALL_ANGLE));
 		forces.setCP(new Coordinate(x, 0, 0, cna));
 		forces.setCm(forces.getCN() * x / conditions.getRefLength());
