@@ -56,9 +56,7 @@ import net.sf.openrocket.gui.widgets.SaveFileChooser;
 import net.sf.openrocket.logging.Message;
 import net.sf.openrocket.logging.Warning;
 import net.sf.openrocket.startup.OpenRocket;
-import net.sf.openrocket.utils.educoder.BodyPressureCDRequest;
-import net.sf.openrocket.utils.educoder.Result;
-import net.sf.openrocket.utils.educoder.TotalBasalResistanceRequest;
+import net.sf.openrocket.utils.educoder.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1097,6 +1095,8 @@ public class SimulationPanel extends JPanel {
 			//每次运行仿真后及时删除旧值
 			BodyPressureCDRequest.server_cn.clear();
 			TotalBasalResistanceRequest.server_cn.clear();
+			FinsetPressureCDRequest.server_cn.clear();
+			AxialCDRequest.server_cn.clear();
 			//远程删除旧值
 			OpenRocket.eduCoderService.deletePressureCD().enqueue(new Callback<Result>() {
 				@Override
@@ -1110,6 +1110,28 @@ public class SimulationPanel extends JPanel {
 				}
 			});
 			OpenRocket.eduCoderService.delTotalCD().enqueue(new Callback<Result>() {
+				@Override
+				public void onResponse(Call<Result> call, Response<Result> response) {
+
+				}
+
+				@Override
+				public void onFailure(Call<Result> call, Throwable throwable) {
+
+				}
+			});
+			OpenRocket.eduCoderService.deleteAxialCD().enqueue(new Callback<Result>() {
+				@Override
+				public void onResponse(Call<Result> call, Response<Result> response) {
+
+				}
+
+				@Override
+				public void onFailure(Call<Result> call, Throwable throwable) {
+
+				}
+			});
+			OpenRocket.eduCoderService.deleteFinsetPressureCD().enqueue(new Callback<Result>() {
 				@Override
 				public void onResponse(Call<Result> call, Response<Result> response) {
 

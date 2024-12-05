@@ -11,12 +11,18 @@ import net.sf.openrocket.logging.Warning;
 import net.sf.openrocket.logging.WarningSet;
 import net.sf.openrocket.rocketcomponent.FinSet;
 import net.sf.openrocket.rocketcomponent.RocketComponent;
+import net.sf.openrocket.startup.OpenRocket;
 import net.sf.openrocket.util.BugException;
 import net.sf.openrocket.util.Coordinate;
 import net.sf.openrocket.util.LinearInterpolator;
 import net.sf.openrocket.util.MathUtil;
 import net.sf.openrocket.util.PolyInterpolator;
 import net.sf.openrocket.util.Transformation;
+import net.sf.openrocket.utils.educoder.FinsetPressureCDRequest;
+import net.sf.openrocket.utils.educoder.Result;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class FinSetCalc extends RocketComponentCalc {
 	
@@ -630,7 +636,7 @@ public class FinSetCalc extends RocketComponentCalc {
 	@Override
 	public double calculatePressureCD(FlightConditions conditions,
 									  double stagnationCD, double baseCD, WarningSet warnings) {
-		
+
 		// a fin with 0 area contributes no drag
 		if (finArea < MathUtil.EPSILON) {
 			return 0.0;
@@ -671,6 +677,33 @@ public class FinSetCalc extends RocketComponentCalc {
 		
 		// Scale to correct reference area
 		cd *= span * thickness / conditions.getRefArea();
+		// 去除自检
+		if (conditions.getAOA()!=0&&conditions.getTheta()!=0){
+			//添加值
+			FinsetPressureCDRequest request = new FinsetPressureCDRequest();
+			request.setFinArea(finArea);
+			request.setMach(conditions.getMach());
+			request.setCrossSection(crossSection.toString());
+			request.setCosGammaLead(cosGammaLead);
+			request.setSpan(span);
+			request.setThickness(thickness);
+			request.setTimestamp(System.nanoTime());
+			request.setRefArea(conditions.getRefArea());
+			FinsetPressureCDRequest.server_cn.add(cd);
+			//发送请求
+			OpenRocket.eduCoderService.calculateFinsetPressureCD(request).enqueue(new Callback<Result>() {
+
+				@Override
+				public void onResponse(Call<Result> call, Response<Result> response) {
+					//ignore
+				}
+
+				@Override
+				public void onFailure(Call<Result> call, Throwable throwable) {
+					//ignore
+				}
+			});
+		}
 		
 		return cd;
 	}

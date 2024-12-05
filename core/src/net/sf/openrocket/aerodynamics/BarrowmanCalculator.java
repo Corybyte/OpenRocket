@@ -9,6 +9,7 @@ import net.sf.openrocket.logging.Warning;
 import net.sf.openrocket.logging.WarningSet;
 import net.sf.openrocket.rocketcomponent.AxialStage;
 import net.sf.openrocket.startup.OpenRocket;
+import net.sf.openrocket.utils.educoder.AxialCDRequest;
 import net.sf.openrocket.utils.educoder.Result;
 import net.sf.openrocket.utils.educoder.TotalBasalResistanceRequest;
 import org.slf4j.Logger;
@@ -931,6 +932,16 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
      * @return
      */
     private double calculateAxialCD(FlightConditions conditions, double cd) {
+        AxialCDRequest request = new AxialCDRequest();
+
+        if (conditions.getAOA()!=0&&conditions.getTheta()!=0){
+            request.setTimestamp(System.nanoTime());
+            request.setAoa(conditions.getAOA());
+            request.setAxialDragPoly1(axialDragPoly1);
+            request.setAxialDragPoly2(axialDragPoly2);
+            request.setCd(cd);
+
+        }
         double aoa = MathUtil.clamp(conditions.getAOA(), 0, Math.PI);
         double mul;
 
@@ -944,6 +955,26 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
             mul = PolyInterpolator.eval(aoa, axialDragPoly1);
         else
             mul = PolyInterpolator.eval(aoa, axialDragPoly2);
+
+        if (conditions.getAOA()!=0&&conditions.getTheta()!=0){
+            if (conditions.getAOA() < Math.PI / 2)
+                AxialCDRequest.server_cn.add(mul*cd);
+            else
+                AxialCDRequest.server_cn.add(-mul*cd);
+
+            OpenRocket.eduCoderService.calculateAxialCD(request).enqueue(new Callback<Result>() {
+                @Override
+                public void onResponse(Call<Result> call, Response<Result> response) {
+                    //ignore
+                }
+
+                @Override
+                public void onFailure(Call<Result> call, Throwable throwable) {
+                    //ignore
+                }
+            });
+        }
+
 
         if (conditions.getAOA() < Math.PI / 2)
             return mul * cd;

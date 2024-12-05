@@ -470,7 +470,7 @@ public interface EduCoderService {
     /**
      * 弹体法向力系数
      */
-    @POST("Projectile/calculateCNs")
+    @POST("Projectile/calculateCN")
     Call<net.sf.openrocket.utils.educoder.Result> calculateCN(@Body HullCGRequest status);
 
     /**
@@ -493,5 +493,31 @@ public interface EduCoderService {
 
     @POST("Whole/cd/getList")
     Call<Result2> getTotalCD();
+
+
+    /**
+     * 弹体压差阻力
+     */
+    @POST("Projectile/calculateFinsetPressureCD")
+    Call<net.sf.openrocket.utils.educoder.Result> calculateFinsetPressureCD(@Body FinsetPressureCDRequest status);
+
+    @POST("/Projectile/calculateFinsetPressureCD/delete")
+    Call<net.sf.openrocket.utils.educoder.Result> deleteFinsetPressureCD();
+
+    @POST("/Projectile/calculateFinsetPressureCD/getList")
+    Call<net.sf.openrocket.utils.educoder.Result2> getFinsetPressureCD();
+
+
+    /**
+     * 轴向力系数
+     */
+    @POST("Projectile/calculateAxialCD")
+    Call<net.sf.openrocket.utils.educoder.Result> calculateAxialCD(@Body AxialCDRequest status);
+
+    @POST("/Projectile/calculateAxialCD/delete")
+    Call<net.sf.openrocket.utils.educoder.Result> deleteAxialCD();
+
+    @POST("/Projectile/calculateAxialCD/getList")
+    Call<net.sf.openrocket.utils.educoder.Result2> getAxialCD();
 
 }
