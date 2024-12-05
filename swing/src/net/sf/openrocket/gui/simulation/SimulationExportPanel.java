@@ -30,10 +30,16 @@ import net.sf.openrocket.simulation.FlightData;
 import net.sf.openrocket.simulation.FlightDataBranch;
 import net.sf.openrocket.simulation.FlightDataType;
 import net.sf.openrocket.startup.Application;
+import net.sf.openrocket.startup.OpenRocket;
 import net.sf.openrocket.unit.Unit;
 import net.sf.openrocket.unit.UnitGroup;
 import net.sf.openrocket.gui.widgets.SelectColorButton;
 import net.sf.openrocket.utils.educoder.HullCGRequest;
+import net.sf.openrocket.utils.educoder.Result;
+import org.apache.commons.collections4.CollectionUtils;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class SimulationExportPanel extends JPanel {
 	
@@ -171,7 +177,7 @@ public class SimulationExportPanel extends JPanel {
 					leftTextArea.setLineWrap(true); // 自动换行
 					leftTextArea.setWrapStyleWord(true); // 仅在单词边界处换行
 					leftTextArea.setFont(new Font("Monospaced", Font.PLAIN, 14)); // 设置字体
-					leftTextArea.setText(HullCGRequest.server_cn.toString());
+					leftTextArea.setText(HullCGRequest.Server_cn.toString());
 					JScrollPane leftScrollPane = new JScrollPane(leftTextArea);
 					mainPanel.add(leftScrollPane);
 
@@ -180,7 +186,7 @@ public class SimulationExportPanel extends JPanel {
 					rightTextArea.setLineWrap(true); // 自动换行
 					rightTextArea.setWrapStyleWord(true); // 仅在单词边界处换行
 					rightTextArea.setFont(new Font("Monospaced", Font.PLAIN, 14)); // 设置字体
-					rightTextArea.setText(HullCGRequest.client_cn.toString());
+					rightTextArea.setText(HullCGRequest.Client_cn.toString());
 					JScrollPane rightScrollPane = new JScrollPane(rightTextArea);
 					mainPanel.add(rightScrollPane);
 
@@ -192,12 +198,27 @@ public class SimulationExportPanel extends JPanel {
 					closeButton.addActionListener(ev -> dialog.dispose()); // 点击按钮时关闭对话框
 
 					// 创建一个新的按钮
-					JButton newButton = new JButton("评测");
+					HullCGRequest request = new HullCGRequest(HullCGRequest.Client_cn,HullCGRequest.Server_cn);
+					JButton checkButton = new JButton("评测");
+					checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.checkJSON(request).enqueue(new Callback<Result>() {
+						@Override
+						public void onResponse(Call<Result> call, Response<Result> response) {
+							System.out.println(HullCGRequest.Server_cn.size());
+							System.out.println(HullCGRequest.Client_cn.size());
+							System.out.println(CollectionUtils.isEqualCollection(HullCGRequest.Server_cn,HullCGRequest.Client_cn));
+						}
+						@Override
+						public void onFailure(Call<Result> call, Throwable throwable) {
 
-					// 创建按钮面板
+						}
+					}));
+
+
+
+			// 创建按钮面板
 					JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0)); // 水平间距 10
 					buttonPanel.add(closeButton); // 添加关闭按钮
-					buttonPanel.add(newButton);   // 添加新按钮
+					buttonPanel.add(checkButton);   // 添加新按钮
 					dialog.add(buttonPanel, BorderLayout.SOUTH); // 将按钮面板放置在底部
 
 					// 设置对话框属性

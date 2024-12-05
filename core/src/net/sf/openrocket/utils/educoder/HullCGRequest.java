@@ -16,9 +16,15 @@ public class HullCGRequest {
     public  double client_PlanformCenter;
     public  double client_PlanformArea;
     public  final double client_BODY_LIFT_K = 1.1;
+    public  long timestap;
     public  double result_cn;
     public  double result_cna;
 
-    public static   ArrayList client_cn = new ArrayList();
-    public  static ArrayList server_cn = new ArrayList();
+    public static   ArrayList Client_cn = new ArrayList();
+    public  static ArrayList Server_cn = new ArrayList();
+
+    public HullCGRequest(ArrayList client_cn, ArrayList server_cn) {
+        Client_cn = client_cn;
+        Server_cn = server_cn;
+    }
 }

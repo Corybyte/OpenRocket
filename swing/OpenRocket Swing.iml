@@ -391,5 +391,14 @@
     <orderEntry type="library" name="okio-2.10.0" level="project" />
     <orderEntry type="library" name="converter-gson-2.11.0" level="project" />
     <orderEntry type="library" name="gson-2.10.1" level="project" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../core/lib/commons-collections4-4.4.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
   </component>
 </module>
