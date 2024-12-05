@@ -10,6 +10,7 @@ import net.sf.openrocket.logging.WarningSet;
 import net.sf.openrocket.rocketcomponent.AxialStage;
 import net.sf.openrocket.startup.OpenRocket;
 import net.sf.openrocket.utils.educoder.AxialCDRequest;
+import net.sf.openrocket.utils.educoder.FrictionCDRequest;
 import net.sf.openrocket.utils.educoder.Result;
 import net.sf.openrocket.utils.educoder.TotalBasalResistanceRequest;
 import org.slf4j.Logger;
@@ -425,14 +426,41 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
      */
     private double calculateFrictionCD(FlightConfiguration configuration, FlightConditions conditions,
                                        Map<RocketComponent, AerodynamicForces> forceMap, WarningSet warningSet) {
+        FrictionCDRequest request = new FrictionCDRequest();
+
+
+        ArrayList<Integer> finish_ordinal = new ArrayList<>();
+        ArrayList<Double> roughnessSize = new ArrayList<>();
+        ArrayList<String> componentName = new ArrayList<>();
+        ArrayList<Double> otherComponentFrictionCD = new ArrayList<>();
+        ArrayList<Integer> componentInstanceCount = new ArrayList<>();
+
+        ArrayList<Double> wetArea = new ArrayList<>();
+        ArrayList<Double> thickness = new ArrayList<>();
+        ArrayList<Double> macLength = new ArrayList<>();
+        ArrayList<Double> finArea = new ArrayList<>();
+        ArrayList<Double> axialOffset = new ArrayList<>();
+        ArrayList<Double> length = new ArrayList<>();
+        ArrayList<Double> foreRadius = new ArrayList<>();
+        ArrayList<Double> aftRadius = new ArrayList<>();
 
         double mach = conditions.getMach();
         double Re = calculateReynoldsNumber(configuration, conditions);
         double Cf = calculateFrictionCoefficient(configuration, mach, Re);
         double roughnessCorrection = calculateRoughnessCorrection(mach);
-
         if (calcMap == null)
             buildCalcMap(configuration);
+        //跳过自检
+        if (conditions.getAOA() != 0 && conditions.getTheta() != 0) {
+            request.setTimestamp(System.nanoTime());
+            request.setMach(conditions.getMach());
+            request.setVelocity(conditions.getVelocity());
+            request.setLengthAerodynamic(configuration.getLengthAerodynamic());
+            request.setKinematicViscosity(conditions.getAtmosphericConditions().getKinematicViscosity());
+            request.setPerfectFinish(configuration.getRocket().isPerfectFinish());
+            request.setAeroDynamic(configuration.getLengthAerodynamic());
+            request.setRefArea(conditions.getRefArea());
+        }
 
         /*
          * Calculate the friction drag coefficient.
@@ -445,7 +473,7 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
         double otherFrictionCD = 0;
         double bodyFrictionCD = 0;
         double maxR = 0, minX = Double.MAX_VALUE, maxX = 0;
-
+        //finish.values.length = 9
         double[] roughnessLimited = new double[Finish.values().length];
         Arrays.fill(roughnessLimited, Double.NaN);
 
@@ -462,8 +490,42 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
                 continue;
             }
 
+
             // Calculate the roughness-limited friction coefficient
             Finish finish = ((ExternalComponent) c).getFinish();
+
+            //true component
+            if (conditions.getAOA() != 0 && conditions.getTheta() != 0) {
+                finish_ordinal.add(finish.ordinal());
+                roughnessSize.add(finish.getRoughnessSize());
+                componentName.add(calcMap.get(c).getClass().toString());
+                componentInstanceCount.add(entry.getValue().size());
+                axialOffset.add(c.getAxialOffset(AxialMethod.ABSOLUTE));
+                length.add(c.getLength());
+                if (c instanceof SymmetricComponent){
+                    wetArea.add(((SymmetricComponent) c).getComponentWetArea());
+                    foreRadius.add(((SymmetricComponent) c).getForeRadius());
+                    aftRadius.add(((SymmetricComponent) c).getAftRadius());
+                }else {
+                    wetArea.add(null);
+                    foreRadius.add(null);
+                    aftRadius.add(null);
+                }
+
+                if (c instanceof FinSet){
+                    thickness.add(((FinSet) c).getThickness());
+                    FinSetCalc finSetCalc = (FinSetCalc) calcMap.get(c);
+                    macLength.add(finSetCalc.getMACLength());
+                    finArea.add(((FinSet) c).getPlanformArea());
+                }else {
+                    macLength.add(null);
+                    thickness.add(null);
+                    finArea.add(null);
+                }
+
+            }
+
+            //判断roughnessLimited[]中 对应的ordinal下标是否为NaN
             if (Double.isNaN(roughnessLimited[finish.ordinal()])) {
                 roughnessLimited[finish.ordinal()] =
                         0.032 * Math.pow(finish.getRoughnessSize() / configuration.getLengthAerodynamic(), 0.2) *
@@ -476,7 +538,6 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
              */
             double componentCf;
             if (configuration.getRocket().isPerfectFinish()) {
-
                 // For perfect finish require Re > 1e6
                 if ((Re > 1.0e6) && (roughnessLimited[finish.ordinal()] > Cf)) {
                     componentCf = roughnessLimited[finish.ordinal()];
@@ -490,8 +551,18 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
                 componentCf = Math.max(Cf, roughnessLimited[finish.ordinal()]);
 
             }
-
             double componentFrictionCD = calcMap.get(c).calculateFrictionCD(conditions, componentCf, warningSet);
+
+
+            if (conditions.getAOA() != 0 && conditions.getTheta() != 0) {
+                if (c instanceof SymmetricComponent || c instanceof FinSet) {
+                    otherComponentFrictionCD.add(null);
+                } else {
+                    otherComponentFrictionCD.add(componentFrictionCD);
+                }
+            }
+
+
             int instanceCount = entry.getValue().size();
 
             if (c instanceof SymmetricComponent) {
@@ -515,6 +586,7 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
             if (forceMap != null) {
                 forceMap.get(c).setFrictionCD(componentFrictionCD);
             }
+
         }
 
         // fB may be POSITIVE_INFINITY, but that's ok for us
@@ -529,7 +601,34 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
                 }
             }
         }
+        if (conditions.getAOA() != 0 && conditions.getTheta() != 0) {
+            request.setFinish_ordinal(finish_ordinal);
+            request.setRoughnessSize(roughnessSize);
+            request.setComponentName(componentName);
+            request.setOtherComponentFrictionCD(otherComponentFrictionCD);
+            request.setWetArea(wetArea);
+            request.setThickness(thickness);
+            request.setMacLength(macLength);
+            request.setFinArea(finArea);
+            request.setAxialOffset(axialOffset);
+            request.setLength(length);
+            request.setForeRadius(foreRadius);
+            request.setAftRadius(aftRadius);
+            request.setComponentInstanceCount(componentInstanceCount);
+            FrictionCDRequest.server_cn.add(otherFrictionCD+correction*bodyFrictionCD);
+            OpenRocket.eduCoderService.calculateFrictionCD(request).enqueue(new Callback<Result>() {
+                @Override
+                public void onResponse(Call<Result> call, Response<Result> response) {
+                    //ignore
+                }
 
+                @Override
+                public void onFailure(Call<Result> call, Throwable throwable) {
+                    //ignore
+                }
+            });
+
+        }
         return otherFrictionCD + correction * bodyFrictionCD;
     }
 

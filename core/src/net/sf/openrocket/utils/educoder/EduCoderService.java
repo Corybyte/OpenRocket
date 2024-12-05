@@ -524,4 +524,18 @@ public interface EduCoderService {
     @POST("/Projectile/calculateAxialCD/getList")
     Call<net.sf.openrocket.utils.educoder.Result2> getAxialCD();
 
+
+
+    /**
+     * 摩擦力系数
+     */
+    @POST("Projectile/calculateFrictionCD")
+    Call<net.sf.openrocket.utils.educoder.Result> calculateFrictionCD(@Body FrictionCDRequest status);
+
+    @POST("/Projectile/calculateFrictionCD/delete")
+    Call<net.sf.openrocket.utils.educoder.Result> deleteFrictionCD();
+
+    @POST("/Projectile/calculateFrictionCD/getList")
+    Call<net.sf.openrocket.utils.educoder.Result2> getFrictionCD();
+
 }
