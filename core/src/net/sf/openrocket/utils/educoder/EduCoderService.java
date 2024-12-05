@@ -58,7 +58,7 @@ public interface EduCoderService {
      * @param request request
      * @return result
      */
-    @POST("/Projectile/calculateCN")
+    @POST("/Projectile/checkJson")
     Call<net.sf.openrocket.utils.educoder.Result> checkJSON (@Body Object object);
 
 

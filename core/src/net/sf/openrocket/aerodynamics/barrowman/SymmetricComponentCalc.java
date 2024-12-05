@@ -109,12 +109,7 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 	@Override
 	public void calculateNonaxialForces(FlightConditions conditions, Transformation transform,
 			AerodynamicForces forces, WarningSet warnings) {
-		HullCGRequest hullCGRequest = new HullCGRequest(HullCGRequest.Client_cn,HullCGRequest.Server_cn);
-
-
-
-
-		if (Double.isNaN(cnaCache)) {
+			if (Double.isNaN(cnaCache)) {
 			final double r0 = foreRadius;
 			final double r1 = aftRadius;
 			
@@ -145,11 +140,7 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 		//mul * BODY_LIFT_K * planformArea / conditions.getRefArea() * conditions.getSinAOA() * conditions.getSincAOA()  /2 *  conditions.getAOA()
 		forces.setCP(cp);
 		forces.setCNa(cp.weight);
-		if (forces.getCNa() * conditions.getAOA() != 0) {
-			forces.setCN(forces.getCNa() * conditions.getAOA());
-			HullCGRequest.Server_cn.add(forces.getCNa() * conditions.getAOA());
-		}
-
+		forces.setCN(forces.getCNa() * conditions.getAOA());
 		forces.setCm(forces.getCN() * cp.x / conditions.getRefLength());
 		forces.setCroll(0);
 		forces.setCrollDamp(0);
@@ -161,8 +152,12 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 		if (conditions.getMach() > 1.1) {
 			warnings.add(Warning.SUPERSONIC);
 		}
+		//判断是否是系统自检
+		if (conditions.getAOA()==0 || conditions.getTheta()==0){
+			return;
+		}
 
-
+		HullCGRequest hullCGRequest = new HullCGRequest(HullCGRequest.Client_cn,HullCGRequest.Server_cn);
 		hullCGRequest.client_CnaCache=0;
 		hullCGRequest.client_ForeRadius=foreRadius;
 		hullCGRequest.client_AftRadius=aftRadius;
@@ -177,14 +172,19 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 		hullCGRequest.client_PlanformArea=planformArea;
 		hullCGRequest.result_cn=forces.getCNa() * conditions.getAOA();
 		hullCGRequest.result_cna=cp.weight;
+		hullCGRequest.timestap=System.nanoTime();
 
 		if (forces.getCNa() * conditions.getAOA() != 0) {
 			OpenRocket.eduCoderService.calculateCN(hullCGRequest).enqueue(new Callback<Result>() {
 
 				@Override
 				public void onResponse(Call<Result> call, Response<Result> response) {
-					System.out.println(response.body().getResult());
-					hullCGRequest.Client_cn.add(response.body().getResult());
+					synchronized (HullCGRequest.Client_cn) {
+						HullCGRequest.Client_cn.add(response.body().getResult());
+					}
+					synchronized (HullCGRequest.Server_cn){
+						HullCGRequest.Server_cn.add(forces.getCNa() * conditions.getAOA());
+					}
 				}
 
 				@Override
