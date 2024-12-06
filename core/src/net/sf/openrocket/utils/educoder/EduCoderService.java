@@ -538,4 +538,16 @@ public interface EduCoderService {
     @POST("/Projectile/calculateFrictionCD/getList")
     Call<net.sf.openrocket.utils.educoder.Result2> getFrictionCD();
 
+
+    /**
+     *轨迹
+     */
+    @POST("Projectile/Acceleration")
+    Call<net.sf.openrocket.utils.educoder.Result> Acceleration(@Body AccelerationRequest status);
+
+    @POST("/Projectile/Acceleration/delete")
+    Call<net.sf.openrocket.utils.educoder.Result> delAcceleration();
+
+    @POST("/Projectile/Acceleration/getList")
+    Call<net.sf.openrocket.utils.educoder.Result2> getAcceleration();
 }
