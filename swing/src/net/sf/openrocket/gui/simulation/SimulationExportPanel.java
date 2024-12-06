@@ -34,6 +34,7 @@ import net.sf.openrocket.startup.OpenRocket;
 import net.sf.openrocket.unit.Unit;
 import net.sf.openrocket.unit.UnitGroup;
 import net.sf.openrocket.gui.widgets.SelectColorButton;
+import net.sf.openrocket.utils.educoder.DataRequest;
 import net.sf.openrocket.utils.educoder.HullCGRequest;
 import net.sf.openrocket.utils.educoder.Result;
 import org.apache.commons.collections4.CollectionUtils;
@@ -198,7 +199,7 @@ public class SimulationExportPanel extends JPanel {
 					closeButton.addActionListener(ev -> dialog.dispose()); // 点击按钮时关闭对话框
 
 					// 创建一个新的按钮
-					HullCGRequest request = new HullCGRequest(HullCGRequest.Client_cn,HullCGRequest.Server_cn);
+					DataRequest request = new DataRequest(HullCGRequest.Client_cn,HullCGRequest.Server_cn);
 					JButton checkButton = new JButton("评测");
 					checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.checkJSON(request).enqueue(new Callback<Result>() {
 						@Override
