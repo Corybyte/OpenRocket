@@ -34,7 +34,7 @@ import net.sf.openrocket.startup.OpenRocket;
 import net.sf.openrocket.unit.Unit;
 import net.sf.openrocket.unit.UnitGroup;
 import net.sf.openrocket.gui.widgets.SelectColorButton;
-import net.sf.openrocket.utils.educoder.HullCGRequest;
+import net.sf.openrocket.utils.educoder.HullCNRequest;
 import net.sf.openrocket.utils.educoder.Result;
 import org.apache.commons.collections4.CollectionUtils;
 import retrofit2.Call;
@@ -177,7 +177,7 @@ public class SimulationExportPanel extends JPanel {
 					leftTextArea.setLineWrap(true); // 自动换行
 					leftTextArea.setWrapStyleWord(true); // 仅在单词边界处换行
 					leftTextArea.setFont(new Font("Monospaced", Font.PLAIN, 14)); // 设置字体
-					leftTextArea.setText(HullCGRequest.Server_cn.toString());
+					leftTextArea.setText(HullCNRequest.Server_cn.toString());
 					JScrollPane leftScrollPane = new JScrollPane(leftTextArea);
 					mainPanel.add(leftScrollPane);
 
@@ -186,7 +186,7 @@ public class SimulationExportPanel extends JPanel {
 					rightTextArea.setLineWrap(true); // 自动换行
 					rightTextArea.setWrapStyleWord(true); // 仅在单词边界处换行
 					rightTextArea.setFont(new Font("Monospaced", Font.PLAIN, 14)); // 设置字体
-					rightTextArea.setText(HullCGRequest.Client_cn.toString());
+					rightTextArea.setText(HullCNRequest.Client_cn.toString());
 					JScrollPane rightScrollPane = new JScrollPane(rightTextArea);
 					mainPanel.add(rightScrollPane);
 
@@ -198,7 +198,7 @@ public class SimulationExportPanel extends JPanel {
 					closeButton.addActionListener(ev -> dialog.dispose()); // 点击按钮时关闭对话框
 
 					// 创建一个新的按钮
-					DataRequest request = new DataRequest(HullCGRequest.Client_cn,HullCGRequest.Server_cn);
+					DataRequest request = new DataRequest(HullCNRequest.Client_cn,HullCNRequest.Server_cn);
 					JButton checkButton = new JButton("评测");
 					checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.checkJSON(request).enqueue(new Callback<Result>() {
 						@Override

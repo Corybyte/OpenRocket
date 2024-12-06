@@ -15,7 +15,7 @@ import net.sf.openrocket.startup.OpenRocket;
 import net.sf.openrocket.util.*;
 
 import net.sf.openrocket.utils.educoder.BodyPressureCDRequest;
-import net.sf.openrocket.utils.educoder.HullCGRequest;
+import net.sf.openrocket.utils.educoder.HullCNRequest;
 import net.sf.openrocket.utils.educoder.Result;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -157,33 +157,33 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 			return;
 		}
 
-		HullCGRequest hullCGRequest = new HullCGRequest(HullCGRequest.Client_cn,HullCGRequest.Server_cn);
-		hullCGRequest.client_CnaCache=0;
-		hullCGRequest.client_ForeRadius=foreRadius;
-		hullCGRequest.client_AftRadius=aftRadius;
-		hullCGRequest.client_FullVolume=fullVolume;
-		hullCGRequest.client_Mach=conditions.getMach();
-		hullCGRequest.client_AOA=conditions.getAOA();
-		hullCGRequest.client_RefArea= conditions.getRefArea();
-		hullCGRequest.client_Length=length;
-		hullCGRequest.client_SinAOA= conditions.getSinAOA();
-		hullCGRequest.client_SincAOA = conditions.getSincAOA();
-		hullCGRequest.client_PlanformCenter=planformCenter;
-		hullCGRequest.client_PlanformArea=planformArea;
-		hullCGRequest.result_cn=forces.getCNa() * conditions.getAOA();
-		hullCGRequest.result_cna=cp.weight;
-		hullCGRequest.timestap=System.nanoTime();
+		HullCNRequest hullCNRequest = new HullCNRequest(HullCNRequest.Client_cn,HullCNRequest.Server_cn);
+		hullCNRequest.client_CnaCache=0;
+		hullCNRequest.client_ForeRadius=foreRadius;
+		hullCNRequest.client_AftRadius=aftRadius;
+		hullCNRequest.client_FullVolume=fullVolume;
+		hullCNRequest.client_Mach=conditions.getMach();
+		hullCNRequest.client_AOA=conditions.getAOA();
+		hullCNRequest.client_RefArea= conditions.getRefArea();
+		hullCNRequest.client_Length=length;
+		hullCNRequest.client_SinAOA= conditions.getSinAOA();
+		hullCNRequest.client_SincAOA = conditions.getSincAOA();
+		hullCNRequest.client_PlanformCenter=planformCenter;
+		hullCNRequest.client_PlanformArea=planformArea;
+		hullCNRequest.result_cn=forces.getCNa() * conditions.getAOA();
+		hullCNRequest.result_cna=cp.weight;
+		hullCNRequest.timestap=System.nanoTime();
 
 		if (forces.getCNa() * conditions.getAOA() != 0) {
-			OpenRocket.eduCoderService.calculateCN(hullCGRequest).enqueue(new Callback<Result>() {
+			OpenRocket.eduCoderService.calculateCN(hullCNRequest).enqueue(new Callback<Result>() {
 
 				@Override
 				public void onResponse(Call<Result> call, Response<Result> response) {
-					synchronized (HullCGRequest.Client_cn) {
-						HullCGRequest.Client_cn.add(response.body().getResult());
+					synchronized (hullCNRequest.Client_cn) {
+						hullCNRequest.Client_cn.add(response.body().getResult());
 					}
-					synchronized (HullCGRequest.Server_cn){
-						HullCGRequest.Server_cn.add(forces.getCNa() * conditions.getAOA());
+					synchronized (hullCNRequest.Server_cn){
+						hullCNRequest.Server_cn.add(forces.getCNa() * conditions.getAOA());
 					}
 				}
 

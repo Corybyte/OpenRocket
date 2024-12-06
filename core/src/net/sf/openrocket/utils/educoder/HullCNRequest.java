@@ -2,7 +2,7 @@ package net.sf.openrocket.utils.educoder;
 
 import net.sf.openrocket.util.ArrayList;
 
-public class HullCGRequest {
+public class HullCNRequest {
     public  double client_CnaCache;
     public  double client_ForeRadius;
     public  double client_AftRadius;
@@ -23,7 +23,7 @@ public class HullCGRequest {
     public static   ArrayList Client_cn = new ArrayList();
     public  static ArrayList Server_cn = new ArrayList();
 
-    public HullCGRequest(ArrayList client_cn, ArrayList server_cn) {
+    public HullCNRequest(ArrayList client_cn, ArrayList server_cn) {
         Client_cn = client_cn;
         Server_cn = server_cn;
     }

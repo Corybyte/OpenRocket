@@ -20,6 +20,7 @@ import net.sf.openrocket.util.PolyInterpolator;
 import net.sf.openrocket.util.Transformation;
 import net.sf.openrocket.utils.educoder.FinsetPressureCDRequest;
 import net.sf.openrocket.utils.educoder.Result;
+import net.sf.openrocket.utils.educoder.WingCNRequest;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -153,10 +154,28 @@ public class FinSetCalc extends RocketComponentCalc {
 			break;
 		}
 
-				
 		// Body-fin interference effect
 		double r = bodyRadius;
 		double tau = r / (span + r);
+
+		WingCNRequest request = new WingCNRequest();
+		request.Tau=tau;
+		request.Cna=cna;
+		request.Cna1=cna1;
+		request.MacLength=macLength;
+		request.MacLead=macLead;
+		request.FlightConditions_Mach=conditions.getMach();
+		request.FlightConditions_Beta=conditions.getBeta();
+		request.MacSpen=macSpan;
+		request.BodyRadius=bodyRadius;
+		request.CantAngle=cantAngle;
+		request.FlightConditions_RefLength=conditions.getRefLength();
+		request.FlightConditions_AOA=conditions.getAOA();
+		request.STALL_ANGLE=STALL_ANGLE;
+		request.AerodynamicForces_CrollForce=forces.getCrollForce();
+
+
+
 		if (Double.isNaN(tau) || Double.isInfinite(tau))
 			tau = 0;
 		cna *= 1 + tau; // Classical Barrowman

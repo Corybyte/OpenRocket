@@ -8,7 +8,6 @@ import net.sf.openrocket.utils.educoder.DemoRequest;
 import net.sf.openrocket.utils.educoder.FinSetCgRequest;
 import net.sf.openrocket.utils.educoder.FinSetCpRequest;
 import net.sf.openrocket.utils.educoder.FinSetMOIRequest;
-import net.sf.openrocket.utils.educoder.HullCGRequest;
 import net.sf.openrocket.utils.educoder.InnerComponentCgRequest;
 import net.sf.openrocket.utils.educoder.InnerComponentMOIRequest;
 import net.sf.openrocket.utils.educoder.InnerTubeCgRequest;
@@ -68,9 +67,6 @@ public interface EduCoderService {
     @POST("Demo/calculateCG")
     Call<net.sf.openrocket.utils.educoder.Result> calculateDemo(@Body DemoRequest request);
 
-
-    @POST("Demo/demo")
-    Call<net.sf.openrocket.utils.educoder.Result> demo(@Body net.sf.openrocket.utils.educoder.HullCGRequest request);
 
 
     /***
@@ -475,7 +471,7 @@ public interface EduCoderService {
      * 弹体法向力系数
      */
     @POST("Projectile/calculateCN")
-    Call<net.sf.openrocket.utils.educoder.Result> calculateCN(@Body HullCGRequest status);
+    Call<net.sf.openrocket.utils.educoder.Result> calculateCN(@Body HullCNRequest status);
 
     /**
      * 弹体压差阻力
