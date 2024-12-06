@@ -204,13 +204,12 @@ public class SimulationExportPanel extends JPanel {
 					checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.checkJSON(request).enqueue(new Callback<Result>() {
 						@Override
 						public void onResponse(Call<Result> call, Response<Result> response) {
-							System.out.println(HullCGRequest.Server_cn.size());
-							System.out.println(HullCGRequest.Client_cn.size());
-							System.out.println(CollectionUtils.isEqualCollection(HullCGRequest.Server_cn,HullCGRequest.Client_cn));
+							System.out.println(response.body().getResult());
+							JOptionPane.showMessageDialog(dialog, "请点击平台评测按钮");
 						}
 						@Override
 						public void onFailure(Call<Result> call, Throwable throwable) {
-
+							System.out.println(throwable.getMessage());
 						}
 					}));
 
