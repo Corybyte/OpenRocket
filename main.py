@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 
-from openrocket.calculateCD.calculateCDHelper import calculateCD
+from calculateCD.calculateCDHelper import calculateCD
 from utils import *
 import Pods_cg_helper
 import Pods_cp_helper
