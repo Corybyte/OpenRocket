@@ -113,9 +113,12 @@ def calculateCN():
 @app.route('/Projectile/checkJson', methods=['POST'])
 def check_json_api():
     data = request.json
-    json_a = data.get('a', {})
-    json_b = data.get('b', {})
-    ret = check_json(json_a, json_b)
+    json_a = data.get('Client_List', {})
+    json_b = data.get('Server_List', {})
+    # 原json比较
+    # ret = check_json(json_a, json_b)
+    # 新无序列表比较
+    ret = check_list(json_a, json_b)
     return jsonify({"code": 200, "msg": ret})
 
 

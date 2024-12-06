@@ -4,6 +4,8 @@
 # @Author  : Switch616
 # @File    : check.py
 # @Description:
+from collections import Counter
+
 
 def check_json(a, b) -> bool:
     """
@@ -17,3 +19,19 @@ def check_json(a, b) -> bool:
     """
 
     return a == b
+
+
+
+
+def check_list(a, b) -> bool:
+    """
+    Check if two lists contain the same elements, regardless of order.
+
+    Args:
+        a: List of elements
+        b: List of elements
+
+    Returns:
+        bool: True if both lists have the same elements, False otherwise.
+    """
+    return Counter(a) == Counter(b)
