@@ -121,6 +121,11 @@ def check_json_api():
     # ret = check_json(json_a, json_b)
     # 新无序列表比较
     ret = check_list(json_a, json_b)
+    if ret:
+        file_path = "/data/workspace/myshixun/result.txt"
+        with open(file_path, 'w+') as f:
+            f.write("比对成功")
+
     return jsonify({"code": 200, "msg": ret})
 
 
@@ -831,6 +836,7 @@ def calculateFunction():
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
+
 @app.route('/Whole/cd', methods=['POST'])
 def calculateCDs():
     app.logger.info(f"{request.json}")
@@ -846,6 +852,7 @@ def calculateCDs():
         with open(os.path.join("step57", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
 
 if __name__ == '__main__':
     app.run(host="127.0.0.1", port=8080, debug=True)
