@@ -1,4 +1,4 @@
-from calculateCD.solution import calculateBaseCD
+from openrocket.calculateCD.solution import calculateBaseCD
 
 
 def calculateCD(param):

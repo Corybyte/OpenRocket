@@ -105,6 +105,17 @@ class Coordinate:
             "z": self.z,
             "weight": self.weight
         }
+    def add(self, other):
+        return Coordinate(self.x + other.x, self.y + other.y, self.z + other.z, self.weight + other.weight)
+
+    def dot(self, other):
+        return self.x * other.x + self.y + other.y + self.z + other.z
+
+    def sub(self, x1, y1, z1):
+        return Coordinate(self.x - x1, self.y - y1, self.z - z1, self.weight)
+
+    def multiply(self, m):
+        return Coordinate(self.x * m, self.y * m, self.z * m, self.weight * m)
 
 
 def getLiftCP(Mach, AOA, planformCenter, BODY_LIFT_K, planformArea, RefArea, SinAOA, SincAOA, warnings=None):
@@ -137,3 +148,29 @@ def getLiftCP(Mach, AOA, planformCenter, BODY_LIFT_K, planformArea, RefArea, Sin
 
     # 返回一个 Coordinate 对象，代表升力中心坐标
     return Coordinate(planformCenter, 0, 0, lift)
+
+class RigidBody:
+    def __init__(self, cm, Ixx, Iyy, Izz):
+        """
+        Coordinate 类用于表示三维坐标和一个权重值（如升力）。
+
+        :param x: x 坐标
+        :param y: y 坐标
+        :param z: z 坐标
+        :param weight: 代表坐标点的权重（例如，升力值）
+        """
+        if isinstance(cm, dict):  # 如果传入的是字典
+            cm = Coordinate(**cm)  # 自动解包字典
+        self.cm = cm
+        self.Ixx = Ixx
+        self.Iyy = Iyy
+        self.Izz = Izz
+
+
+
+    def __repr__(self):
+        """
+        定义对象的字符串表示。
+        """
+        return (f"RigidBody(cm={self.cm}, "
+                f"Ixx={self.Ixx}, Iyy={self.Iyy}, Izz={self.Izz})")
