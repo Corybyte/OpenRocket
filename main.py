@@ -6,6 +6,8 @@ from calculateAxialCD.calculateAxialCDHelper import calculateAixalCDHelper
 from calculateFinsetPCD.calculateFinsetPressureCDHelper import calculateFSPCD
 from calculateFrictionCD.calculateFrictionCDHelper import calculateFriectionCDHelper
 from calculateSymComponentPCD import calculatePCD
+from calculateStability.calculateStabilityHelper import calculateStabilityHelper
+from demo_dir.utils import Coordinate
 from utils import *
 import Pods_cg_helper
 import Pods_cp_helper
@@ -41,6 +43,7 @@ import tube_fine_set_moi_helper
 import whole_cg_helper
 import whole_cp_helper
 import whole_moi_helper
+from calculateAcceleration.pltImages import AccelerationPlt
 from calculateFunction import myFunction
 from calculatePoint import myPoint
 from common_helper import equals
@@ -837,7 +840,6 @@ def calculateFunction():
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
-
 symComponentPressureCD = []
 
 
@@ -887,6 +889,8 @@ def getBodyTubePressureCD():
         with open(os.path.join("step1", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
+
 totalCDs = []
 
 
@@ -897,7 +901,7 @@ def calculateCDs():
         timestamp = request.json.get('timestamp', None)
         result = calculateCD(request.json)
         totalCDs.append({'timestamp': timestamp, 'result': result})
-        totalCDs.sort(key=lambda x: x['timestamp'])
+        # totalCDs.sort(key=lambda x: x['timestamp'])
         return {"code": 200, "msg": "ok", "result": result}
     except Exception:
         with open(os.path.join("calculatePoint", "error.txt"), 'w') as f:
@@ -944,7 +948,7 @@ def calculateFinsetCDs():
         timestamp = request.json.get('timestamp', None)
         result = calculateFSPCD(request.json)
         finSetCDs.append({'timestamp': timestamp, 'result': result})
-        finSetCDs.sort(key=lambda x: x['timestamp'])
+        # finSetCDs.sort(key=lambda x: x['timestamp'])
         return {"code": 200, "msg": "ok", "result": result}
     except Exception:
         with open(os.path.join("calculateFinsetPCD", "error.txt"), 'w') as f:
@@ -990,7 +994,7 @@ def calculateAxialCD():
         timestamp = request.json.get('timestamp', None)
         result = calculateAixalCDHelper(request.json)
         axialCD.append({'timestamp': timestamp, 'result': result})
-        axialCD.sort(key=lambda x: x['timestamp'])
+        # axialCD.sort(key=lambda x: x['timestamp'])
         return {"code": 200, "msg": "ok", "result": result}
     except Exception:
         with open(os.path.join("calculateFinsetPCD", "error.txt"), 'w') as f:
@@ -1036,7 +1040,7 @@ def calculateFrictionCD():
         timestamp = request.json.get('timestamp', None)
         result = calculateFriectionCDHelper(request.json)
         FrictionCD.append({'timestamp': timestamp, 'result': result})
-        FrictionCD.sort(key=lambda x: x['timestamp'])
+        # FrictionCD.sort(key=lambda x: x['timestamp'])
         return {"code": 200, "msg": "ok", "result": result}
     except Exception:
         with open(os.path.join("calculateFinsetPCD", "error.txt"), 'w') as f:
@@ -1074,6 +1078,7 @@ def getFrictionCD():
 
 acc = []
 acc2 = []
+wordCoordinates = []
 
 
 @app.route('/Projectile/Acceleration', methods=['POST'])
@@ -1081,11 +1086,19 @@ def Acceleration():
     app.logger.info(f"{request.json}")
     try:
         timestamp = request.json.get('timestamp', None)
+        # 获取当前的世界坐标
+        wordCoordinate = request.json.get('wordCoordinate', None)
+        # x,y,z,weight
+        wordCoordinate = Coordinate(wordCoordinate['x'], wordCoordinate['y'],
+                                    wordCoordinate['z'], wordCoordinate['weight'])
+        # plt
         result = calculateAccelerationHelper(request.json)
         acc.append({'timestamp': timestamp, 'result': result[0]})
         acc2.append({'timestamp': timestamp, 'result': result[1]})
-        acc.sort(key=lambda x: x['timestamp'])
-        acc2.sort(key=lambda x: x['timestamp'])
+        wordCoordinates.append({'timestamp': timestamp, 'wordCoordinate': wordCoordinate})
+        # acc.sort(key=lambda x: x['timestamp'])
+        # acc2.sort(key=lambda x: x['timestamp'])
+        # wordCoordinates.sort(key=lambda x: x['timestamp'])
         return {"code": 200, "msg": "ok", "result": 0}
     except Exception:
         with open(os.path.join("calculateFinsetPCD", "error.txt"), 'w') as f:
@@ -1098,7 +1111,7 @@ def Acceleration():
 def delAcceleration():
     # app.logger.info(f"{request.json}")
     try:
-        FrictionCD.clear()
+        wordCoordinates.clear()
         return {"code": 200, "msg": "ok", "result": 0}
     # 异常处理
     except Exception:
@@ -1113,6 +1126,9 @@ def getAcceleration():
     # app.logger.info(f"{request.json}")
     try:
         sorted_results = [entry['result'] for entry in sorted(FrictionCD, key=lambda x: x['timestamp'])]
+        sorted_AccelerationPlt = [entry['wordCoordinate'] for entry in
+                                  sorted(wordCoordinates, key=lambda x: x['timestamp'])]
+        AccelerationPlt(sorted_AccelerationPlt)
         return {"code": 200, "msg": "ok", "result": sorted_results}
     # 异常处理
     except Exception:
@@ -1121,8 +1137,58 @@ def getAcceleration():
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
+stabilitys = []
 
 
+@app.route('/Projectile/Stability', methods=['POST'])
+def Stability():
+    app.logger.info(f"{request.json}")
+    try:
+        timestamp = request.json.get('timestamp', None)
+        stab = calculateStabilityHelper(request.json)
+        stabilitys.append({'timestamp': timestamp, 'result': stab})
+        # stabilitys.sort(key=lambda x: x['timestamp'])
+        print(len(stabilitys))
+        return {"code": 200, "msg": "ok", "result": 0}
+    except Exception:
+        with open(os.path.join("calculateFinsetPCD", "error.txt"), 'w') as f:
+            f.write(traceback.format_exc())
+        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
+
+
+# 删除
+@app.route('/Projectile/Stability/delete', methods=['POST'])
+def delStability():
+    # app.logger.info(f"{request.json}")
+    try:
+        stabilitys.clear()
+        print("length")
+        print(len(stabilitys))
+        return {"code": 200, "msg": "ok", "result": 0}
+    # 异常处理
+    except Exception:
+        with open(os.path.join("step1", "error.txt"), 'w') as f:
+            f.write(traceback.format_exc())
+        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
+
+# 获取值
+@app.route('/Projectile/Stability/getList', methods=['POST'])
+def getStability():
+    # app.logger.info(f"{request.json}")
+    try:
+        sorted_results = [entry['result'] for entry in sorted(stabilitys, key=lambda x: x['timestamp'])]
+        print("======>发送给java：")
+        print(len(sorted_results))
+        return {"code": 200, "msg": "ok", "result": sorted_results}
+    # 异常处理
+    except Exception:
+        with open(os.path.join("step1", "error.txt"), 'w') as f:
+            f.write(traceback.format_exc())
+        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
+#
 
 if __name__ == '__main__':
     app.run(host="127.0.0.1", port=8080, debug=True)
