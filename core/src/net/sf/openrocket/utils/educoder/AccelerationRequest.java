@@ -3,10 +3,13 @@ package net.sf.openrocket.utils.educoder;
 import net.sf.openrocket.masscalc.RigidBody;
 import net.sf.openrocket.util.ArrayList;
 import net.sf.openrocket.util.Coordinate;
+import net.sf.openrocket.util.WorldCoordinate;
 
 public class AccelerationRequest {
     private Double density;
     private Double velocity;
+
+    public Coordinate wordCoordinate;
 
     private Double CDaxial;
 

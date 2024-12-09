@@ -34,8 +34,7 @@ import net.sf.openrocket.startup.OpenRocket;
 import net.sf.openrocket.unit.Unit;
 import net.sf.openrocket.unit.UnitGroup;
 import net.sf.openrocket.gui.widgets.SelectColorButton;
-import net.sf.openrocket.utils.educoder.HullCNRequest;
-import net.sf.openrocket.utils.educoder.Result;
+import net.sf.openrocket.utils.educoder.*;
 import org.apache.commons.collections4.CollectionUtils;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -226,9 +225,215 @@ public class SimulationExportPanel extends JPanel {
 					dialog.setLocationRelativeTo(this); // 设置相对于父窗口居中显示
 					dialog.setVisible(true); // 显示对话框
 				});
-
-
 		panel.add(edu_button, "growx 1, sizegroup selectbutton, wrap");
+
+		SelectColorButton edu_button2 = new SelectColorButton("弹道轨迹测评");
+		edu_button2.addActionListener(e -> {
+			// 创建一个模态对话框，父窗口为当前组件的顶层窗口
+			JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "弹道轨迹测评", Dialog.ModalityType.MODELESS);
+
+			// 设置对话框的主布局为 BorderLayout
+			dialog.setLayout(new BorderLayout());
+
+			// 创建主内容面板，使用 GridLayout 管理两部分内容
+			JPanel mainPanel = new JPanel(new GridLayout(1, 4, 0, 0)); // 1 行 2 列，水平间距 10
+
+			// 左边的大文本框
+			JTextArea leftTextArea = new JTextArea();
+			leftTextArea.setLineWrap(true); // 自动换行
+			leftTextArea.setWrapStyleWord(true); // 仅在单词边界处换行
+			leftTextArea.setFont(new Font("Monospaced", Font.PLAIN, 14)); // 设置字体
+			leftTextArea.setText(AccelerationRequest.server_cn.toString()+AccelerationRequest.server_cn2.toString());
+			JScrollPane leftScrollPane = new JScrollPane(leftTextArea);
+			mainPanel.add(leftScrollPane);
+
+			// 右边的小文本框
+			JTextArea rightTextArea = new JTextArea();
+			rightTextArea.setLineWrap(true); // 自动换行
+			rightTextArea.setWrapStyleWord(true); // 仅在单词边界处换行
+			rightTextArea.setFont(new Font("Monospaced", Font.PLAIN, 14)); // 设置字体
+			rightTextArea.setText(HullCNRequest.Client_cn.toString());
+			JScrollPane rightScrollPane = new JScrollPane(rightTextArea);
+			mainPanel.add(rightScrollPane);
+
+			// 将主面板添加到对话框的中间区域
+			dialog.add(mainPanel, BorderLayout.CENTER);
+
+			// 创建关闭按钮
+			JButton closeButton = new JButton("关闭");
+			closeButton.addActionListener(ev -> dialog.dispose()); // 点击按钮时关闭对话框
+
+			// 创建一个新的按钮
+			DataRequest request = new DataRequest(HullCNRequest.Client_cn,HullCNRequest.Server_cn);
+			JButton checkButton = new JButton("评测");
+			checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.checkJSON(request).enqueue(new Callback<Result>() {
+				@Override
+				public void onResponse(Call<Result> call, Response<Result> response) {
+					System.out.println(response.body().getResult());
+					JOptionPane.showMessageDialog(dialog, "请点击平台评测按钮");
+				}
+				@Override
+				public void onFailure(Call<Result> call, Throwable throwable) {
+					System.out.println(throwable.getMessage());
+				}
+			}));
+
+
+
+			// 创建按钮面板
+			JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0)); // 水平间距 10
+			buttonPanel.add(closeButton); // 添加关闭按钮
+			buttonPanel.add(checkButton);   // 添加新按钮
+			dialog.add(buttonPanel, BorderLayout.SOUTH); // 将按钮面板放置在底部
+
+			// 设置对话框属性
+			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE); // 关闭时释放对话框资源
+			dialog.setSize(800, 400); // 设置窗口宽度更大，适应两个文本框
+			dialog.setLocationRelativeTo(this); // 设置相对于父窗口居中显示
+			dialog.setVisible(true); // 显示对话框
+		});
+
+		SelectColorButton edu_button3 = new SelectColorButton("稳定性测评");
+		edu_button3.addActionListener(e -> {
+			// 创建一个模态对话框，父窗口为当前组件的顶层窗口
+			JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "稳定性测评", Dialog.ModalityType.MODELESS);
+
+			// 设置对话框的主布局为 BorderLayout
+			dialog.setLayout(new BorderLayout());
+
+			// 创建主内容面板，使用 GridLayout 管理两部分内容
+			JPanel mainPanel = new JPanel(new GridLayout(1, 4, 0, 0)); // 1 行 2 列，水平间距 10
+
+			// 左边的大文本框
+			JTextArea leftTextArea = new JTextArea();
+			leftTextArea.setLineWrap(true); // 自动换行
+			leftTextArea.setWrapStyleWord(true); // 仅在单词边界处换行
+			leftTextArea.setFont(new Font("Monospaced", Font.PLAIN, 14)); // 设置字体
+			leftTextArea.setText(StabilityRequest.server_cn.toString());
+			JScrollPane leftScrollPane = new JScrollPane(leftTextArea);
+			mainPanel.add(leftScrollPane);
+
+			// 右边的小文本框
+			JTextArea rightTextArea = new JTextArea();
+			rightTextArea.setLineWrap(true); // 自动换行
+			rightTextArea.setWrapStyleWord(true); // 仅在单词边界处换行
+			rightTextArea.setFont(new Font("Monospaced", Font.PLAIN, 14)); // 设置字体
+			JScrollPane rightScrollPane = new JScrollPane(rightTextArea);
+			mainPanel.add(rightScrollPane);
+
+			// 将主面板添加到对话框的中间区域
+			dialog.add(mainPanel, BorderLayout.CENTER);
+
+			// 创建关闭按钮
+			JButton closeButton = new JButton("关闭");
+			closeButton.addActionListener(ev -> dialog.dispose()); // 点击按钮时关闭对话框
+
+			// 创建一个新的按钮
+			JButton checkButton = new JButton("评测");
+
+
+			checkButton.addActionListener(e1 -> {
+				OpenRocket.eduCoderService.getStability().enqueue(new Callback<Result2>() {
+					@Override
+					public void onResponse(Call<Result2> call, Response<Result2> response) {
+						Double[] result = response.body().getResult();
+						rightTextArea.setText(Arrays.toString(result));
+						System.out.println("====得到的长度====");
+						System.out.println(result.length);
+						System.out.println("内部计算长度");
+						System.out.println(StabilityRequest.server_cn.size());
+					}
+
+					@Override
+					public void onFailure(Call<Result2> call, Throwable throwable) {
+
+					}
+				});
+			});
+
+
+			// 创建按钮面板
+			JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0)); // 水平间距 10
+			buttonPanel.add(closeButton); // 添加关闭按钮
+			buttonPanel.add(checkButton);   // 添加新按钮
+			dialog.add(buttonPanel, BorderLayout.SOUTH); // 将按钮面板放置在底部
+
+			// 设置对话框属性
+			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE); // 关闭时释放对话框资源
+			dialog.setSize(800, 400); // 设置窗口宽度更大，适应两个文本框
+			dialog.setLocationRelativeTo(this); // 设置相对于父窗口居中显示
+			dialog.setVisible(true); // 显示对话框
+		});
+		panel.add(edu_button3, "growx 1, sizegroup selectbutton, wrap");
+
+
+		SelectColorButton edu_button4 = new SelectColorButton("总体力矩系数测评");
+		edu_button4.addActionListener(e -> {
+			// 创建一个模态对话框，父窗口为当前组件的顶层窗口
+			JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "总体力矩系数测评", Dialog.ModalityType.MODELESS);
+
+			// 设置对话框的主布局为 BorderLayout
+			dialog.setLayout(new BorderLayout());
+
+			// 创建主内容面板，使用 GridLayout 管理两部分内容
+			JPanel mainPanel = new JPanel(new GridLayout(1, 4, 0, 0)); // 1 行 2 列，水平间距 10
+
+			// 左边的大文本框
+			JTextArea leftTextArea = new JTextArea();
+			leftTextArea.setLineWrap(true); // 自动换行
+			leftTextArea.setWrapStyleWord(true); // 仅在单词边界处换行
+			leftTextArea.setFont(new Font("Monospaced", Font.PLAIN, 14)); // 设置字体
+			leftTextArea.setText(AccelerationRequest.server_cn.toString()+AccelerationRequest.server_cn2.toString());
+			JScrollPane leftScrollPane = new JScrollPane(leftTextArea);
+			mainPanel.add(leftScrollPane);
+
+			// 右边的小文本框
+			JTextArea rightTextArea = new JTextArea();
+			rightTextArea.setLineWrap(true); // 自动换行
+			rightTextArea.setWrapStyleWord(true); // 仅在单词边界处换行
+			rightTextArea.setFont(new Font("Monospaced", Font.PLAIN, 14)); // 设置字体
+			rightTextArea.setText(HullCNRequest.Client_cn.toString());
+			JScrollPane rightScrollPane = new JScrollPane(rightTextArea);
+			mainPanel.add(rightScrollPane);
+
+			// 将主面板添加到对话框的中间区域
+			dialog.add(mainPanel, BorderLayout.CENTER);
+
+			// 创建关闭按钮
+			JButton closeButton = new JButton("关闭");
+			closeButton.addActionListener(ev -> dialog.dispose()); // 点击按钮时关闭对话框
+
+			// 创建一个新的按钮
+			DataRequest request = new DataRequest(HullCNRequest.Client_cn,HullCNRequest.Server_cn);
+			JButton checkButton = new JButton("评测");
+			checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.checkJSON(request).enqueue(new Callback<Result>() {
+				@Override
+				public void onResponse(Call<Result> call, Response<Result> response) {
+					System.out.println(response.body().getResult());
+					JOptionPane.showMessageDialog(dialog, "请点击平台评测按钮");
+				}
+				@Override
+				public void onFailure(Call<Result> call, Throwable throwable) {
+					System.out.println(throwable.getMessage());
+				}
+			}));
+
+
+
+			// 创建按钮面板
+			JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0)); // 水平间距 10
+			buttonPanel.add(closeButton); // 添加关闭按钮
+			buttonPanel.add(checkButton);   // 添加新按钮
+			dialog.add(buttonPanel, BorderLayout.SOUTH); // 将按钮面板放置在底部
+
+			// 设置对话框属性
+			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE); // 关闭时释放对话框资源
+			dialog.setSize(800, 400); // 设置窗口宽度更大，适应两个文本框
+			dialog.setLocationRelativeTo(this); // 设置相对于父窗口居中显示
+			dialog.setVisible(true); // 显示对话框
+		});
+		panel.add(edu_button4, "growx 1, sizegroup selectbutton, wrap");
+
 
 
 

@@ -6,6 +6,7 @@ import java.util.Random;
 import net.sf.openrocket.startup.OpenRocket;
 import net.sf.openrocket.utils.educoder.AccelerationRequest;
 import net.sf.openrocket.utils.educoder.Result;
+import net.sf.openrocket.utils.educoder.StabilityRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -297,7 +298,6 @@ public class RK4SimulationStepper extends AbstractSimulationStepper {
     private AccelerationData calculateAcceleration(RK4SimulationStatus status, DataStore store) throws SimulationException {
         AccelerationRequest request = new AccelerationRequest();
 
-
         // Compute the forces affecting the rocket
         calculateForces(status, store);
 
@@ -320,6 +320,10 @@ public class RK4SimulationStepper extends AbstractSimulationStepper {
         double refLength = store.flightConditions.getRefLength();
         if (store.flightConditions.getAOA() != 0 && store.flightConditions.getTheta() != 0) {
             request.timestamp = System.nanoTime();
+            WorldCoordinate worldPosition = status.getRocketWorldPosition();
+            request.wordCoordinate = new Coordinate(worldPosition.getLatitudeRad(),worldPosition.getLongitudeRad(),worldPosition.getAltitude());
+//            request.wordCoordinate = status.getRocketPosition();
+
             FlightConditions conditions = store.flightConditions;
             request.setDensity(conditions.getAtmosphericConditions().getDensity());
             request.setVelocity(conditions.getVelocity());
@@ -414,6 +418,24 @@ public class RK4SimulationStepper extends AbstractSimulationStepper {
         if (store.flightConditions.getAOA() != 0 && store.flightConditions.getTheta() != 0) {
             AccelerationRequest.server_cn.add(store.linearAcceleration);
             AccelerationRequest.server_cn2.add(store.angularAcceleration);
+
+            StabilityRequest stabilityRequest = new StabilityRequest(store.forces.getCP().x, store.rocketMass.getCM().x, refArea, System.nanoTime());
+            StabilityRequest.server_cn.add((store.forces.getCP().x-store.rocketMass.getCM().x)/refArea);
+            //发送请求
+            System.out.println(StabilityRequest.server_cn.size());
+            OpenRocket.eduCoderService.calculateStability(stabilityRequest).enqueue(new Callback<Result>() {
+                @Override
+                public void onResponse(Call<Result> call, Response<Result> response) {
+                    //ignore
+                }
+
+                @Override
+                public void onFailure(Call<Result> call, Throwable throwable) {
+                    //ignore
+                }
+            });
+
+
             //发送请求
             OpenRocket.eduCoderService.Acceleration(request).enqueue(new Callback<Result>() {
                 @Override

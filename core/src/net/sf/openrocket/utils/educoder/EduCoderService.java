@@ -546,4 +546,16 @@ public interface EduCoderService {
 
     @POST("/Projectile/Acceleration/getList")
     Call<net.sf.openrocket.utils.educoder.Result2> getAcceleration();
+
+    @POST("Projectile/Stability")
+    Call<Result> calculateStability(@Body StabilityRequest stabilityRequest);
+
+
+    @POST("/Projectile/Stability/delete")
+    Call<net.sf.openrocket.utils.educoder.Result> delStability();
+
+    @POST("/Projectile/Stability/getList")
+    Call<net.sf.openrocket.utils.educoder.Result2> getStability();
+
+
 }

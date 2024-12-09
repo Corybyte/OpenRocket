@@ -1098,6 +1098,12 @@ public class SimulationPanel extends JPanel {
 			FinsetPressureCDRequest.server_cn.clear();
 			AxialCDRequest.server_cn.clear();
 			FrictionCDRequest.server_cn.clear();
+			StabilityRequest.server_cn.clear();
+			if (StabilityRequest.server_cn.size()==0){
+				System.out.println("已清除。。。。。");
+			}
+			AccelerationRequest.server_cn.clear();
+			AccelerationRequest.server_cn2.clear();
 			//远程删除旧值
 			OpenRocket.eduCoderService.deletePressureCD().enqueue(new Callback<Result>() {
 				@Override
@@ -1144,6 +1150,17 @@ public class SimulationPanel extends JPanel {
 				}
 			});
 			OpenRocket.eduCoderService.deleteFrictionCD().enqueue(new Callback<Result>() {
+				@Override
+				public void onResponse(Call<Result> call, Response<Result> response) {
+
+				}
+
+				@Override
+				public void onFailure(Call<Result> call, Throwable throwable) {
+
+				}
+			});
+			OpenRocket.eduCoderService.delStability().enqueue(new Callback<Result>() {
 				@Override
 				public void onResponse(Call<Result> call, Response<Result> response) {
 
