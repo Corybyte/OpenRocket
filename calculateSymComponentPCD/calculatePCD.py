@@ -1,4 +1,4 @@
-from openrocket.calculateSymComponentPCD.solution import calculatePressureCD
+from calculateSymComponentPCD.solution import calculatePressureCD
 
 
 def calculate(param):

@@ -1,6 +1,6 @@
-from openrocket.calculateAcceleration.solution import calculateAcceleration
-from openrocket.calculateAxialCD.solution import calculateAxialCD
-from openrocket.demo_dir.utils import RigidBody, Coordinate
+from calculateAcceleration.solution import calculateAcceleration
+from calculateAxialCD.solution import calculateAxialCD
+from demo_dir.utils import RigidBody, Coordinate
 
 
 def calculateAccelerationHelper(param):

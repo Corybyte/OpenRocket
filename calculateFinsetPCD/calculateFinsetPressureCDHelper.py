@@ -1,4 +1,4 @@
-from openrocket.calculateFinsetPCD.solution import calculatePressureCD
+from calculateFinsetPCD.solution import calculatePressureCD
 
 
 def calculateFSPCD(param):

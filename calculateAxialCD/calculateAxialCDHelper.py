@@ -1,4 +1,4 @@
-from openrocket.calculateAxialCD.solution import calculateAxialCD
+from calculateAxialCD.solution import calculateAxialCD
 
 
 def calculateAixalCDHelper(param):

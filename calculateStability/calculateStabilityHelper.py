@@ -1,4 +1,4 @@
-from openrocket.calculateStability.solution import calculateStability
+from calculateStability.solution import calculateStability
 
 
 def calculateStabilityHelper(param):
