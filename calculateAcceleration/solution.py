@@ -1,4 +1,4 @@
-from openrocket.demo_dir import utils
+from demo_dir import utils
 
 
 def calculateAcceleration(AtmosphericDensity, AtmosphericVelocity, CDaxial, refArea, refLength, CN, rocketMass, Cside,

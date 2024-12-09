@@ -1,4 +1,4 @@
-from openrocket.calculateFrictionCD.solution import calculateFrictionCD
+from calculateFrictionCD.solution import calculateFrictionCD
 import re
 
 def calculateFriectionCDHelper(param):
