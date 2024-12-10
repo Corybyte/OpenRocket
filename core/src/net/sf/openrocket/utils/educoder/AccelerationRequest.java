@@ -43,9 +43,11 @@ public class AccelerationRequest {
     private Coordinate coriolisAcceleration;
 
     public Long timestamp;
-    public static ArrayList<Double> client_cn = new ArrayList<Double>();
-    public  static ArrayList<Coordinate> server_cn = new ArrayList<Coordinate>();
-    public  static ArrayList<Coordinate> server_cn2 = new ArrayList<Coordinate>();
+    public static ArrayList client_cn = new ArrayList();
+    public  static ArrayList client_cn2 = new ArrayList();
+
+    public  static ArrayList server_cn = new ArrayList();
+    public  static ArrayList server_cn2 = new ArrayList();
 
     public void setDensity(Double density) {
         this.density = density;

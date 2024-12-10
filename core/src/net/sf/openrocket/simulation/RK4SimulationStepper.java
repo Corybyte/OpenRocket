@@ -1,12 +1,11 @@
 package net.sf.openrocket.simulation;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 
 import net.sf.openrocket.startup.OpenRocket;
-import net.sf.openrocket.utils.educoder.AccelerationRequest;
-import net.sf.openrocket.utils.educoder.Result;
-import net.sf.openrocket.utils.educoder.StabilityRequest;
+import net.sf.openrocket.utils.educoder.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -421,12 +420,14 @@ public class RK4SimulationStepper extends AbstractSimulationStepper {
 
             StabilityRequest stabilityRequest = new StabilityRequest(store.forces.getCP().x, store.rocketMass.getCM().x, refArea, System.nanoTime());
             StabilityRequest.server_cn.add((store.forces.getCP().x-store.rocketMass.getCM().x)/refArea);
-            //发送请求
-            System.out.println(StabilityRequest.server_cn.size());
             OpenRocket.eduCoderService.calculateStability(stabilityRequest).enqueue(new Callback<Result>() {
                 @Override
                 public void onResponse(Call<Result> call, Response<Result> response) {
                     //ignore
+                    synchronized (StabilityRequest.client_cn) {
+                        StabilityRequest.client_cn.add(response.body().getResult());
+                    }
+
                 }
 
                 @Override
@@ -438,9 +439,22 @@ public class RK4SimulationStepper extends AbstractSimulationStepper {
 
             //发送请求
             OpenRocket.eduCoderService.Acceleration(request).enqueue(new Callback<Result>() {
+
                 @Override
                 public void onResponse(Call<Result> call, Response<Result> response) {
-                    //ignore
+
+                    try {
+                        ArrayList<ArrayList<Double>> result = (ArrayList) response.body().getResult();
+                        synchronized (AccelerationRequest.client_cn) {
+                            AccelerationRequest.client_cn.add(new Coordinate(result.get(0).get(0),result.get(0).get(1),result.get(0).get(2)));
+                        }
+                        synchronized (AccelerationRequest.client_cn2) {
+                            AccelerationRequest.client_cn2.add(new Coordinate(result.get(1).get(0),result.get(1).get(1),result.get(1).get(2)));
+
+                        }
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
                 }
 
                 @Override

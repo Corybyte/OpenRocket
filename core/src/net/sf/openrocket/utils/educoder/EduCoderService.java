@@ -60,6 +60,8 @@ public interface EduCoderService {
     @POST("/Projectile/checkJson")
     Call<net.sf.openrocket.utils.educoder.Result> checkJSON (@Body Object object);
 
+    @POST("/Projectile/checkJson2")
+    Call<net.sf.openrocket.utils.educoder.Result> checkJSON2 (@Body Object object);
 
     @POST("NoseCone/calculateCG")
     Call<net.sf.openrocket.utils.educoder.Result> calculateCG(@Body NoseConeCgRequest request);
@@ -479,20 +481,9 @@ public interface EduCoderService {
     @POST("Projectile/calculatePressureCD")
     Call<net.sf.openrocket.utils.educoder.Result> calculatePressureCD(@Body BodyPressureCDRequest status);
 
-    @POST("/Projectile/calculatePressureCD/delete")
-    Call<net.sf.openrocket.utils.educoder.Result> deletePressureCD();
-
-    @POST("/Projectile/calculatePressureCD/getList")
-    Call<net.sf.openrocket.utils.educoder.Result2> getPressureCD();
 
     @POST("Whole/cd")
     Call<Result> calculateCD(@Body TotalBasalResistanceRequest status);
-
-    @POST("Whole/cd/delete")
-    Call<Result> delTotalCD();
-
-    @POST("Whole/cd/getList")
-    Call<Result2> getTotalCD();
 
 
     /**
@@ -501,11 +492,6 @@ public interface EduCoderService {
     @POST("Projectile/calculateFinsetPressureCD")
     Call<net.sf.openrocket.utils.educoder.Result> calculateFinsetPressureCD(@Body FinsetPressureCDRequest status);
 
-    @POST("/Projectile/calculateFinsetPressureCD/delete")
-    Call<net.sf.openrocket.utils.educoder.Result> deleteFinsetPressureCD();
-
-    @POST("/Projectile/calculateFinsetPressureCD/getList")
-    Call<net.sf.openrocket.utils.educoder.Result2> getFinsetPressureCD();
 
 
     /**
@@ -514,11 +500,7 @@ public interface EduCoderService {
     @POST("Projectile/calculateAxialCD")
     Call<net.sf.openrocket.utils.educoder.Result> calculateAxialCD(@Body AxialCDRequest status);
 
-    @POST("/Projectile/calculateAxialCD/delete")
-    Call<net.sf.openrocket.utils.educoder.Result> deleteAxialCD();
 
-    @POST("/Projectile/calculateAxialCD/getList")
-    Call<net.sf.openrocket.utils.educoder.Result2> getAxialCD();
 
 
 
@@ -528,11 +510,6 @@ public interface EduCoderService {
     @POST("Projectile/calculateFrictionCD")
     Call<net.sf.openrocket.utils.educoder.Result> calculateFrictionCD(@Body FrictionCDRequest status);
 
-    @POST("/Projectile/calculateFrictionCD/delete")
-    Call<net.sf.openrocket.utils.educoder.Result> deleteFrictionCD();
-
-    @POST("/Projectile/calculateFrictionCD/getList")
-    Call<net.sf.openrocket.utils.educoder.Result2> getFrictionCD();
 
 
     /**
@@ -541,21 +518,11 @@ public interface EduCoderService {
     @POST("Projectile/Acceleration")
     Call<net.sf.openrocket.utils.educoder.Result> Acceleration(@Body AccelerationRequest status);
 
-    @POST("/Projectile/Acceleration/delete")
-    Call<net.sf.openrocket.utils.educoder.Result> delAcceleration();
-
-    @POST("/Projectile/Acceleration/getList")
-    Call<net.sf.openrocket.utils.educoder.Result2> getAcceleration();
 
     @POST("Projectile/Stability")
     Call<Result> calculateStability(@Body StabilityRequest stabilityRequest);
 
 
-    @POST("/Projectile/Stability/delete")
-    Call<net.sf.openrocket.utils.educoder.Result> delStability();
-
-    @POST("/Projectile/Stability/getList")
-    Call<net.sf.openrocket.utils.educoder.Result2> getStability();
 
 
 }

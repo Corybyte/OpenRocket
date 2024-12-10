@@ -36,6 +36,6 @@ public class AxialCDRequest {
         this.cd = cd;
     }
 
-    public static ArrayList<Double> client_cn = new ArrayList<Double>();
-    public  static ArrayList<Double> server_cn = new ArrayList<Double>();
+    public static ArrayList client_cn = new ArrayList();
+    public  static ArrayList server_cn = new ArrayList();
 }

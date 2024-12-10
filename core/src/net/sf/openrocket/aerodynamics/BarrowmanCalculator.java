@@ -620,6 +620,7 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
                 @Override
                 public void onResponse(Call<Result> call, Response<Result> response) {
                     //ignore
+                    FrictionCDRequest.client_cn.add(response.body().getResult());
                 }
 
                 @Override
@@ -959,6 +960,10 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
                     @Override
                     public void onResponse(Call<Result> call, Response<Result> response) {
                         //ignore
+                        //将返回的计算结果
+                        synchronized (TotalBasalResistanceRequest.client_cn) {
+                            TotalBasalResistanceRequest.client_cn.add(response.body().getResult());
+                        }
                     }
 
                     @Override
@@ -1065,6 +1070,7 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
                 @Override
                 public void onResponse(Call<Result> call, Response<Result> response) {
                     //ignore
+                    AxialCDRequest.client_cn.add(response.body().getResult());
                 }
 
                 @Override

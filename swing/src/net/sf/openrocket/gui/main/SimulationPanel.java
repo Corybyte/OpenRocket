@@ -1094,83 +1094,29 @@ public class SimulationPanel extends JPanel {
 		public void actionPerformed(ActionEvent e) {
 			//每次运行仿真后及时删除旧值
 			BodyPressureCDRequest.server_cn.clear();
+			BodyPressureCDRequest.client_cn.clear();
+
 			TotalBasalResistanceRequest.server_cn.clear();
+			TotalBasalResistanceRequest.client_cn.clear();
+
 			FinsetPressureCDRequest.server_cn.clear();
+			FinsetPressureCDRequest.client_cn.clear();
+
+
 			AxialCDRequest.server_cn.clear();
+			AxialCDRequest.client_cn.clear();
+
 			FrictionCDRequest.server_cn.clear();
+			FrictionCDRequest.client_cn.clear();
+
 			StabilityRequest.server_cn.clear();
-			if (StabilityRequest.server_cn.size()==0){
-				System.out.println("已清除。。。。。");
-			}
+			StabilityRequest.client_cn.clear();
+
 			AccelerationRequest.server_cn.clear();
 			AccelerationRequest.server_cn2.clear();
-			//远程删除旧值
-			OpenRocket.eduCoderService.deletePressureCD().enqueue(new Callback<Result>() {
-				@Override
-				public void onResponse(Call<Result> call, Response<Result> response) {
+			AccelerationRequest.client_cn.clear();
+			AccelerationRequest.client_cn2.clear();
 
-				}
-
-				@Override
-				public void onFailure(Call<Result> call, Throwable throwable) {
-
-				}
-			});
-			OpenRocket.eduCoderService.delTotalCD().enqueue(new Callback<Result>() {
-				@Override
-				public void onResponse(Call<Result> call, Response<Result> response) {
-
-				}
-
-				@Override
-				public void onFailure(Call<Result> call, Throwable throwable) {
-
-				}
-			});
-			OpenRocket.eduCoderService.deleteAxialCD().enqueue(new Callback<Result>() {
-				@Override
-				public void onResponse(Call<Result> call, Response<Result> response) {
-
-				}
-
-				@Override
-				public void onFailure(Call<Result> call, Throwable throwable) {
-
-				}
-			});
-			OpenRocket.eduCoderService.deleteFinsetPressureCD().enqueue(new Callback<Result>() {
-				@Override
-				public void onResponse(Call<Result> call, Response<Result> response) {
-
-				}
-
-				@Override
-				public void onFailure(Call<Result> call, Throwable throwable) {
-
-				}
-			});
-			OpenRocket.eduCoderService.deleteFrictionCD().enqueue(new Callback<Result>() {
-				@Override
-				public void onResponse(Call<Result> call, Response<Result> response) {
-
-				}
-
-				@Override
-				public void onFailure(Call<Result> call, Throwable throwable) {
-
-				}
-			});
-			OpenRocket.eduCoderService.delStability().enqueue(new Callback<Result>() {
-				@Override
-				public void onResponse(Call<Result> call, Response<Result> response) {
-
-				}
-
-				@Override
-				public void onFailure(Call<Result> call, Throwable throwable) {
-
-				}
-			});
 			runSimulation();
 		}
 

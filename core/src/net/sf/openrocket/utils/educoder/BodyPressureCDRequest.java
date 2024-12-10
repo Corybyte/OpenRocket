@@ -19,8 +19,8 @@ public class BodyPressureCDRequest extends Request {
         this.mach = mach;
     }
 
-    public static ArrayList<Double> client_cn = new ArrayList<Double>();
-    public  static ArrayList<Double> server_cn = new ArrayList<Double>();
+    public static ArrayList client_cn = new ArrayList();
+    public  static ArrayList server_cn = new ArrayList();
 
     public void setInterpolatorValue(Double interpolatorValue) {
         this.interpolatorValue = interpolatorValue;

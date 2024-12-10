@@ -15,6 +15,7 @@ import javax.swing.border.Border;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
+import javax.xml.crypto.Data;
 
 import com.oracle.truffle.js.nodes.access.LocalVarIncNode;
 import net.miginfocom.swing.MigLayout;
@@ -503,7 +504,7 @@ public class SimulationPlotPanel extends JPanel {
             rightTextArea.setLineWrap(true); // 自动换行
             rightTextArea.setWrapStyleWord(true); // 仅在单词边界处换行
             rightTextArea.setFont(new Font("Monospaced", Font.PLAIN, 14)); // 设置字体
-//			rightTextArea.setText(BodyPressureCDRequest.client_cn.toString());
+			rightTextArea.setText(TotalBasalResistanceRequest.client_cn.toString());
             JScrollPane rightScrollPane = new JScrollPane(rightTextArea);
             mainPanel.add(rightScrollPane);
 
@@ -515,12 +516,12 @@ public class SimulationPlotPanel extends JPanel {
             closeButton.addActionListener(ev -> dialog.dispose()); // 点击按钮时关闭对话框
 
             // 创建一个新的按钮
-            JButton newButton = new JButton("评测");
+            JButton checkButton = new JButton("评测");
 
             // 创建按钮面板
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0)); // 水平间距 10
             buttonPanel.add(closeButton); // 添加关闭按钮
-            buttonPanel.add(newButton);   // 添加新按钮
+            buttonPanel.add(checkButton);   // 添加新按钮
             dialog.add(buttonPanel, BorderLayout.SOUTH); // 将按钮面板放置在底部
 
             // 设置对话框属性
@@ -528,23 +529,18 @@ public class SimulationPlotPanel extends JPanel {
             dialog.setSize(800, 400); // 设置窗口宽度更大，适应两个文本框
             dialog.setLocationRelativeTo(this); // 设置相对于父窗口居中显示
             dialog.setVisible(true); // 显示对话框
-            //点击测评更新值
-            newButton.addActionListener(e1 -> {
-                OpenRocket.eduCoderService.getTotalCD().enqueue(new Callback<Result2>() {
-                    @Override
-                    public void onResponse(Call<Result2> call, Response<Result2> response) {
-                        Double[] result = response.body().getResult();
-                        rightTextArea.setText(Arrays.toString(result));
-                    }
-
-                    @Override
-                    public void onFailure(Call<Result2> call, Throwable throwable) {
-
-                    }
-                });
-            });
+            DataRequest request = new DataRequest(TotalBasalResistanceRequest.client_cn,TotalBasalResistanceRequest.server_cn);
+            checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.checkJSON(request).enqueue(new Callback<Result>() {
+                @Override
+                public void onResponse(Call<Result> call, Response<Result> response) {
+                    JOptionPane.showMessageDialog(dialog, "请点击平台评测按钮");
+                }
+                @Override
+                public void onFailure(Call<Result> call, Throwable throwable) {
+                    System.out.println(throwable.getMessage());
+                }
+            }));
         });
-
 
 
         //
@@ -572,7 +568,7 @@ public class SimulationPlotPanel extends JPanel {
             rightTextArea.setLineWrap(true); // 自动换行
             rightTextArea.setWrapStyleWord(true); // 仅在单词边界处换行
             rightTextArea.setFont(new Font("Monospaced", Font.PLAIN, 14)); // 设置字体
-//			rightTextArea.setText(BodyPressureCDRequest.client_cn.toString());
+			rightTextArea.setText(BodyPressureCDRequest.client_cn.toString());
             JScrollPane rightScrollPane = new JScrollPane(rightTextArea);
             mainPanel.add(rightScrollPane);
 
@@ -584,12 +580,12 @@ public class SimulationPlotPanel extends JPanel {
             closeButton.addActionListener(ev -> dialog.dispose()); // 点击按钮时关闭对话框
 
             // 创建一个新的按钮
-            JButton newButton = new JButton("评测");
+            JButton checkButton = new JButton("评测");
 
             // 创建按钮面板
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0)); // 水平间距 10
             buttonPanel.add(closeButton); // 添加关闭按钮
-            buttonPanel.add(newButton);   // 添加新按钮
+            buttonPanel.add(checkButton);   // 添加新按钮
             dialog.add(buttonPanel, BorderLayout.SOUTH); // 将按钮面板放置在底部
 
             // 设置对话框属性
@@ -597,20 +593,25 @@ public class SimulationPlotPanel extends JPanel {
             dialog.setSize(800, 400); // 设置窗口宽度更大，适应两个文本框
             dialog.setLocationRelativeTo(this); // 设置相对于父窗口居中显示
             dialog.setVisible(true); // 显示对话框
+            DataRequest request = new DataRequest(BodyPressureCDRequest.client_cn,BodyPressureCDRequest.server_cn);
+            System.out.println(BodyPressureCDRequest.client_cn);
+            System.out.println(BodyPressureCDRequest.server_cn);
+            System.out.println(BodyPressureCDRequest.server_cn.size());
+            System.out.println(BodyPressureCDRequest.client_cn.size());
             //点击测评更新值
-            newButton.addActionListener(e1 -> {
-               	OpenRocket.eduCoderService.getPressureCD().enqueue(new Callback<Result2>() {
-					@Override
-					public void onResponse(Call<Result2> call, Response<Result2> response) {
-						Double[] result = response.body().getResult();
-						rightTextArea.setText(Arrays.toString(result));
-					}
+            checkButton.addActionListener(e1 -> {
+                OpenRocket.eduCoderService.checkJSON(request).enqueue(new Callback<Result>() {
+                    @Override
+                    public void onResponse(Call<Result> call, Response<Result> response) {
+                        JOptionPane.showMessageDialog(dialog, "请点击平台评测按钮");
 
-					@Override
-					public void onFailure(Call<Result2> call, Throwable throwable) {
+                    }
 
-					}
-				});
+                    @Override
+                    public void onFailure(Call<Result> call, Throwable throwable) {
+
+                    }
+                });
             });
         });
 
@@ -638,7 +639,7 @@ public class SimulationPlotPanel extends JPanel {
             rightTextArea.setLineWrap(true); // 自动换行
             rightTextArea.setWrapStyleWord(true); // 仅在单词边界处换行
             rightTextArea.setFont(new Font("Monospaced", Font.PLAIN, 14)); // 设置字体
-//			rightTextArea.setText(BodyPressureCDRequest.client_cn.toString());
+			rightTextArea.setText(FinsetPressureCDRequest.client_cn.toString());
             JScrollPane rightScrollPane = new JScrollPane(rightTextArea);
             mainPanel.add(rightScrollPane);
 
@@ -650,12 +651,12 @@ public class SimulationPlotPanel extends JPanel {
             closeButton.addActionListener(ev -> dialog.dispose()); // 点击按钮时关闭对话框
 
             // 创建一个新的按钮
-            JButton newButton = new JButton("评测");
+            JButton checkButton = new JButton("评测");
 
             // 创建按钮面板
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0)); // 水平间距 10
             buttonPanel.add(closeButton); // 添加关闭按钮
-            buttonPanel.add(newButton);   // 添加新按钮
+            buttonPanel.add(checkButton);   // 添加新按钮
             dialog.add(buttonPanel, BorderLayout.SOUTH); // 将按钮面板放置在底部
 
             // 设置对话框属性
@@ -663,24 +664,30 @@ public class SimulationPlotPanel extends JPanel {
             dialog.setSize(800, 400); // 设置窗口宽度更大，适应两个文本框
             dialog.setLocationRelativeTo(this); // 设置相对于父窗口居中显示
             dialog.setVisible(true); // 显示对话框
+            DataRequest request = new DataRequest(FinsetPressureCDRequest.client_cn,FinsetPressureCDRequest.server_cn);
+            System.out.println(FinsetPressureCDRequest.client_cn);
+            System.out.println(FinsetPressureCDRequest.server_cn);
+            System.out.println(FinsetPressureCDRequest.server_cn.size());
+            System.out.println(FinsetPressureCDRequest.client_cn.size());
+
             //点击测评更新值
-            newButton.addActionListener(e1 -> {
-                OpenRocket.eduCoderService.getFinsetPressureCD().enqueue(new Callback<Result2>() {
+            checkButton.addActionListener(e1 -> {
+                OpenRocket.eduCoderService.checkJSON(request).enqueue(new Callback<Result>() {
                     @Override
-                    public void onResponse(Call<Result2> call, Response<Result2> response) {
-                        Double[] result = response.body().getResult();
-                        rightTextArea.setText(Arrays.toString(result));
+                    public void onResponse(Call<Result> call, Response<Result> response) {
+                        JOptionPane.showMessageDialog(dialog, "请点击平台评测按钮");
+
                     }
 
                     @Override
-                    public void onFailure(Call<Result2> call, Throwable throwable) {
+                    public void onFailure(Call<Result> call, Throwable throwable) {
 
                     }
                 });
             });
         });
 
-        //尾翼压差阻力ui
+        //轴向力系数ui
         JButton jButton4 = new SelectColorButton("轴向力系数测评");
         typeSelectorPanel.add(jButton4, "growx 1, sizegroup selectbutton, wrap,newline");
 
@@ -704,7 +711,7 @@ public class SimulationPlotPanel extends JPanel {
             rightTextArea.setLineWrap(true); // 自动换行
             rightTextArea.setWrapStyleWord(true); // 仅在单词边界处换行
             rightTextArea.setFont(new Font("Monospaced", Font.PLAIN, 14)); // 设置字体
-//			rightTextArea.setText(BodyPressureCDRequest.client_cn.toString());
+			rightTextArea.setText(AxialCDRequest.client_cn.toString());
             JScrollPane rightScrollPane = new JScrollPane(rightTextArea);
             mainPanel.add(rightScrollPane);
 
@@ -729,17 +736,18 @@ public class SimulationPlotPanel extends JPanel {
             dialog.setSize(800, 400); // 设置窗口宽度更大，适应两个文本框
             dialog.setLocationRelativeTo(this); // 设置相对于父窗口居中显示
             dialog.setVisible(true); // 显示对话框
+            DataRequest request = new DataRequest(AxialCDRequest.client_cn,AxialCDRequest.server_cn);
+
             //点击测评更新值
             newButton.addActionListener(e1 -> {
-                OpenRocket.eduCoderService.getAxialCD().enqueue(new Callback<Result2>() {
+                OpenRocket.eduCoderService.checkJSON(request).enqueue(new Callback<Result>() {
                     @Override
-                    public void onResponse(Call<Result2> call, Response<Result2> response) {
-                        Double[] result = response.body().getResult();
-                        rightTextArea.setText(Arrays.toString(result));
+                    public void onResponse(Call<Result> call, Response<Result> response) {
+                        JOptionPane.showMessageDialog(dialog, "请点击平台评测按钮");
                     }
 
                     @Override
-                    public void onFailure(Call<Result2> call, Throwable throwable) {
+                    public void onFailure(Call<Result> call, Throwable throwable) {
 
                     }
                 });
@@ -770,7 +778,7 @@ public class SimulationPlotPanel extends JPanel {
             rightTextArea.setLineWrap(true); // 自动换行
             rightTextArea.setWrapStyleWord(true); // 仅在单词边界处换行
             rightTextArea.setFont(new Font("Monospaced", Font.PLAIN, 14)); // 设置字体
-//			rightTextArea.setText(BodyPressureCDRequest.client_cn.toString());
+			rightTextArea.setText(FrictionCDRequest.client_cn.toString());
             JScrollPane rightScrollPane = new JScrollPane(rightTextArea);
             mainPanel.add(rightScrollPane);
 
@@ -795,19 +803,25 @@ public class SimulationPlotPanel extends JPanel {
             dialog.setSize(800, 400); // 设置窗口宽度更大，适应两个文本框
             dialog.setLocationRelativeTo(this); // 设置相对于父窗口居中显示
             dialog.setVisible(true); // 显示对话框
+            DataRequest request = new DataRequest(FrictionCDRequest.client_cn,FrictionCDRequest.server_cn);
+            System.out.println(FrictionCDRequest.client_cn);
+            System.out.println(FrictionCDRequest.server_cn);
+            System.out.println(FrictionCDRequest.server_cn.size());
+            System.out.println(FrictionCDRequest.client_cn.size());
+
             //点击测评更新值
             newButton.addActionListener(e1 -> {
-                OpenRocket.eduCoderService.getFrictionCD().enqueue(new Callback<Result2>() {
+                OpenRocket.eduCoderService.checkJSON(request).enqueue(new Callback<Result>() {
                     @Override
-                    public void onResponse(Call<Result2> call, Response<Result2> response) {
-                        Double[] result = response.body().getResult();
-                        rightTextArea.setText(Arrays.toString(result));
+                    public void onResponse(Call<Result> call, Response<Result> response) {
+                        JOptionPane.showMessageDialog(dialog, "请点击平台评测按钮");
+
 
 
                     }
 
                     @Override
-                    public void onFailure(Call<Result2> call, Throwable throwable) {
+                    public void onFailure(Call<Result> call, Throwable throwable) {
 
                     }
                 });
