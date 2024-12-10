@@ -57,11 +57,14 @@ import finset_moi_helper
 import body_tube_cg_helper
 import body_tube_cp_helper
 import traceback
-
+import logging
 from demo_dir import demo
 
 app = Flask(__name__)
-
+#
+# # 禁用 Flask 默认日志
+# log = logging.getLogger('werkzeug')
+# log.setLevel(logging.ERROR)  # 只显示 ERROR 级别的日志
 
 # def check(result, answer, dir):
 #     if equals(result, answer):
@@ -71,7 +74,7 @@ app = Flask(__name__)
 #         with open(os.path.join(dir, "result.txt"), 'w') as f:
 #             f.write("No")
 
-
+# 适用于组件对比
 def check(result, answer, dir):
     # 判断是否为元组
     if isinstance(result, list):
@@ -101,7 +104,6 @@ def check(result, answer, dir):
             with open(os.path.join(dir, "result.txt"), 'w') as f:
                 f.write("No")
 
-
 @app.route('/Projectile/calculateCN', methods=['POST'])
 def calculateCN():
     # app.logger.info(f"{request.json}")
@@ -110,7 +112,8 @@ def calculateCN():
         error_file_path = "/data/workspace/myshixun/step1/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        check(cg, request.json['answer'], os.path.join(os.getcwd(), "step1"))
+        #     对比每一次的是否一致
+        # check(cg, request.json['answer'], os.path.join(os.getcwd(), "step1"))
         return {"code": 200, "msg": "ok", "result": cg}
     # 异常处理
     except Exception:
@@ -121,7 +124,10 @@ def calculateCN():
 
 @app.route('/Projectile/checkJson', methods=['POST'])
 def check_json_api():
+
+    # 及时清除上次结果？？？？？？？？？？？？？？？
     data = request.json
+    print(data)
     json_a = data.get('Client_List', {})
     json_b = data.get('Server_List', {})
     # 原json比较
@@ -129,12 +135,39 @@ def check_json_api():
     # 新无序列表比较
     ret = check_list(json_a, json_b)
     if ret:
+        print("success")
         file_path = "/data/workspace/myshixun/result.txt"
         with open(file_path, 'w+') as f:
             f.write("比对成功")
+    else:
+        print("false")
 
     return jsonify({"code": 200, "msg": ret})
 
+@app.route('/Projectile/checkJson2', methods=['POST'])
+def check_json_api2():
+
+    # 及时清除上次结果？？？？？？？？？？？？？？？
+    data = request.json
+    # print(data)
+    json_a = data.get('Client_List', {})
+    json_a2 = data.get('Client_List2', {})
+    json_b = data.get('Server_List', {})
+    json_b2 = data.get('Server_List2', {})
+    # 原json比较
+    # ret = check_json(json_a, json_b)
+    # 新无序列表比较
+    ret = check_list2(json_a, json_b)
+    ret2 = check_list2(json_a2, json_b2)
+    if ret and ret2:
+        print("success")
+        file_path = "/data/workspace/myshixun/result.txt"
+        with open(file_path, 'w+') as f:
+            f.write("比对成功")
+    else:
+        print("false")
+
+    return jsonify({"code": 200, "msg": 666})
 
 ###NoseCone
 @app.route('/NoseCone/calculateCG', methods=['POST'])
@@ -840,23 +873,20 @@ def calculateFunction():
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
-symComponentPressureCD = []
 
 
-# 计算校验！！！！！！
-# 计算值
+
+# 计算对称组件的压差阻力
 @app.route('/Projectile/calculatePressureCD', methods=['POST'])
 def calculateBodyTubePressureCD():
-    # app.logger.info(f"{request.json}")
     try:
         pcd = calculatePCD.calculate(request.json)
-        symComponentPressureCD.append(pcd)
         error_file_path = "/data/workspace/myshixun/step1/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
 
         # check(cg, request.json['answer'], os.path.join(os.getcwd(), "step1"))
-        return {"code": 200, "msg": "ok", "result": 0}
+        return {"code": 200, "msg": "ok", "result": pcd}
     # 异常处理
     except Exception:
         with open(os.path.join("step1", "error.txt"), 'w') as f:
@@ -864,44 +894,15 @@ def calculateBodyTubePressureCD():
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
-# 删除
-@app.route('/Projectile/calculatePressureCD/delete', methods=['POST'])
-def delBodyTubePressureCD():
-    # app.logger.info(f"{request.json}")
-    try:
-        symComponentPressureCD.clear()
-        return {"code": 200, "msg": "ok", "result": 0}
-    # 异常处理
-    except Exception:
-        with open(os.path.join("step1", "error.txt"), 'w') as f:
-            f.write(traceback.format_exc())
-        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
-
-# 获取值
-@app.route('/Projectile/calculatePressureCD/getList', methods=['POST'])
-def getBodyTubePressureCD():
-    # app.logger.info(f"{request.json}")
-    try:
-        return {"code": 200, "msg": "ok", "result": symComponentPressureCD}
-    # 异常处理
-    except Exception:
-        with open(os.path.join("step1", "error.txt"), 'w') as f:
-            f.write(traceback.format_exc())
-        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
-
-
-totalCDs = []
-
-
+# 计算总体基底阻力
 @app.route('/Whole/cd', methods=['POST'])
 def calculateCDs():
-    app.logger.info(f"{request.json}")
     try:
         timestamp = request.json.get('timestamp', None)
         result = calculateCD(request.json)
-        totalCDs.append({'timestamp': timestamp, 'result': result})
-        # totalCDs.sort(key=lambda x: x['timestamp'])
+        # totalCDs.append({'timestamp': timestamp, 'result': result})
+        # # totalCDs.sort(key=lambda x: x['timestamp'])
         return {"code": 200, "msg": "ok", "result": result}
     except Exception:
         with open(os.path.join("calculatePoint", "error.txt"), 'w') as f:
@@ -909,46 +910,14 @@ def calculateCDs():
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
-# 删除
-@app.route('/Whole/cd/delete', methods=['POST'])
-def delTotalCD():
-    # app.logger.info(f"{request.json}")
-    try:
-        totalCDs.clear()
-        return {"code": 200, "msg": "ok", "result": 0}
-    # 异常处理
-    except Exception:
-        with open(os.path.join("step1", "error.txt"), 'w') as f:
-            f.write(traceback.format_exc())
-        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
-
-# 获取值
-@app.route('/Whole/cd/getList', methods=['POST'])
-def getTotalCD():
-    # app.logger.info(f"{request.json}")
-    try:
-        sorted_results = [entry['result'] for entry in sorted(totalCDs, key=lambda x: x['timestamp'])]
-        sorted_total_cds = sorted(totalCDs, key=lambda x: x['timestamp'])
-        return {"code": 200, "msg": "ok", "result": sorted_results}
-    # 异常处理
-    except Exception:
-        with open(os.path.join("step1", "error.txt"), 'w') as f:
-            f.write(traceback.format_exc())
-        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
-
-
-finSetCDs = []
 
 
 @app.route('/Projectile/calculateFinsetPressureCD', methods=['POST'])
 def calculateFinsetCDs():
-    app.logger.info(f"{request.json}")
     try:
         timestamp = request.json.get('timestamp', None)
         result = calculateFSPCD(request.json)
-        finSetCDs.append({'timestamp': timestamp, 'result': result})
-        # finSetCDs.sort(key=lambda x: x['timestamp'])
         return {"code": 200, "msg": "ok", "result": result}
     except Exception:
         with open(os.path.join("calculateFinsetPCD", "error.txt"), 'w') as f:
@@ -956,45 +925,13 @@ def calculateFinsetCDs():
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
-# 删除
-@app.route('/Projectile/calculateFinsetPressureCD/delete', methods=['POST'])
-def delFinsetCD():
-    # app.logger.info(f"{request.json}")
-    try:
-        finSetCDs.clear()
-        return {"code": 200, "msg": "ok", "result": 0}
-    # 异常处理
-    except Exception:
-        with open(os.path.join("step1", "error.txt"), 'w') as f:
-            f.write(traceback.format_exc())
-        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
-
-
-# 获取值
-@app.route('/Projectile/calculateFinsetPressureCD/getList', methods=['POST'])
-def getFinsetCD():
-    # app.logger.info(f"{request.json}")
-    try:
-        sorted_results = [entry['result'] for entry in sorted(finSetCDs, key=lambda x: x['timestamp'])]
-        return {"code": 200, "msg": "ok", "result": sorted_results}
-    # 异常处理
-    except Exception:
-        with open(os.path.join("step1", "error.txt"), 'w') as f:
-            f.write(traceback.format_exc())
-        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
-
-
-axialCD = []
-
+# 轴向力系数计算
 
 @app.route('/Projectile/calculateAxialCD', methods=['POST'])
 def calculateAxialCD():
-    app.logger.info(f"{request.json}")
     try:
         timestamp = request.json.get('timestamp', None)
         result = calculateAixalCDHelper(request.json)
-        axialCD.append({'timestamp': timestamp, 'result': result})
-        # axialCD.sort(key=lambda x: x['timestamp'])
         return {"code": 200, "msg": "ok", "result": result}
     except Exception:
         with open(os.path.join("calculateFinsetPCD", "error.txt"), 'w') as f:
@@ -1002,45 +939,13 @@ def calculateAxialCD():
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
-# 删除
-@app.route('/Projectile/calculateAxialCD/delete', methods=['POST'])
-def deleteAxialCD():
-    # app.logger.info(f"{request.json}")
-    try:
-        axialCD.clear()
-        return {"code": 200, "msg": "ok", "result": 0}
-    # 异常处理
-    except Exception:
-        with open(os.path.join("step1", "error.txt"), 'w') as f:
-            f.write(traceback.format_exc())
-        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
-
-# 获取值
-@app.route('/Projectile/calculateAxialCD/getList', methods=['POST'])
-def getAxialCD():
-    # app.logger.info(f"{request.json}")
-    try:
-        sorted_results = [entry['result'] for entry in sorted(axialCD, key=lambda x: x['timestamp'])]
-        return {"code": 200, "msg": "ok", "result": sorted_results}
-    # 异常处理
-    except Exception:
-        with open(os.path.join("step1", "error.txt"), 'w') as f:
-            f.write(traceback.format_exc())
-        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
-
-
-FrictionCD = []
-
-
+# 摩擦阻力计算
 @app.route('/Projectile/calculateFrictionCD', methods=['POST'])
 def calculateFrictionCD():
-    app.logger.info(f"{request.json}")
     try:
         timestamp = request.json.get('timestamp', None)
         result = calculateFriectionCDHelper(request.json)
-        FrictionCD.append({'timestamp': timestamp, 'result': result})
-        # FrictionCD.sort(key=lambda x: x['timestamp'])
         return {"code": 200, "msg": "ok", "result": result}
     except Exception:
         with open(os.path.join("calculateFinsetPCD", "error.txt"), 'w') as f:
@@ -1048,42 +953,10 @@ def calculateFrictionCD():
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
-# 删除
-@app.route('/Projectile/calculateFrictionCD/delete', methods=['POST'])
-def deleteFrictionCD():
-    # app.logger.info(f"{request.json}")
-    try:
-        FrictionCD.clear()
-        return {"code": 200, "msg": "ok", "result": 0}
-    # 异常处理
-    except Exception:
-        with open(os.path.join("step1", "error.txt"), 'w') as f:
-            f.write(traceback.format_exc())
-        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
-
-
-# 获取值
-@app.route('/Projectile/calculateFrictionCD/getList', methods=['POST'])
-def getFrictionCD():
-    # app.logger.info(f"{request.json}")
-    try:
-        sorted_results = [entry['result'] for entry in sorted(FrictionCD, key=lambda x: x['timestamp'])]
-        return {"code": 200, "msg": "ok", "result": sorted_results}
-    # 异常处理
-    except Exception:
-        with open(os.path.join("step1", "error.txt"), 'w') as f:
-            f.write(traceback.format_exc())
-        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
-
-
-acc = []
-acc2 = []
 wordCoordinates = []
-
 
 @app.route('/Projectile/Acceleration', methods=['POST'])
 def Acceleration():
-    app.logger.info(f"{request.json}")
     try:
         timestamp = request.json.get('timestamp', None)
         # 获取当前的世界坐标
@@ -1093,100 +966,45 @@ def Acceleration():
                                     wordCoordinate['z'], wordCoordinate['weight'])
         # plt
         result = calculateAccelerationHelper(request.json)
-        acc.append({'timestamp': timestamp, 'result': result[0]})
-        acc2.append({'timestamp': timestamp, 'result': result[1]})
         wordCoordinates.append({'timestamp': timestamp, 'wordCoordinate': wordCoordinate})
-        # acc.sort(key=lambda x: x['timestamp'])
-        # acc2.sort(key=lambda x: x['timestamp'])
-        # wordCoordinates.sort(key=lambda x: x['timestamp'])
-        return {"code": 200, "msg": "ok", "result": 0}
+        return {"code": 200, "msg": "ok", "result": result}
     except Exception:
         with open(os.path.join("calculateFinsetPCD", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
+#
+# # 获取值
+# @app.route('/Projectile/Acceleration/getList', methods=['POST'])
+# def getAcceleration():
+#     try:
+#         sorted_results = [entry['result'] for entry in sorted([1,2,3], key=lambda x: x['timestamp'])]
+#         sorted_AccelerationPlt = [entry['wordCoordinate'] for entry in
+#                                   sorted(wordCoordinates, key=lambda x: x['timestamp'])]
+#         AccelerationPlt(sorted_AccelerationPlt)
+#         return {"code": 200, "msg": "ok", "result": sorted_results}
+#     # 异常处理
+#     except Exception:
+#         with open(os.path.join("step1", "error.txt"), 'w') as f:
+#             f.write(traceback.format_exc())
+#         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
-# 删除
-@app.route('/Projectile/Acceleration/delete', methods=['POST'])
-def delAcceleration():
-    # app.logger.info(f"{request.json}")
-    try:
-        wordCoordinates.clear()
-        return {"code": 200, "msg": "ok", "result": 0}
-    # 异常处理
-    except Exception:
-        with open(os.path.join("step1", "error.txt"), 'w') as f:
-            f.write(traceback.format_exc())
-        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
-
-
-# 获取值
-@app.route('/Projectile/Acceleration/getList', methods=['POST'])
-def getAcceleration():
-    # app.logger.info(f"{request.json}")
-    try:
-        sorted_results = [entry['result'] for entry in sorted(FrictionCD, key=lambda x: x['timestamp'])]
-        sorted_AccelerationPlt = [entry['wordCoordinate'] for entry in
-                                  sorted(wordCoordinates, key=lambda x: x['timestamp'])]
-        AccelerationPlt(sorted_AccelerationPlt)
-        return {"code": 200, "msg": "ok", "result": sorted_results}
-    # 异常处理
-    except Exception:
-        with open(os.path.join("step1", "error.txt"), 'w') as f:
-            f.write(traceback.format_exc())
-        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
-
-
-stabilitys = []
 
 
 @app.route('/Projectile/Stability', methods=['POST'])
 def Stability():
-    app.logger.info(f"{request.json}")
     try:
         timestamp = request.json.get('timestamp', None)
         stab = calculateStabilityHelper(request.json)
-        stabilitys.append({'timestamp': timestamp, 'result': stab})
+        # stabilitys.append({'timestamp': timestamp, 'result': stab})
         # stabilitys.sort(key=lambda x: x['timestamp'])
-        print(len(stabilitys))
-        return {"code": 200, "msg": "ok", "result": 0}
+        return {"code": 200, "msg": "ok", "result": stab}
     except Exception:
         with open(os.path.join("calculateFinsetPCD", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
-
-# 删除
-@app.route('/Projectile/Stability/delete', methods=['POST'])
-def delStability():
-    # app.logger.info(f"{request.json}")
-    try:
-        stabilitys.clear()
-        print("length")
-        print(len(stabilitys))
-        return {"code": 200, "msg": "ok", "result": 0}
-    # 异常处理
-    except Exception:
-        with open(os.path.join("step1", "error.txt"), 'w') as f:
-            f.write(traceback.format_exc())
-        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
-
-
-# 获取值
-@app.route('/Projectile/Stability/getList', methods=['POST'])
-def getStability():
-    # app.logger.info(f"{request.json}")
-    try:
-        sorted_results = [entry['result'] for entry in sorted(stabilitys, key=lambda x: x['timestamp'])]
-        print("======>发送给java：")
-        print(len(sorted_results))
-        return {"code": 200, "msg": "ok", "result": sorted_results}
-    # 异常处理
-    except Exception:
-        with open(os.path.join("step1", "error.txt"), 'w') as f:
-            f.write(traceback.format_exc())
-        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 #
 

@@ -27,20 +27,20 @@ def calculateAccelerationHelper(param):
     cos = param['cos']
     orientationQuaternion = param['orientationQuaternion']
     orientationQuaternion = Coordinate(orientationQuaternion['x'], orientationQuaternion['y'],
-                                        orientationQuaternion['z'], orientationQuaternion['weight'])
+                                       orientationQuaternion['z'], orientationQuaternion['weight'])
     Cm = param['Cm']
     Cyaw = param['Cyaw']
     Croll = param['Croll']
     isLaunchRodCleared = param['isLaunchRodCleared']
     launchRodDirection = param['launchRodDirection']
     launchRodDirection = Coordinate(launchRodDirection['x'], launchRodDirection['y'],
-                                        launchRodDirection['z'], launchRodDirection['weight'])
+                                    launchRodDirection['z'], launchRodDirection['weight'])
     gravity = param['gravity']
     coriolisAcceleration = param['coriolisAcceleration']
 
     coriolisAcceleration = Coordinate(coriolisAcceleration['x'], coriolisAcceleration['y'],
-                                        coriolisAcceleration['z'], coriolisAcceleration['weight'])
-    return calculateAcceleration(
+                                      coriolisAcceleration['z'], coriolisAcceleration['weight'])
+    linearAcceleration, angularAcceleration = calculateAcceleration(
         AtmosphericDensity,
         AtmosphericVelocity,
         CDaxial,
@@ -61,3 +61,6 @@ def calculateAccelerationHelper(param):
         gravity,
         coriolisAcceleration
     )
+    return [linearAcceleration.x, linearAcceleration.y, linearAcceleration.z], [angularAcceleration.x,
+                                                                                angularAcceleration.y,
+                                                                                angularAcceleration.z]
