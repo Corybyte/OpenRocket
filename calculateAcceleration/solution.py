@@ -1,4 +1,4 @@
-from demo_dir import utils
+from calculateTubeFinSetHullCG import utils
 
 
 def calculateAcceleration(AtmosphericDensity, AtmosphericVelocity, CDaxial, refArea, refLength, CN, rocketMass, Cside,

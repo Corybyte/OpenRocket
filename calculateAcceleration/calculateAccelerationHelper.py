@@ -1,6 +1,5 @@
 from calculateAcceleration.solution import calculateAcceleration
-from calculateAxialCD.solution import calculateAxialCD
-from demo_dir.utils import RigidBody, Coordinate
+from calculateTubeFinSetHullCG.utils import RigidBody, Coordinate
 
 
 def calculateAccelerationHelper(param):

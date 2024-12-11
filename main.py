@@ -5,62 +5,64 @@ from calculateAcceleration.calculateAccelerationHelper import calculateAccelerat
 from calculateAxialCD.calculateAxialCDHelper import calculateAixalCDHelper
 from calculateFinsetPCD.calculateFinsetPressureCDHelper import calculateFSPCD
 from calculateFrictionCD.calculateFrictionCDHelper import calculateFriectionCDHelper
-from calculateSymComponentPCD import calculatePCD
+from calculateSymComponentPCD import calculateSymPCDHelper
 from calculateStability.calculateStabilityHelper import calculateStabilityHelper
-from demo_dir.utils import Coordinate
+from calculateTubeFinSetHullCG.utils import Coordinate
 from utils import *
-import Pods_cg_helper
-import Pods_cp_helper
-import Pods_moi_helper
-import Transition_cp_helper
-import body_tube_moi_helper
-import inner_component_cg_helper
-import inner_component_moi_helper
-import inner_tube_cg_helper
-import inner_tube_moi_helper
-import launchlug_cg_helper
-import launchlug_cp_helper
-import launchlug_moi_helper
-import massComponent_cg_helper
-import massComponent_moi_helper
-import parachute_cg_helper
-import parachute_moi_helper
-import rail_button_cg_helper
-import rail_button_cp_helper
-import rail_button_moi_helper
-import shockCord_cg_helper
-import shockCord_moi_helper
-import stage_cg_helper
-import stage_cp_helper
-import stage_moi_helper
-import streamer_cg_helper
-import streamer_moi_helper
-import transition_cg_helper
-import transition_moi_helper
-import tube_fine_set_cg_helper
-import tube_fine_set_cp_helper
-import tube_fine_set_moi_helper
-import whole_cg_helper
-import whole_cp_helper
-import whole_moi_helper
-from calculateAcceleration.pltImages import AccelerationPlt
-from calculateFunction import myFunction
-from calculatePoint import myPoint
-from common_helper import equals
+from podsCG import pods_cg_helper
+from podsCP import pods_cp_helper
+from podsMOI import pods_moi_helper
+from bodyTubeMOI import body_tube_moi_helper
+from innerComponentCG import inner_component_cg_helper
+from innerComponentMOI import inner_component_moi_helper
+from innerTubeCG import inner_tube_cg_helper
+from innerTubeMOI import inner_tube_moi_helper
+from launchLugCG import launchlug_cg_helper
+from launchLugCP import launchlug_cp_helper
+from launchLugMOI import launchlug_moi_helper
+from massComponentCG import mass_component_cg_helper
+from massComponentMOI import mass_component_moi_helper
+from parachuteCG import parachute_cg_helper
+from parachuteMOI import parachute_moi_helper
+from railButtonCG import rail_button_cg_helper
+from railButtonCP import rail_button_cp_helper
+from railButtonMOI import rail_button_moi_helper
+from shockCordCG import shockCord_cg_helper
+from shockCordMOI import shockCord_moi_helper
+from stageCG import stage_cg_helper
+from stageCP import stage_cp_helper
+from stageMOI import stage_moi_helper
+from streamerCG import streamer_cg_helper
+from streamerMOI import streamer_moi_helper
+from transitionCG import transition_cg_helper
+from transitionCP import transition_cp_helper
+from transitionMOI import transition_moi_helper
+from tubeFinsetCG import tube_fine_set_cg_helper
+from tubeFinsetCP import tube_fine_set_cp_helper
+from tubeFinsetMOI import tube_fine_set_moi_helper
+from wholeCG import whole_cg_helper
+from wholeCP import whole_cp_helper
+from wholeMOI import whole_moi_helper
+from motorFunction import myFunction
+from motorPoint import myPoint
+from utils.common_helper import equals
 import os
-import nose_cone_cg_helper
-import nose_cone_cp_helper
-import nose_cone_moi_helper
-import finset_cg_helper
-import finset_cp_helper
-import finset_moi_helper
-import body_tube_cg_helper
-import body_tube_cp_helper
+from noseConeCG import nose_cone_cg_helper
+from noseConeCP import nose_cone_cp_helper
+from noseConeMOI import nose_cone_moi_helper
+from finSetCG import finset_cg_helper
+from finSetCP import finset_cp_helper
+from finSetMOI import finset_moi_helper
+from bodyTubeCG import body_tube_cg_helper
+from bodyTubeCP import body_tube_cp_helper
+
 import traceback
 import logging
-from demo_dir import demo
+from calculateTubeFinSetHullCG import demo
 
 app = Flask(__name__)
+
+
 #
 # # 禁用 Flask 默认日志
 # log = logging.getLogger('werkzeug')
@@ -104,84 +106,20 @@ def check(result, answer, dir):
             with open(os.path.join(dir, "result.txt"), 'w') as f:
                 f.write("No")
 
-@app.route('/Projectile/calculateCN', methods=['POST'])
-def calculateCN():
-    # app.logger.info(f"{request.json}")
-    try:
-        cg = demo.calculate(request.json)
-        error_file_path = "/data/workspace/myshixun/step1/error.txt"
-        if os.path.exists(error_file_path):
-            os.remove(error_file_path)
-        #     对比每一次的是否一致
-        # check(cg, request.json['answer'], os.path.join(os.getcwd(), "step1"))
-        return {"code": 200, "msg": "ok", "result": cg}
-    # 异常处理
-    except Exception:
-        with open(os.path.join("step1", "error.txt"), 'w') as f:
-            f.write(traceback.format_exc())
-        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
-
-@app.route('/Projectile/checkJson', methods=['POST'])
-def check_json_api():
-
-    # 及时清除上次结果？？？？？？？？？？？？？？？
-    data = request.json
-    print(data)
-    json_a = data.get('Client_List', {})
-    json_b = data.get('Server_List', {})
-    # 原json比较
-    # ret = check_json(json_a, json_b)
-    # 新无序列表比较
-    ret = check_list(json_a, json_b)
-    if ret:
-        print("success")
-        file_path = "/data/workspace/myshixun/result.txt"
-        with open(file_path, 'w+') as f:
-            f.write("比对成功")
-    else:
-        print("false")
-
-    return jsonify({"code": 200, "msg": ret})
-
-@app.route('/Projectile/checkJson2', methods=['POST'])
-def check_json_api2():
-
-    # 及时清除上次结果？？？？？？？？？？？？？？？
-    data = request.json
-    # print(data)
-    json_a = data.get('Client_List', {})
-    json_a2 = data.get('Client_List2', {})
-    json_b = data.get('Server_List', {})
-    json_b2 = data.get('Server_List2', {})
-    # 原json比较
-    # ret = check_json(json_a, json_b)
-    # 新无序列表比较
-    ret = check_list2(json_a, json_b)
-    ret2 = check_list2(json_a2, json_b2)
-    if ret and ret2:
-        print("success")
-        file_path = "/data/workspace/myshixun/result.txt"
-        with open(file_path, 'w+') as f:
-            f.write("比对成功")
-    else:
-        print("false")
-
-    return jsonify({"code": 200, "msg": 666})
-
-###NoseCone
+# NoseCone
 @app.route('/NoseCone/calculateCG', methods=['POST'])
 def calculateNoseConeCG():
     app.logger.info(f"{request.json}")
     try:
         cg = nose_cone_cg_helper.calculateNoseConeCG(request.json)
-        error_file_path = "/data/workspace/myshixun/step1/error.txt"
+        error_file_path = "/data/workspace/myshixun/noseConeCG/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        check(cg, request.json['answer'], os.path.join(os.getcwd(), "step1"))
+        check(cg, request.json['answer'], os.path.join(os.getcwd(), "noseConeCG"))
         return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
-        with open(os.path.join("step1", "error.txt"), 'w') as f:
+        with open(os.path.join("noseConeCG", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
@@ -191,13 +129,13 @@ def calculateNoseConeCP():
     app.logger.info(f"{request.json}")
     try:
         cp = nose_cone_cp_helper.calculateCP(request.json)
-        error_file_path = "/data/workspace/myshixun/step2/error.txt"
+        error_file_path = "/data/workspace/myshixun/noseConeCP/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        check(cp, request.json['answer'], os.path.join(os.getcwd(), "step2"))
+        check(cp, request.json['answer'], os.path.join(os.getcwd(), "noseConeCP"))
         return {"code": 200, "msg": "ok", "result": cp}
     except Exception:
-        with open(os.path.join("step2", "error.txt"), 'w') as f:
+        with open(os.path.join("noseConeCP", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
@@ -207,13 +145,13 @@ def calculateNoseConeMOI():
     app.logger.info(f"{request.json}")
     try:
         moi = nose_cone_moi_helper.calculateMOI(request.json)
-        error_file_path = "/data/workspace/myshixun/step3/error.txt"
+        error_file_path = "/data/workspace/myshixun/noseConeMOI/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        check(moi, request.json['answer'], os.path.join(os.getcwd(), "step3"))
+        check(moi, request.json['answer'], os.path.join(os.getcwd(), "noseConeMOI"))
         return {"code": 200, "msg": "ok", "result": moi}
     except Exception:
-        with open(os.path.join("step3", "error.txt"), 'w') as f:
+        with open(os.path.join("noseConeMOI", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
@@ -224,13 +162,13 @@ def calculateBodyTubeCG():
     app.logger.info(f"{request.json}")
     try:
         cg = body_tube_cg_helper.calculateCG(request.json)
-        error_file_path = "/data/workspace/myshixun/step4/error.txt"
+        error_file_path = "/data/workspace/myshixun/bodyTubeCG/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        check(cg, request.json['answer'], os.path.join(os.getcwd(), "step4"))
+        check(cg, request.json['answer'], os.path.join(os.getcwd(), "bodyTubeCG"))
         return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
-        with open(os.path.join("step4", "error.txt"), 'w') as f:
+        with open(os.path.join("bodyTubeCG", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
@@ -240,13 +178,13 @@ def calculateBodyTubeCP():
     app.logger.info(f"{request.json}")
     try:
         cp = body_tube_cp_helper.calculateCP(request.json)
-        error_file_path = "/data/workspace/myshixun/step5/error.txt"
+        error_file_path = "/data/workspace/myshixun/bodyTubeCP/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        check(cp, request.json['answer'], os.path.join(os.getcwd(), "step5"))
+        check(cp, request.json['answer'], os.path.join(os.getcwd(), "bodyTubeCP"))
         return {"code": 200, "msg": "ok", "result": cp}
     except Exception:
-        with open(os.path.join("step5", "error.txt"), 'w') as f:
+        with open(os.path.join("bodyTubeCP", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
@@ -256,13 +194,13 @@ def calculateBodyTubeMOI():
     app.logger.info(f"{request.json}")
     try:
         moi = body_tube_moi_helper.calculate_moi(request.json)
-        error_file_path = "/data/workspace/myshixun/step6/error.txt"
+        error_file_path = "/data/workspace/myshixun/bodyTubeMOI/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        check(moi, request.json['answer'], os.path.join(os.getcwd(), "step6"))
+        check(moi, request.json['answer'], os.path.join(os.getcwd(), "bodyTubeMOI"))
         return {"code": 200, "msg": "ok", "result": moi}
     except Exception:
-        with open(os.path.join("step6", "error.txt"), 'w') as f:
+        with open(os.path.join("bodyTubeMOI", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
@@ -273,13 +211,13 @@ def calculateFinSetCG():
     app.logger.info(f"{request.json}")
     try:
         cg = finset_cg_helper.calculateCG(request.json)
-        error_file_path = "/data/workspace/myshixun/step7/error.txt"
+        error_file_path = "/data/workspace/myshixun/finSetCG/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        check(cg, request.json['answer'], os.path.join(os.getcwd(), "step7"))
+        check(cg, request.json['answer'], os.path.join(os.getcwd(), "finSetCG"))
         return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
-        with open(os.path.join("step7", "error.txt"), 'w') as f:
+        with open(os.path.join("finSetCG", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
@@ -289,13 +227,13 @@ def calculateFinSetCP():
     app.logger.info(f"{request.json}")
     try:
         cp = finset_cp_helper.calculateCP(request.json)
-        error_file_path = "/data/workspace/myshixun/step8/error.txt"
+        error_file_path = "/data/workspace/myshixun/finSetCP/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        check(cp, request.json['answer'], os.path.join(os.getcwd(), "step8"))
+        check(cp, request.json['answer'], os.path.join(os.getcwd(), "finSetCP"))
         return {"code": 200, "msg": "ok", "result": cp}
     except Exception:
-        with open(os.path.join("step8", "error.txt"), 'w') as f:
+        with open(os.path.join("finSetCP", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
@@ -305,13 +243,13 @@ def calculateFinSetMOI():
     app.logger.info(f"{request.json}")
     try:
         moi = finset_moi_helper.calculate_moi(request.json)
-        error_file_path = "/data/workspace/myshixun/step9/error.txt"
+        error_file_path = "/data/workspace/myshixun/finSetMOI/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        check(moi, request.json['answer'], os.path.join(os.getcwd(), "step9"))
+        check(moi, request.json['answer'], os.path.join(os.getcwd(), "finSetMOI"))
         return {"code": 200, "msg": "ok", "result": moi}
     except Exception:
-        with open(os.path.join("step9", "error.txt"), 'w') as f:
+        with open(os.path.join("finSetMOI", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
@@ -322,13 +260,13 @@ def calculateTransitionCG():
     app.logger.info(f"{request.json}")
     try:
         cg = transition_cg_helper.calculateCG(request.json)
-        error_file_path = "/data/workspace/myshixun/step10/error.txt"
+        error_file_path = "/data/workspace/myshixun/transitionCG/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        check(cg, request.json['answer'], os.path.join(os.getcwd(), "step10"))
+        check(cg, request.json['answer'], os.path.join(os.getcwd(), "transitionCG"))
         return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
-        with open(os.path.join("step10", "error.txt"), 'w') as f:
+        with open(os.path.join("transitionCG", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
@@ -337,14 +275,14 @@ def calculateTransitionCG():
 def calculateTransitionCP():
     app.logger.info(f"{request.json}")
     try:
-        cp = Transition_cp_helper.calculateCP(request.json)
-        error_file_path = "/data/workspace/myshixun/step11/error.txt"
+        cp = transition_cp_helper.calculateCP(request.json)
+        error_file_path = "/data/workspace/myshixun/transitionCP/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        check(cp, request.json['answer'], os.path.join(os.getcwd(), "step11"))
+        check(cp, request.json['answer'], os.path.join(os.getcwd(), "transitionCP"))
         return {"code": 200, "msg": "ok", "result": cp}
     except Exception:
-        with open(os.path.join("step11", "error.txt"), 'w') as f:
+        with open(os.path.join("transitionCP", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
@@ -354,13 +292,13 @@ def calculateTransitionMOI():
     app.logger.info(f"{request.json}")
     try:
         moi = transition_moi_helper.calculateMOI(request.json)
-        error_file_path = "/data/workspace/myshixun/step12/error.txt"
+        error_file_path = "/data/workspace/myshixun/transitionMOI/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        check(moi, request.json['answer'], os.path.join(os.getcwd(), "step12"))
+        check(moi, request.json['answer'], os.path.join(os.getcwd(), "transitionMOI"))
         return {"code": 200, "msg": "ok", "result": moi}
     except Exception:
-        with open(os.path.join("step12", "error.txt"), 'w') as f:
+        with open(os.path.join("transitionMOI", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
@@ -370,13 +308,13 @@ def calculateTubeFinSetCG():
     app.logger.info(f"{request.json}")
     try:
         cg = tube_fine_set_cg_helper.calculateCG(request.json)
-        error_file_path = "/data/workspace/myshixun/step13/error.txt"
+        error_file_path = "/data/workspace/myshixun/tubeFinsetCG/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        check(cg, request.json['answer'], os.path.join(os.getcwd(), "step13"))
+        check(cg, request.json['answer'], os.path.join(os.getcwd(), "tubeFinsetCG"))
         return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
-        with open(os.path.join("step13", "error.txt"), 'w') as f:
+        with open(os.path.join("tubeFinsetCG", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
@@ -386,13 +324,13 @@ def calculateTubeFinSetCP():
     app.logger.info(f"{request.json}")
     try:
         cp = tube_fine_set_cp_helper.calculateCP(request.json)
-        error_file_path = "/data/workspace/myshixun/step14/error.txt"
+        error_file_path = "/data/workspace/myshixun/tubeFinsetCP/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        check(cp, request.json['answer'], os.path.join(os.getcwd(), "step14"))
+        check(cp, request.json['answer'], os.path.join(os.getcwd(), "tubeFinsetCP"))
         return {"code": 200, "msg": "ok", "result": cp}
     except Exception:
-        with open(os.path.join("step14", "error.txt"), 'w') as f:
+        with open(os.path.join("tubeFinsetCP", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
@@ -402,13 +340,13 @@ def calculateTubeFinSetMOI():
     app.logger.info(f"{request.json}")
     try:
         moi = tube_fine_set_moi_helper.calculateMOI(request.json)
-        error_file_path = "/data/workspace/myshixun/step15/error.txt"
+        error_file_path = "/data/workspace/myshixun/tubeFinsetMOI/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        check(moi, request.json['answer'], os.path.join(os.getcwd(), "step15"))
+        check(moi, request.json['answer'], os.path.join(os.getcwd(), "tubeFinsetMOI"))
         return {"code": 200, "msg": "ok", "result": moi}
     except Exception:
-        with open(os.path.join("step15", "error.txt"), 'w') as f:
+        with open(os.path.join("tubeFinsetMOI", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
@@ -418,13 +356,13 @@ def calculateLaunchLugCG():
     app.logger.info(f"{request.json}")
     try:
         cg = launchlug_cg_helper.calculateCG(request.json)
-        error_file_path = "/data/workspace/myshixun/step16/error.txt"
+        error_file_path = "/data/workspace/myshixun/launchLugCG/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        check(cg, request.json['answer'], os.path.join(os.getcwd(), "step16"))
+        check(cg, request.json['answer'], os.path.join(os.getcwd(), "launchLugCG"))
         return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
-        with open(os.path.join("step16", "error.txt"), 'w') as f:
+        with open(os.path.join("launchLugCG", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
@@ -434,13 +372,13 @@ def calculateLaunchLugCP():
     app.logger.info(f"{request.json}")
     try:
         cp = launchlug_cp_helper.calculateCP(request.json)
-        error_file_path = "/data/workspace/myshixun/step17/error.txt"
+        error_file_path = "/data/workspace/myshixun/launchLugCP/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        check(cp, request.json['answer'], os.path.join(os.getcwd(), "step17"))
+        check(cp, request.json['answer'], os.path.join(os.getcwd(), "launchLugCP"))
         return {"code": 200, "msg": "ok", "result": cp}
     except Exception:
-        with open(os.path.join("step17", "error.txt"), 'w') as f:
+        with open(os.path.join("launchLugCP", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
@@ -450,13 +388,13 @@ def calculateLaunchLugMOI():
     app.logger.info(f"{request.json}")
     try:
         moi = launchlug_moi_helper.calculateMOI(request.json)
-        error_file_path = "/data/workspace/myshixun/step18/error.txt"
+        error_file_path = "/data/workspace/myshixun/launchLugMOI/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        check(moi, request.json['answer'], os.path.join(os.getcwd(), "step18"))
+        check(moi, request.json['answer'], os.path.join(os.getcwd(), "launchLugMOI"))
         return {"code": 200, "msg": "ok", "result": moi}
     except Exception:
-        with open(os.path.join("step18", "error.txt"), 'w') as f:
+        with open(os.path.join("launchLugMOI", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
@@ -466,13 +404,13 @@ def calculateRailButtonCG():
     app.logger.info(f"{request.json}")
     try:
         cg = rail_button_cg_helper.calculateCG(request.json)
-        error_file_path = "/data/workspace/myshixun/step19/error.txt"
+        error_file_path = "/data/workspace/myshixun/railButtonCG/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        check(cg, request.json['answer'], os.path.join(os.getcwd(), "step19"))
+        check(cg, request.json['answer'], os.path.join(os.getcwd(), "railButtonCG"))
         return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
-        with open(os.path.join("step19", "error.txt"), 'w') as f:
+        with open(os.path.join("railButtonCG", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
@@ -482,13 +420,13 @@ def calculateRailButtonCP():
     app.logger.info(f"{request.json}")
     try:
         cp = rail_button_cp_helper.calculateCP(request.json)
-        error_file_path = "/data/workspace/myshixun/step20/error.txt"
+        error_file_path = "/data/workspace/myshixun/railButtonCP/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        check(cp, request.json['answer'], os.path.join(os.getcwd(), "step20"))
+        check(cp, request.json['answer'], os.path.join(os.getcwd(), "railButtonCP"))
         return {"code": 200, "msg": "ok", "result": cp}
     except Exception:
-        with open(os.path.join("step20", "error.txt"), 'w') as f:
+        with open(os.path.join("railButtonCP", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
@@ -498,13 +436,13 @@ def calculateRailButtonMOI():
     app.logger.info(f"{request.json}")
     try:
         moi = rail_button_moi_helper.calculateMOI(request.json)
-        error_file_path = "/data/workspace/myshixun/step21/error.txt"
+        error_file_path = "/data/workspace/myshixun/railButtonMOI/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        check(moi, request.json['answer'], os.path.join(os.getcwd(), "step21"))
+        check(moi, request.json['answer'], os.path.join(os.getcwd(), "railButtonMOI"))
         return {"code": 200, "msg": "ok", "result": moi}
     except Exception:
-        with open(os.path.join("step21", "error.txt"), 'w') as f:
+        with open(os.path.join("railButtonMOI", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
@@ -514,13 +452,13 @@ def calculateInnerTubeCG():
     app.logger.info(f"{request.json}")
     try:
         cg = inner_tube_cg_helper.calculateCG(request.json)
-        error_file_path = "/data/workspace/myshixun/step22/error.txt"
+        error_file_path = "/data/workspace/myshixun/innerTubeCG/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        check(cg, request.json['answer'], os.path.join(os.getcwd(), "step22"))
+        check(cg, request.json['answer'], os.path.join(os.getcwd(), "innerTubeCG"))
         return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
-        with open(os.path.join("step22", "error.txt"), 'w') as f:
+        with open(os.path.join("innerTubeCG", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
@@ -530,13 +468,13 @@ def calculateInnerTubeMOI():
     app.logger.info(f"{request.json}")
     try:
         moi = inner_tube_moi_helper.calculateMOI(request.json)
-        error_file_path = "/data/workspace/myshixun/step24/error.txt"
+        error_file_path = "/data/workspace/myshixun/innerTubeMOI/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        check(moi, request.json['answer'], os.path.join(os.getcwd(), "step24"))
+        check(moi, request.json['answer'], os.path.join(os.getcwd(), "innerTubeMOI"))
         return {"code": 200, "msg": "ok", "result": moi}
     except Exception:
-        with open(os.path.join("step24", "error.txt"), 'w') as f:
+        with open(os.path.join("innerTubeMOI", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
@@ -546,13 +484,13 @@ def calculateInnerComponentCG():
     app.logger.info(f"{request.json}")
     try:
         cg = inner_component_cg_helper.calculateCG(request.json)
-        error_file_path = "/data/workspace/myshixun/step25/error.txt"
+        error_file_path = "/data/workspace/myshixun/innerComponentCG/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        check(cg, request.json['answer'], os.path.join(os.getcwd(), "step25"))
+        check(cg, request.json['answer'], os.path.join(os.getcwd(), "innerComponentCG"))
         return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
-        with open(os.path.join("step25", "error.txt"), 'w') as f:
+        with open(os.path.join("innerComponentCG", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
@@ -562,13 +500,13 @@ def calculateInnerComponentMOI():
     app.logger.info(f"{request.json}")
     try:
         moi = inner_component_moi_helper.calculateMOI(request.json)
-        error_file_path = "/data/workspace/myshixun/step27/error.txt"
+        error_file_path = "/data/workspace/myshixun/innerComponentMOI/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        check(moi, request.json['answer'], os.path.join(os.getcwd(), "step27"))
+        check(moi, request.json['answer'], os.path.join(os.getcwd(), "innerComponentMOI"))
         return {"code": 200, "msg": "ok", "result": moi}
     except Exception:
-        with open(os.path.join("step27", "error.txt"), 'w') as f:
+        with open(os.path.join("innerComponentMOI", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
@@ -578,13 +516,13 @@ def calculateParachuteCG():
     app.logger.info(f"{request.json}")
     try:
         cg = parachute_cg_helper.calculateCG(request.json)
-        error_file_path = "/data/workspace/myshixun/step28/error.txt"
+        error_file_path = "/data/workspace/myshixun/parachuteCG/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        check(cg, request.json['answer'], os.path.join(os.getcwd(), "step28"))
+        check(cg, request.json['answer'], os.path.join(os.getcwd(), "parachuteCG"))
         return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
-        with open(os.path.join("step28", "error.txt"), 'w') as f:
+        with open(os.path.join("parachuteCG", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
@@ -594,13 +532,13 @@ def calculateParachuteMOI():
     app.logger.info(f"{request.json}")
     try:
         moi = parachute_moi_helper.calculateMOI(request.json)
-        error_file_path = "/data/workspace/myshixun/step30/error.txt"
+        error_file_path = "/data/workspace/myshixun/parachuteMOI/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        check(moi, request.json['answer'], os.path.join(os.getcwd(), "step30"))
+        check(moi, request.json['answer'], os.path.join(os.getcwd(), "parachuteMOI"))
         return {"code": 200, "msg": "ok", "result": moi}
     except Exception:
-        with open(os.path.join("step30", "error.txt"), 'w') as f:
+        with open(os.path.join("parachuteMOI", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
@@ -610,13 +548,13 @@ def calculateShockCordCG():
     app.logger.info(f"{request.json}")
     try:
         cg = shockCord_cg_helper.calculateCG(request.json)
-        error_file_path = "/data/workspace/myshixun/step31/error.txt"
+        error_file_path = "/data/workspace/myshixun/shockCordCG/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        check(cg, request.json['answer'], os.path.join(os.getcwd(), "step31"))
+        check(cg, request.json['answer'], os.path.join(os.getcwd(), "shockCordCG"))
         return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
-        with open(os.path.join("step31", "error.txt"), 'w') as f:
+        with open(os.path.join("shockCordCG", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
@@ -626,13 +564,13 @@ def calculateShockCordMOI():
     app.logger.info(f"{request.json}")
     try:
         moi = shockCord_moi_helper.calculateMOI(request.json)
-        error_file_path = "/data/workspace/myshixun/step33/error.txt"
+        error_file_path = "/data/workspace/myshixun/shockCordMOI/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        check(moi, request.json['answer'], os.path.join(os.getcwd(), "step33"))
+        check(moi, request.json['answer'], os.path.join(os.getcwd(), "shockCordMOI"))
         return {"code": 200, "msg": "ok", "result": moi}
     except Exception:
-        with open(os.path.join("step33", "error.txt"), 'w') as f:
+        with open(os.path.join("shockCordMOI", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
@@ -641,14 +579,14 @@ def calculateShockCordMOI():
 def calculateMassComponentCG():
     app.logger.info(f"{request.json}")
     try:
-        cg = massComponent_cg_helper.calculateCG(request.json)
-        error_file_path = "/data/workspace/myshixun/step34/error.txt"
+        cg = mass_component_cg_helper.calculateCG(request.json)
+        error_file_path = "/data/workspace/myshixun/massComponentCG/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        check(cg, request.json['answer'], os.path.join(os.getcwd(), "step34"))
+        check(cg, request.json['answer'], os.path.join(os.getcwd(), "massComponentCG"))
         return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
-        with open(os.path.join("step34", "error.txt"), 'w') as f:
+        with open(os.path.join("massComponentCG", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
@@ -657,14 +595,14 @@ def calculateMassComponentCG():
 def calculateMassComponentMOI():
     app.logger.info(f"{request.json}")
     try:
-        moi = massComponent_moi_helper.calculateMOI(request.json)
-        error_file_path = "/data/workspace/myshixun/step36/error.txt"
+        moi = mass_component_moi_helper.calculateMOI(request.json)
+        error_file_path = "/data/workspace/myshixun/massComponentMOI/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        check(moi, request.json['answer'], os.path.join(os.getcwd(), "step36"))
+        check(moi, request.json['answer'], os.path.join(os.getcwd(), "massComponentMOI"))
         return {"code": 200, "msg": "ok", "result": moi}
     except Exception:
-        with open(os.path.join("step36", "error.txt"), 'w') as f:
+        with open(os.path.join("massComponentMOI", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
@@ -674,13 +612,13 @@ def calculateStreamerCG():
     app.logger.info(f"{request.json}")
     try:
         cg = streamer_cg_helper.calculateCG(request.json)
-        error_file_path = "/data/workspace/myshixun/step37/error.txt"
+        error_file_path = "/data/workspace/myshixun/streamerCG/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        check(cg, request.json['answer'], os.path.join(os.getcwd(), "step37"))
+        check(cg, request.json['answer'], os.path.join(os.getcwd(), "streamerCG"))
         return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
-        with open(os.path.join("step37", "error.txt"), 'w') as f:
+        with open(os.path.join("streamerCG", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
@@ -690,13 +628,13 @@ def calculateStreamerMOI():
     app.logger.info(f"{request.json}")
     try:
         moi = streamer_moi_helper.calculateMOI(request.json)
-        error_file_path = "/data/workspace/myshixun/step39/error.txt"
+        error_file_path = "/data/workspace/myshixun/streamerMOI/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        check(moi, request.json['answer'], os.path.join(os.getcwd(), "step39"))
+        check(moi, request.json['answer'], os.path.join(os.getcwd(), "streamerMOI"))
         return {"code": 200, "msg": "ok", "result": moi}
     except Exception:
-        with open(os.path.join("step39", "error.txt"), 'w') as f:
+        with open(os.path.join("streamerMOI", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
@@ -706,13 +644,13 @@ def calculateStageCG():
     app.logger.info(f"{request.json}")
     try:
         cg = stage_cg_helper.calculateCG(request.json)
-        error_file_path = "/data/workspace/myshixun/step49/error.txt"
+        error_file_path = "/data/workspace/myshixun/stageCG/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        check(cg, request.json['answer'], os.path.join(os.getcwd(), "step49"))
+        check(cg, request.json['answer'], os.path.join(os.getcwd(), "stageCG"))
         return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
-        with open(os.path.join("step49", "error.txt"), 'w') as f:
+        with open(os.path.join("stageCG", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
@@ -722,13 +660,13 @@ def calculateStageCP():
     app.logger.info(f"{request.json}")
     try:
         cp = stage_cp_helper.calculateCP(request.json)
-        error_file_path = "/data/workspace/myshixun/step50/error.txt"
+        error_file_path = "/data/workspace/myshixun/stageCP/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        check(cp, request.json['answer'], os.path.join(os.getcwd(), "step50"))
+        check(cp, request.json['answer'], os.path.join(os.getcwd(), "stageCP"))
         return {"code": 200, "msg": "ok", "result": cp}
     except Exception:
-        with open(os.path.join("step50", "error.txt"), 'w') as f:
+        with open(os.path.join("stageCP", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
@@ -738,13 +676,13 @@ def calculateStageMOI():
     app.logger.info(f"{request.json}")
     try:
         moi = stage_moi_helper.calculateMOI(request.json)
-        error_file_path = "/data/workspace/myshixun/step51/error.txt"
+        error_file_path = "/data/workspace/myshixun/stageMOI/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        check(moi, request.json['answer'], os.path.join(os.getcwd(), "step51"))
+        check(moi, request.json['answer'], os.path.join(os.getcwd(), "stageMOI"))
         return {"code": 200, "msg": "ok", "result": moi}
     except Exception:
-        with open(os.path.join("step51", "error.txt"), 'w') as f:
+        with open(os.path.join("stageMOI", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
@@ -753,14 +691,14 @@ def calculateStageMOI():
 def calculatePodsCG():
     app.logger.info(f"{request.json}")
     try:
-        cg = Pods_cg_helper.calculateCG(request.json)
-        error_file_path = "/data/workspace/myshixun/step52/error.txt"
+        cg = pods_cg_helper.calculateCG(request.json)
+        error_file_path = "/data/workspace/myshixun/podsCG/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        check(cg, request.json['answer'], os.path.join(os.getcwd(), "step52"))
+        check(cg, request.json['answer'], os.path.join(os.getcwd(), "podsCG"))
         return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
-        with open(os.path.join("step52", "error.txt"), 'w') as f:
+        with open(os.path.join("podsCG", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
@@ -769,14 +707,14 @@ def calculatePodsCG():
 def calculatePodsCP():
     app.logger.info(f"{request.json}")
     try:
-        cp = Pods_cp_helper.calculateCP(request.json)
-        error_file_path = "/data/workspace/myshixun/step53/error.txt"
+        cp = pods_cp_helper.calculateCP(request.json)
+        error_file_path = "/data/workspace/myshixun/podsCP/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        check(cp, request.json['answer'], os.path.join(os.getcwd(), "step53"))
+        check(cp, request.json['answer'], os.path.join(os.getcwd(), "podsCP"))
         return {"code": 200, "msg": "ok", "result": cp}
     except Exception:
-        with open(os.path.join("step53", "error.txt"), 'w') as f:
+        with open(os.path.join("podsCP", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
@@ -785,14 +723,14 @@ def calculatePodsCP():
 def calculatePodsMOI():
     app.logger.info(f"{request.json}")
     try:
-        moi = Pods_moi_helper.calculateMOI(request.json)
-        error_file_path = "/data/workspace/myshixun/step54/error.txt"
+        moi = pods_moi_helper.calculateMOI(request.json)
+        error_file_path = "/data/workspace/myshixun/podsMOI/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        check(moi, request.json['answer'], os.path.join(os.getcwd(), "step54"))
+        check(moi, request.json['answer'], os.path.join(os.getcwd(), "podsMOI"))
         return {"code": 200, "msg": "ok", "result": moi}
     except Exception:
-        with open(os.path.join("step54", "error.txt"), 'w') as f:
+        with open(os.path.join("podsMOI", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
@@ -802,13 +740,13 @@ def calculateWholeCG():
     app.logger.info(f"{request.json}")
     try:
         cg = whole_cg_helper.calculateCG(request.json)
-        error_file_path = "/data/workspace/myshixun/step55/error.txt"
+        error_file_path = "/data/workspace/myshixun/wholeCG/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        check(cg, request.json['answer'], os.path.join(os.getcwd(), "step55"))
+        check(cg, request.json['answer'], os.path.join(os.getcwd(), "wholeCG"))
         return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
-        with open(os.path.join("step55", "error.txt"), 'w') as f:
+        with open(os.path.join("wholeCG", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
@@ -818,13 +756,13 @@ def calculateWholeCP():
     app.logger.info(f"{request.json}")
     try:
         cg = whole_cp_helper.calculateCP(request.json)
-        error_file_path = "/data/workspace/myshixun/step56/error.txt"
+        error_file_path = "/data/workspace/myshixun/wholeCP/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        check(cg, request.json['answer'], os.path.join(os.getcwd(), "step56"))
+        check(cg, request.json['answer'], os.path.join(os.getcwd(), "wholeCP"))
         return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
-        with open(os.path.join("step56", "error.txt"), 'w') as f:
+        with open(os.path.join("wholeCP", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
@@ -834,13 +772,13 @@ def calculateWholeMOI():
     app.logger.info(f"{request.json}")
     try:
         cg = whole_moi_helper.calculateMOI(request.json)
-        error_file_path = "/data/workspace/myshixun/step57/error.txt"
+        error_file_path = "/data/workspace/myshixun/wholeMOI/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
-        check(cg, request.json['answer'], os.path.join(os.getcwd(), "step57"))
+        check(cg, request.json['answer'], os.path.join(os.getcwd(), "wholeMOI"))
         return {"code": 200, "msg": "ok", "result": cg}
     except Exception:
-        with open(os.path.join("step57", "error.txt"), 'w') as f:
+        with open(os.path.join("wholeMOI", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
@@ -850,11 +788,11 @@ def calculatePoint():
     app.logger.info(f"{request.json}")
     try:
         result = myPoint.point()
-        with open(os.path.join("calculatePoint", "result.txt"), 'w') as f:
+        with open(os.path.join("motorPoint", "result.txt"), 'w') as f:
             f.write("发动机数据点加载成功")
         return {"code": 200, "msg": "ok", "result": result}
     except Exception:
-        with open(os.path.join("calculatePoint", "error.txt"), 'w') as f:
+        with open(os.path.join("motorPoint", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
@@ -864,23 +802,20 @@ def calculateFunction():
     app.logger.info(f"{request.json}")
     try:
         result = myFunction.functions()
-        with open(os.path.join("calculateFunction", "result.txt"), 'w') as f:
+        with open(os.path.join("motorFunction", "result.txt"), 'w') as f:
             f.write("发动机数据点加载成功")
         return {"code": 200, "msg": "ok", "result": result}
     except Exception:
-        with open(os.path.join("calculatePoint", "error.txt"), 'w') as f:
+        with open(os.path.join("motorFunction", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
-
-
-
 
 
 # 计算对称组件的压差阻力
 @app.route('/Projectile/calculatePressureCD', methods=['POST'])
 def calculateBodyTubePressureCD():
     try:
-        pcd = calculatePCD.calculate(request.json)
+        pcd = calculateSymPCDHelper.calculate(request.json)
         error_file_path = "/data/workspace/myshixun/step1/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
@@ -894,7 +829,6 @@ def calculateBodyTubePressureCD():
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
-
 # 计算总体基底阻力
 @app.route('/Whole/cd', methods=['POST'])
 def calculateCDs():
@@ -905,12 +839,9 @@ def calculateCDs():
         # # totalCDs.sort(key=lambda x: x['timestamp'])
         return {"code": 200, "msg": "ok", "result": result}
     except Exception:
-        with open(os.path.join("calculatePoint", "error.txt"), 'w') as f:
+        with open(os.path.join("dir", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
-
-
-
 
 
 @app.route('/Projectile/calculateFinsetPressureCD', methods=['POST'])
@@ -939,7 +870,6 @@ def calculateAxialCD():
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
-
 # 摩擦阻力计算
 @app.route('/Projectile/calculateFrictionCD', methods=['POST'])
 def calculateFrictionCD():
@@ -954,6 +884,7 @@ def calculateFrictionCD():
 
 
 wordCoordinates = []
+
 
 @app.route('/Projectile/Acceleration', methods=['POST'])
 def Acceleration():
@@ -973,23 +904,6 @@ def Acceleration():
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
-#
-# # 获取值
-# @app.route('/Projectile/Acceleration/getList', methods=['POST'])
-# def getAcceleration():
-#     try:
-#         sorted_results = [entry['result'] for entry in sorted([1,2,3], key=lambda x: x['timestamp'])]
-#         sorted_AccelerationPlt = [entry['wordCoordinate'] for entry in
-#                                   sorted(wordCoordinates, key=lambda x: x['timestamp'])]
-#         AccelerationPlt(sorted_AccelerationPlt)
-#         return {"code": 200, "msg": "ok", "result": sorted_results}
-#     # 异常处理
-#     except Exception:
-#         with open(os.path.join("step1", "error.txt"), 'w') as f:
-#             f.write(traceback.format_exc())
-#         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
-
-
 
 @app.route('/Projectile/Stability', methods=['POST'])
 def Stability():
@@ -1005,8 +919,72 @@ def Stability():
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
+@app.route('/Projectile/calculateCN', methods=['POST'])
+def calculateCN():
+    # app.logger.info(f"{request.json}")
+    try:
+        cg = demo.calculate(request.json)
+        error_file_path = "/data/workspace/myshixun/step1/error.txt"
+        if os.path.exists(error_file_path):
+            os.remove(error_file_path)
+        #     对比每一次的是否一致
+        # check(cg, request.json['answer'], os.path.join(os.getcwd(), "step1"))
+        return {"code": 200, "msg": "ok", "result": cg}
+    # 异常处理
+    except Exception:
+        with open(os.path.join("step1", "error.txt"), 'w') as f:
+            f.write(traceback.format_exc())
+        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
-#
+
+@app.route('/Projectile/checkJson', methods=['POST'])
+def check_json_api():
+    file_path = "/data/workspace/myshixun/result.txt"
+    if os.path.exists(file_path):  # 检查文件是否存在
+        os.remove(file_path)  # 删除文件
+    data = request.json
+    json_a = data.get('Client_List', {})
+    json_b = data.get('Server_List', {})
+    # 原json比较
+    # ret = check_json(json_a, json_b)
+    # 新无序列表比较
+    ret = check_list(json_a, json_b)
+    if ret:
+        print("success")
+        with open(file_path, 'w+') as f:
+            f.write("比对成功")
+    else:
+        print("false")
+
+    return jsonify({"code": 200, "msg": ret})
+
+
+@app.route('/Projectile/checkJson2', methods=['POST'])
+def check_json_api2():
+    # 及时清除上次结果？？？？？？？？？？？？？？？
+    file_path = "/data/workspace/myshixun/result.txt"
+    if os.path.exists(file_path):  # 检查文件是否存在
+        os.remove(file_path)  # 删除文件
+    data = request.json
+    # print(data)
+    json_a = data.get('Client_List', {})
+    json_a2 = data.get('Client_List2', {})
+    json_b = data.get('Server_List', {})
+    json_b2 = data.get('Server_List2', {})
+    # 原json比较
+    # ret = check_json(json_a, json_b)
+    # 新无序列表比较
+    ret = check_list2(json_a, json_b)
+    ret2 = check_list2(json_a2, json_b2)
+    if ret and ret2:
+        print("success")
+        with open(file_path, 'w+') as f:
+            f.write("比对成功")
+    else:
+        print("false")
+
+    return jsonify({"code": 200, "msg": ret})
+
 
 if __name__ == '__main__':
     app.run(host="127.0.0.1", port=8080, debug=True)
