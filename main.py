@@ -905,6 +905,26 @@ def Acceleration():
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
 
+@app.route('/Projectile/position', methods=['POST'])
+def AccelerationPosition():
+    try:
+        print(request.json)
+        timestamp = request.json.get('timestamp', None)
+        # 获取当前的世界坐标
+        wordCoordinate = request.json.get('wordCoordinate', None)
+        # x,y,z,weight
+        wordCoordinate = Coordinate(wordCoordinate['x'], wordCoordinate['y'],
+                                    wordCoordinate['z'], wordCoordinate['weight'])
+        # plt
+        result = calculateAccelerationHelper(request.json)
+        wordCoordinates.append({'timestamp': timestamp, 'wordCoordinate': wordCoordinate})
+        return {"code": 200, "msg": "ok", "result": result}
+    except Exception:
+        with open(os.path.join("calculateFinsetPCD", "error.txt"), 'w') as f:
+            f.write(traceback.format_exc())
+        return {"code": 500, "msg": "error", "result": traceback.format_exc()}
+
+
 @app.route('/Projectile/Stability', methods=['POST'])
 def Stability():
     try:
