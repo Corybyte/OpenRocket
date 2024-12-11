@@ -108,6 +108,6 @@ __pycache__/
 
 # 忽略所有 .pyc 文件
 *.pyc
-
+*/*.pyc
 # 忽略所有 .txt 文件
 */*.txt
