@@ -332,24 +332,24 @@ public class SimulationExportPanel extends JPanel {
 			JButton checkButton = new JButton("评测");
 
 
-			checkButton.addActionListener(e1 -> {
-				OpenRocket.eduCoderService.getStability().enqueue(new Callback<Result2>() {
-					@Override
-					public void onResponse(Call<Result2> call, Response<Result2> response) {
-						Double[] result = response.body().getResult();
-						rightTextArea.setText(Arrays.toString(result));
-						System.out.println("====得到的长度====");
-						System.out.println(result.length);
-						System.out.println("内部计算长度");
-						System.out.println(StabilityRequest.server_cn.size());
-					}
-
-					@Override
-					public void onFailure(Call<Result2> call, Throwable throwable) {
-
-					}
-				});
-			});
+//			checkButton.addActionListener(e1 -> {
+//				OpenRocket.eduCoderService.getStability().enqueue(new Callback<Result2>() {
+//					@Override
+//					public void onResponse(Call<Result2> call, Response<Result2> response) {
+//						Double[] result = response.body().getResult();
+//						rightTextArea.setText(Arrays.toString(result));
+//						System.out.println("====得到的长度====");
+//						System.out.println(result.length);
+//						System.out.println("内部计算长度");
+//						System.out.println(StabilityRequest.server_cn.size());
+//					}
+//
+//					@Override
+//					public void onFailure(Call<Result2> call, Throwable throwable) {
+//
+//					}
+//				});
+//			});
 
 
 			// 创建按钮面板

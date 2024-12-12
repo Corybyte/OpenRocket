@@ -522,6 +522,9 @@ public interface EduCoderService {
     @POST("Projectile/Stability")
     Call<Result> calculateStability(@Body StabilityRequest stabilityRequest);
 
+    @POST("/Wing/calculateCN")
+    Call<Result> Wing_calculateCN(@Body WingCNRequest wingCNRequest);
+
 
 
 

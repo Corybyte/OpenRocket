@@ -158,21 +158,7 @@ public class FinSetCalc extends RocketComponentCalc {
 		double r = bodyRadius;
 		double tau = r / (span + r);
 
-		WingCNRequest request = new WingCNRequest();
-		request.Tau=tau;
-		request.Cna=cna;
-		request.Cna1=cna1;
-		request.MacLength=macLength;
-		request.MacLead=macLead;
-		request.FlightConditions_Mach=conditions.getMach();
-		request.FlightConditions_Beta=conditions.getBeta();
-		request.MacSpen=macSpan;
-		request.BodyRadius=bodyRadius;
-		request.CantAngle=cantAngle;
-		request.FlightConditions_RefLength=conditions.getRefLength();
-		request.FlightConditions_AOA=conditions.getAOA();
-		request.STALL_ANGLE=STALL_ANGLE;
-		request.AerodynamicForces_CrollForce=forces.getCrollForce();
+
 
 
 
@@ -235,6 +221,41 @@ public class FinSetCalc extends RocketComponentCalc {
 		//		}
 		forces.setCside(0);
 		forces.setCyaw(0);
+
+
+
+		WingCNRequest request = new WingCNRequest();
+		request.Tau=tau;
+		request.Cna=cna;
+		request.Cna1=cna1;
+		request.MacLength=macLength;
+		request.MacLead=macLead;
+		request.FlightConditions_Mach=conditions.getMach();
+		request.FlightConditions_Beta=conditions.getBeta();
+		request.MacSpen=macSpan;
+		request.BodyRadius=bodyRadius;
+		request.CantAngle=cantAngle;
+		request.FlightConditions_RefLength=conditions.getRefLength();
+		request.FlightConditions_AOA=conditions.getAOA();
+		request.STALL_ANGLE=STALL_ANGLE;
+		request.AerodynamicForces_CrollForce=forces.getCrollForce();
+
+		//判断是否是系统自检
+		if (conditions.getAOA()==0 || conditions.getTheta()==0){
+			return;
+		}
+
+		OpenRocket.eduCoderService.Wing_calculateCN(request).enqueue(new Callback<Result>() {
+			@Override
+			public void onResponse(Call<Result> call, Response<Result> response) {
+
+			}
+
+			@Override
+			public void onFailure(Call<Result> call, Throwable throwable) {
+
+			}
+		});
 		
 	}
 	
