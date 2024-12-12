@@ -9,6 +9,7 @@ from calculateFrictionCD.calculateFrictionCDHelper import calculateFriectionCDHe
 from calculateSymComponentPCD import calculateSymPCDHelper
 from calculateStability.calculateStabilityHelper import calculateStabilityHelper
 from calculateTubeFinSetHullCG.utils import Coordinate
+from totalMoment.totalMomentHelper import calculateTotalMomentHelper
 from utils import *
 from podsCG import pods_cg_helper
 from podsCP import pods_cp_helper
@@ -966,6 +967,7 @@ def check_json_api():
 
 @app.route('/Projectile/checkJson2', methods=['POST'])
 def check_json_api2():
+    print(request.json)
     # 及时清除上次结果
     file_path = "/data/workspace/myshixun/result.txt"
     if os.path.exists(file_path):  # 检查文件是否存在
@@ -990,6 +992,32 @@ def check_json_api2():
     return jsonify({"code": 200, "msg": ret})
 
 
+@app.route('/Projectile/checkJSON4', methods=['POST'])
+def check_json_api4():
+    # 及时清除上次结果
+    file_path = "/data/workspace/myshixun/result.txt"
+    if os.path.exists(file_path):  # 检查文件是否存在
+        os.remove(file_path)  # 删除文件
+    data = request.json
+    json_a = data.get('Client_List1', {})
+    json_b = data.get('Server_List1', {})
+    json_a2 = data.get('Client_List2', {})
+    json_b2 = data.get('Server_List2', {})
+    # 原json比较
+    # ret = check_json(json_a, json_b)
+    # 新无序列表比较
+    ret = check_list(json_a, json_b)
+    ret2 = check_list(json_a2, json_b2)
+    if ret and ret2:
+        print("success")
+        with open(file_path, 'w+') as f:
+            f.write("比对成功")
+    else:
+        print("false")
+
+    return jsonify({"code": 200, "msg": ret})
+
+
 @app.route('/Wing/calculateCN', methods=['POST'])
 def wing_calculateCN_api():
     app.logger.info(f"{request.json}")
@@ -1000,6 +1028,16 @@ def wing_calculateCN_api():
     except Exception as e:
         return jsonify({"code": 200, "msg": "error", "result": str(e)})
 
+
+@app.route('/Projectile/totalMoment', methods=['POST'])
+def calculateTotalMoment():
+    app.logger.info(f"{request.json}")
+    try:
+        result = calculateTotalMomentHelper(request.json)
+        return {"code": 200, "msg": "ok", "result": result}
+    except Exception as e:
+        print(traceback.format_exc())
+        return jsonify({"code": 200, "msg": "error", "result": str(e)})
 
 if __name__ == '__main__':
     app.run(host="127.0.0.1", port=8080, debug=True)
