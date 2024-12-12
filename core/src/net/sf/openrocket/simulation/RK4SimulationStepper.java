@@ -221,7 +221,6 @@ public class RK4SimulationStepper extends AbstractSimulationStepper {
 
         k4 = computeParameters(status2, store);
 
-
         //// Sum all together,  y(n+1) = y(n) + h*(k1 + 2*k2 + 2*k3 + k4)/6
         Coordinate deltaV, deltaP, deltaR, deltaO;
         deltaV = k2.a.add(k3.a).multiply(2).add(k1.a).add(k4.a).multiply(store.timestep / 6);
@@ -234,7 +233,6 @@ public class RK4SimulationStepper extends AbstractSimulationStepper {
         status.setRocketPosition(status.getRocketPosition().add(deltaP));
         status.setRocketRotationVelocity(status.getRocketRotationVelocity().add(deltaR));
         status.setRocketOrientationQuaternion(status.getRocketOrientationQuaternion().multiplyLeft(Quaternion.rotation(deltaO)).normalizeIfNecessary());
-
         WorldCoordinate w = status.getSimulationConditions().getLaunchSite();
         w = status.getSimulationConditions().getGeodeticComputation().addCoordinate(w, status.getRocketPosition());
         status.setRocketWorldPosition(w);
@@ -319,10 +317,6 @@ public class RK4SimulationStepper extends AbstractSimulationStepper {
         double refLength = store.flightConditions.getRefLength();
         if (store.flightConditions.getAOA() != 0 && store.flightConditions.getTheta() != 0) {
             request.timestamp = System.nanoTime();
-            WorldCoordinate worldPosition = status.getRocketWorldPosition();
-            request.wordCoordinate = new Coordinate(worldPosition.getLatitudeRad(),worldPosition.getLongitudeRad(),worldPosition.getAltitude());
-//            request.wordCoordinate = status.getRocketPosition();
-
             FlightConditions conditions = store.flightConditions;
             request.setDensity(conditions.getAtmosphericConditions().getDensity());
             request.setVelocity(conditions.getVelocity());

@@ -1116,6 +1116,7 @@ public class SimulationPanel extends JPanel {
 			AccelerationRequest.server_cn2.clear();
 			AccelerationRequest.client_cn.clear();
 			AccelerationRequest.client_cn2.clear();
+			AccelerationRequest.wordCoordinate.clear();
 
 			runSimulation();
 		}
