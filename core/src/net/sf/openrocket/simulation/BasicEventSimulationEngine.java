@@ -3,6 +3,7 @@ package net.sf.openrocket.simulation;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
+import net.sf.openrocket.utils.educoder.AccelerationRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -132,7 +133,6 @@ public class BasicEventSimulationEngine implements SimulationEngine {
 							dataBranch.getBranchName(),
 							currentStatus.getSimulationTime(),
 							dataBranch.getLast(FlightDataType.TYPE_TIME)));
-
 
 			// Did the branch generate any data?
 			if (dataBranch.getLength() == 0) {
@@ -277,6 +277,9 @@ public class BasicEventSimulationEngine implements SimulationEngine {
 					currentStatus.addEvent(new FlightEvent(FlightEvent.Type.SIMULATION_END, currentStatus.getSimulationTime()));
 
 				previousSimulationTime = currentStatus.getSimulationTime();
+				AccelerationRequest.wordCoordinate.add(currentStatus.getRocketPosition());
+//				AccelerationRequest.wordCoordinate.add(new Coordinate(currentStatus.getRocketWorldPosition().getAltitude(),currentStatus.getRocketWorldPosition().getLongitudeRad(),currentStatus.getRocketWorldPosition().getLatitudeRad()));
+
 			}
 			
 		} catch (SimulationException e) {
@@ -293,7 +296,6 @@ public class BasicEventSimulationEngine implements SimulationEngine {
 			
 			throw e;
 		}
-		
 		return currentStatus.getFlightData();
 	}	
 	

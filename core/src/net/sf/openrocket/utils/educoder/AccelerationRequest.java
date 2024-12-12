@@ -8,9 +8,6 @@ import net.sf.openrocket.util.WorldCoordinate;
 public class AccelerationRequest {
     private Double density;
     private Double velocity;
-
-    public Coordinate wordCoordinate;
-
     private Double CDaxial;
 
     private Double refArea;
@@ -48,6 +45,10 @@ public class AccelerationRequest {
 
     public  static ArrayList server_cn = new ArrayList();
     public  static ArrayList server_cn2 = new ArrayList();
+    public  static ArrayList wordCoordinate = new ArrayList();
+
+
+
 
     public void setDensity(Double density) {
         this.density = density;

@@ -63,6 +63,9 @@ public interface EduCoderService {
     @POST("/Projectile/checkJson2")
     Call<net.sf.openrocket.utils.educoder.Result> checkJSON2 (@Body Object object);
 
+    @POST("/Projectile/position")
+    Call<net.sf.openrocket.utils.educoder.Result> checkJSON3 (@Body Object object);
+
     @POST("NoseCone/calculateCG")
     Call<net.sf.openrocket.utils.educoder.Result> calculateCG(@Body NoseConeCgRequest request);
 
