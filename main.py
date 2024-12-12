@@ -1006,5 +1006,16 @@ def check_json_api2():
     return jsonify({"code": 200, "msg": ret})
 
 
+@app.route('/Wing/calculateCN', methods=['POST'])
+def wing_calculateCN_api():
+    app.logger.info(f"{request.json}")
+    try:
+
+
+        return {"code": 200, "msg": "ok", "cna": ""}
+    except Exception as e:
+        return jsonify({"code": 200, "msg": "error", "result": str(e)})
+
+
 if __name__ == '__main__':
     app.run(host="127.0.0.1", port=8080, debug=True)
