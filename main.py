@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 
+from calculateAcceleration.pltImages import plot_rocket_from_json
 from calculateCD.calculateCDHelper import calculateCD
 from calculateAcceleration.calculateAccelerationHelper import calculateAccelerationHelper
 from calculateAxialCD.calculateAxialCDHelper import calculateAixalCDHelper
@@ -889,36 +890,19 @@ wordCoordinates = []
 @app.route('/Projectile/Acceleration', methods=['POST'])
 def Acceleration():
     try:
-        timestamp = request.json.get('timestamp', None)
-        # 获取当前的世界坐标
-        wordCoordinate = request.json.get('wordCoordinate', None)
-        # x,y,z,weight
-        wordCoordinate = Coordinate(wordCoordinate['x'], wordCoordinate['y'],
-                                    wordCoordinate['z'], wordCoordinate['weight'])
-        # plt
         result = calculateAccelerationHelper(request.json)
-        wordCoordinates.append({'timestamp': timestamp, 'wordCoordinate': wordCoordinate})
         return {"code": 200, "msg": "ok", "result": result}
     except Exception:
         with open(os.path.join("calculateFinsetPCD", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
-
+# plt 三维图
 @app.route('/Projectile/position', methods=['POST'])
 def AccelerationPosition():
     try:
-        print(request.json)
-        timestamp = request.json.get('timestamp', None)
-        # 获取当前的世界坐标
-        wordCoordinate = request.json.get('wordCoordinate', None)
-        # x,y,z,weight
-        wordCoordinate = Coordinate(wordCoordinate['x'], wordCoordinate['y'],
-                                    wordCoordinate['z'], wordCoordinate['weight'])
-        # plt
-        result = calculateAccelerationHelper(request.json)
-        wordCoordinates.append({'timestamp': timestamp, 'wordCoordinate': wordCoordinate})
-        return {"code": 200, "msg": "ok", "result": result}
+        plot_rocket_from_json(request.json)
+        return {"code": 200, "msg": "ok", "result": 0}
     except Exception:
         with open(os.path.join("calculateFinsetPCD", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
@@ -959,6 +943,7 @@ def calculateCN():
 
 @app.route('/Projectile/checkJson', methods=['POST'])
 def check_json_api():
+    # 及时清除上次结果
     file_path = "/data/workspace/myshixun/result.txt"
     if os.path.exists(file_path):  # 检查文件是否存在
         os.remove(file_path)  # 删除文件
@@ -981,12 +966,11 @@ def check_json_api():
 
 @app.route('/Projectile/checkJson2', methods=['POST'])
 def check_json_api2():
-    # 及时清除上次结果？？？？？？？？？？？？？？？
+    # 及时清除上次结果
     file_path = "/data/workspace/myshixun/result.txt"
     if os.path.exists(file_path):  # 检查文件是否存在
         os.remove(file_path)  # 删除文件
     data = request.json
-    # print(data)
     json_a = data.get('Client_List', {})
     json_a2 = data.get('Client_List2', {})
     json_b = data.get('Server_List', {})
