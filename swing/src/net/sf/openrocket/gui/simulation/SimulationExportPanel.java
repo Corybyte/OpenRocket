@@ -35,7 +35,6 @@ import net.sf.openrocket.unit.Unit;
 import net.sf.openrocket.unit.UnitGroup;
 import net.sf.openrocket.gui.widgets.SelectColorButton;
 import net.sf.openrocket.utils.educoder.*;
-import org.apache.commons.collections4.CollectionUtils;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -394,7 +393,7 @@ public class SimulationExportPanel extends JPanel {
 			leftTextArea.setLineWrap(true); // 自动换行
 			leftTextArea.setWrapStyleWord(true); // 仅在单词边界处换行
 			leftTextArea.setFont(new Font("Monospaced", Font.PLAIN, 14)); // 设置字体
-			leftTextArea.setText(AccelerationRequest.server_cn.toString()+AccelerationRequest.server_cn2.toString());
+			leftTextArea.setText(TotalMomentRequest.Server_cn1.toString()+TotalMomentRequest.Server_cn2.toString());
 			JScrollPane leftScrollPane = new JScrollPane(leftTextArea);
 			mainPanel.add(leftScrollPane);
 
@@ -403,7 +402,7 @@ public class SimulationExportPanel extends JPanel {
 			rightTextArea.setLineWrap(true); // 自动换行
 			rightTextArea.setWrapStyleWord(true); // 仅在单词边界处换行
 			rightTextArea.setFont(new Font("Monospaced", Font.PLAIN, 14)); // 设置字体
-			rightTextArea.setText(HullCNRequest.Client_cn.toString());
+			rightTextArea.setText(TotalMomentRequest.Client_cn1.toString()+TotalMomentRequest.Client_cn2.toString());
 			JScrollPane rightScrollPane = new JScrollPane(rightTextArea);
 			mainPanel.add(rightScrollPane);
 
@@ -415,9 +414,9 @@ public class SimulationExportPanel extends JPanel {
 			closeButton.addActionListener(ev -> dialog.dispose()); // 点击按钮时关闭对话框
 
 			// 创建一个新的按钮
-			DataRequest request = new DataRequest(HullCNRequest.Client_cn,HullCNRequest.Server_cn);
+			DataRequest2 request = new DataRequest2(TotalMomentRequest.Client_cn1,TotalMomentRequest.Client_cn2,TotalMomentRequest.Server_cn1,TotalMomentRequest.Client_cn2);
 			JButton checkButton = new JButton("评测");
-			checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.checkJSON(request).enqueue(new Callback<Result>() {
+			checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.checkJSON4(request).enqueue(new Callback<Result>() {
 				@Override
 				public void onResponse(Call<Result> call, Response<Result> response) {
 					JOptionPane.showMessageDialog(dialog, "请点击平台评测按钮");

@@ -1,8 +1,6 @@
 package net.sf.openrocket.utils.educoder;
 
-import net.sf.openrocket.util.ArrayList;
-
-import java.util.Arrays;
+import java.util.*;
 
 public class DataRequest2 {
     public ArrayList Client_List;

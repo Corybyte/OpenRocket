@@ -319,7 +319,7 @@ public class BodyTube extends SymmetricComponent implements BoxBounded, MotorMou
 	@Override
 	public double getLongitudinalUnitInertia() {
 		// 1/12 * (3 * (r2^2 + r1^2) + h^2)
-		System.out.println((MathUtil.pow2(getOuterRadius()) + MathUtil.pow2(getInnerRadius())));
+		//System.out.println((MathUtil.pow2(getOuterRadius()) + MathUtil.pow2(getInnerRadius())));
 		return (3 * (MathUtil.pow2(getOuterRadius()) + MathUtil.pow2(getInnerRadius())) + MathUtil.pow2(getLength())) / 12;
 	}
 	

@@ -66,6 +66,9 @@ public interface EduCoderService {
     @POST("/Projectile/position")
     Call<net.sf.openrocket.utils.educoder.Result> checkJSON3 (@Body Object object);
 
+
+    @POST("/Projectile/checkJSON4")
+    Call<net.sf.openrocket.utils.educoder.Result> checkJSON4 (@Body Object object);
     @POST("NoseCone/calculateCG")
     Call<net.sf.openrocket.utils.educoder.Result> calculateCG(@Body NoseConeCgRequest request);
 
@@ -529,6 +532,9 @@ public interface EduCoderService {
     Call<Result> Wing_calculateCN(@Body WingCNRequest wingCNRequest);
 
 
+
+    @POST("Projectile/totalMoment")
+    Call<Result> calculateTotalMoment(@Body DataRequest3 totalMomentRequest);
 
 
 }

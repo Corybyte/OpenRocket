@@ -1,36 +1,19 @@
 package net.sf.openrocket.aerodynamics;
 
-import static net.sf.openrocket.util.MathUtil.max;
-import static net.sf.openrocket.util.MathUtil.pow2;
-
 import java.util.*;
 
 import net.sf.openrocket.logging.Warning;
 import net.sf.openrocket.logging.WarningSet;
-import net.sf.openrocket.rocketcomponent.AxialStage;
+import net.sf.openrocket.rocketcomponent.*;
 import net.sf.openrocket.startup.OpenRocket;
-import net.sf.openrocket.utils.educoder.AxialCDRequest;
-import net.sf.openrocket.utils.educoder.FrictionCDRequest;
-import net.sf.openrocket.utils.educoder.Result;
-import net.sf.openrocket.utils.educoder.TotalBasalResistanceRequest;
+import net.sf.openrocket.utils.educoder.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import net.sf.openrocket.aerodynamics.barrowman.FinSetCalc;
 import net.sf.openrocket.aerodynamics.barrowman.RocketComponentCalc;
 import net.sf.openrocket.rocketcomponent.position.AxialMethod;
-import net.sf.openrocket.rocketcomponent.ComponentAssembly;
-import net.sf.openrocket.rocketcomponent.ExternalComponent;
 import net.sf.openrocket.rocketcomponent.ExternalComponent.Finish;
-import net.sf.openrocket.rocketcomponent.FinSet;
-import net.sf.openrocket.rocketcomponent.FlightConfiguration;
-import net.sf.openrocket.rocketcomponent.InstanceContext;
-import net.sf.openrocket.rocketcomponent.InstanceMap;
-import net.sf.openrocket.rocketcomponent.ParallelStage;
-import net.sf.openrocket.rocketcomponent.PodSet;
-import net.sf.openrocket.rocketcomponent.Rocket;
-import net.sf.openrocket.rocketcomponent.RocketComponent;
-import net.sf.openrocket.rocketcomponent.SymmetricComponent;
 import net.sf.openrocket.unit.UnitGroup;
 import net.sf.openrocket.util.Coordinate;
 import net.sf.openrocket.util.MathUtil;
@@ -39,6 +22,10 @@ import net.sf.openrocket.util.Reflection;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+
+import javax.xml.crypto.Data;
+
+import static net.sf.openrocket.util.MathUtil.*;
 
 
 /**
@@ -197,7 +184,6 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
 
         // Calculate non-axial force data
         AerodynamicForces total = calculateNonAxialForces(configuration, conditions, warnings);
-
         // Calculate friction data
         total.setFrictionCD(calculateFrictionCD(configuration, conditions, null, warnings));
         total.setPressureCD(calculatePressureCD(configuration, conditions, null, warnings));
@@ -212,7 +198,8 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
         calculateDampingMoments(configuration, conditions, total);
         total.setCm(total.getCm() - total.getPitchDampingMoment());
         total.setCyaw(total.getCyaw() - total.getYawDampingMoment());
-
+        TotalMomentRequest.PitchDampingMoment = total.getPitchDampingMoment();
+        TotalMomentRequest.YawDampingMoment = total.getYawDampingMoment();
         return total;
     }
 
@@ -224,22 +211,46 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
                                                                WarningSet warnings) {
         // across every instance of this component:
         final AerodynamicForces componentForces = new AerodynamicForces().zero();
-
+        ArrayList<Object> cnaList = new ArrayList<>();
+        ArrayList<Object> cpList = new ArrayList<>();
+        ArrayList<Object> flagList = new ArrayList<>();
+        ArrayList<Object> tubeFinSetList = new ArrayList<>();
         // iterate across component instances
         for (InstanceContext context : contextList) {
             // specific to this _instance_ of this component:
             AerodynamicForces instanceForces = new AerodynamicForces().zero();
+            // cp begin.....
             calcObj.calculateNonaxialForces(conditions, context.transform, instanceForces, warnings);
-
+            // 变换
             Coordinate cp_inst = instanceForces.getCP();
             Coordinate cp_abs = context.transform.transform(cp_inst);
             cp_abs = cp_abs.setY(0.0).setZ(0.0);
-
+            // trual cp
             instanceForces.setCP(cp_abs);
+            cnaList.add(instanceForces.getCNa());
+            cpList.add(instanceForces.getCP().x);
+            if (comp instanceof FinSet){
+                flagList.add(true);
+            }else {
+                flagList.add(false);
+            }
+            if (comp instanceof TubeFinSet){
+                tubeFinSetList.add(true);
+            }else {
+                tubeFinSetList.add(false);
+            }
             double CN_instanced = instanceForces.getCN();
             instanceForces.setCm(CN_instanced * instanceForces.getCP().x / conditions.getRefLength());
-
             componentForces.merge(instanceForces);
+
+        }
+        if (conditions.getAOA()!=0&&conditions.getTheta()!=0) {
+            TotalMomentRequest.cnaLists.add(cnaList);
+            TotalMomentRequest.cpLists.add(cpList);
+            TotalMomentRequest.componentInstance.add(contextList.size());
+            TotalMomentRequest.flags.add(flagList);
+            TotalMomentRequest.tubeFInsetFlags.add(tubeFinSetList);
+
         }
         componentForces.setComponent(comp);
 
@@ -263,12 +274,12 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
             buildCalcMap(configuration);
 
         checkGeometry(configuration, configuration.getRocket(), warnings);
-
+        //所有的组件以及组件对应的个数 (nosecone:1)
         final InstanceMap imap = configuration.getActiveInstances();
 
         // across the _entire_ assembly -- like a rocket, or a stage
         final AerodynamicForces assemblyForces = new AerodynamicForces().zero();
-
+        // 循环实例map
         for (Map.Entry<RocketComponent, ArrayList<InstanceContext>> mapEntry : imap.entrySet()) {
             final RocketComponent comp = mapEntry.getKey();
             final List<InstanceContext> contextList = mapEntry.getValue();
@@ -502,22 +513,22 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
                 componentInstanceCount.add(entry.getValue().size());
                 axialOffset.add(c.getAxialOffset(AxialMethod.ABSOLUTE));
                 length.add(c.getLength());
-                if (c instanceof SymmetricComponent){
+                if (c instanceof SymmetricComponent) {
                     wetArea.add(((SymmetricComponent) c).getComponentWetArea());
                     foreRadius.add(((SymmetricComponent) c).getForeRadius());
                     aftRadius.add(((SymmetricComponent) c).getAftRadius());
-                }else {
+                } else {
                     wetArea.add(null);
                     foreRadius.add(null);
                     aftRadius.add(null);
                 }
 
-                if (c instanceof FinSet){
+                if (c instanceof FinSet) {
                     thickness.add(((FinSet) c).getThickness());
                     FinSetCalc finSetCalc = (FinSetCalc) calcMap.get(c);
                     macLength.add(finSetCalc.getMACLength());
                     finArea.add(((FinSet) c).getPlanformArea());
-                }else {
+                } else {
                     macLength.add(null);
                     thickness.add(null);
                     finArea.add(null);
@@ -615,7 +626,7 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
             request.setForeRadius(foreRadius);
             request.setAftRadius(aftRadius);
             request.setComponentInstanceCount(componentInstanceCount);
-            FrictionCDRequest.server_cn.add(otherFrictionCD+correction*bodyFrictionCD);
+            FrictionCDRequest.server_cn.add(otherFrictionCD + correction * bodyFrictionCD);
             OpenRocket.eduCoderService.calculateFrictionCD(request).enqueue(new Callback<Result>() {
                 @Override
                 public void onResponse(Call<Result> call, Response<Result> response) {
@@ -955,7 +966,7 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
             request.setTimestamp(System.nanoTime());
             TotalBasalResistanceRequest.server_cn.add(total);
             //发送请求
-            synchronized (this){
+            synchronized (this) {
                 OpenRocket.eduCoderService.calculateCD(request).enqueue(new Callback<Result>() {
                     @Override
                     public void onResponse(Call<Result> call, Response<Result> response) {
@@ -1038,7 +1049,7 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
     private double calculateAxialCD(FlightConditions conditions, double cd) {
         AxialCDRequest request = new AxialCDRequest();
 
-        if (conditions.getAOA()!=0&&conditions.getTheta()!=0){
+        if (conditions.getAOA() != 0 && conditions.getTheta() != 0) {
             request.setTimestamp(System.nanoTime());
             request.setAoa(conditions.getAOA());
             request.setAxialDragPoly1(axialDragPoly1);
@@ -1060,11 +1071,11 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
         else
             mul = PolyInterpolator.eval(aoa, axialDragPoly2);
 
-        if (conditions.getAOA()!=0&&conditions.getTheta()!=0){
+        if (conditions.getAOA() != 0 && conditions.getTheta() != 0) {
             if (conditions.getAOA() < Math.PI / 2)
-                AxialCDRequest.server_cn.add(mul*cd);
+                AxialCDRequest.server_cn.add(mul * cd);
             else
-                AxialCDRequest.server_cn.add(-mul*cd);
+                AxialCDRequest.server_cn.add(-mul * cd);
 
             OpenRocket.eduCoderService.calculateAxialCD(request).enqueue(new Callback<Result>() {
                 @Override

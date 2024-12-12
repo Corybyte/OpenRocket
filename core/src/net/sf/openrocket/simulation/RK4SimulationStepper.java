@@ -375,7 +375,6 @@ public class RK4SimulationStepper extends AbstractSimulationStepper {
         // If still on the launch rod, project acceleration onto launch rod direction and
         // set angular acceleration to zero.
         if (!status.isLaunchRodCleared()) {
-
             store.linearAcceleration = status.getLaunchRodDirection().multiply(
                     store.linearAcceleration.dot(status.getLaunchRodDirection()));
             store.angularAcceleration = Coordinate.NUL;
@@ -383,11 +382,50 @@ public class RK4SimulationStepper extends AbstractSimulationStepper {
             store.lateralPitchAcceleration = 0;
 
         } else {
+            if (store.flightConditions.getAOA() != 0 && store.flightConditions.getTheta() != 0) {
 
+                FlightConditions conditions = store.flightConditions;
+                DataRequest3 totalMomentRequest = new DataRequest3(TotalMomentRequest.componentInstance, TotalMomentRequest.cnaLists,
+                        TotalMomentRequest.cpLists, TotalMomentRequest.flags, conditions.getAOA(), conditions.getRefLength(), TotalMomentRequest.randomDouble,
+                        TotalMomentRequest.PitchDampingMoment, TotalMomentRequest.YawDampingMoment, store.rocketMass.getCM(), TotalMomentRequest.tubeFInsetFlags);
+
+                TotalMomentRequest.Server_cn1.add(store.forces.getCm() - store.forces.getCN() * store.rocketMass.getCM().x / refLength);
+                TotalMomentRequest.Server_cn2.add(store.forces.getCyaw() - store.forces.getCside() * store.rocketMass.getCM().x / refLength);
+                OpenRocket.eduCoderService.calculateTotalMoment(totalMomentRequest).enqueue(new Callback<Result>() {
+                    @Override
+                    public void onResponse(Call<Result> call, Response<Result> response) {
+                        ArrayList list = (ArrayList) response.body().getResult();
+                        //ignore
+                        synchronized (TotalMomentRequest.Client_cn1) {
+                            TotalMomentRequest.Client_cn1.add(list.get(0));
+                        }
+                        synchronized (TotalMomentRequest.Client_cn2) {
+                            TotalMomentRequest.Client_cn2.add(list.get(1));
+                        }
+                        System.out.println(TotalMomentRequest.Client_cn1.size());
+                        System.out.println(TotalMomentRequest.Client_cn2.size());
+
+                    }
+
+                    @Override
+                    public void onFailure(Call<Result> call, Throwable throwable) {
+                        //ignore
+                    }
+                });
+                TotalMomentRequest.componentInstance.clear();
+                TotalMomentRequest.cnaLists.clear();
+                TotalMomentRequest.cpLists.clear();
+                TotalMomentRequest.flags.clear();
+                TotalMomentRequest.PitchDampingMoment = 0.0;
+                TotalMomentRequest.randomDouble = 0.0;
+                TotalMomentRequest.YawDampingMoment = 0.0;
+            }
             // Shift moments to CG
             double Cm = store.forces.getCm() - store.forces.getCN() * store.rocketMass.getCM().x / refLength;
             double Cyaw = store.forces.getCyaw() - store.forces.getCside() * store.rocketMass.getCM().x / refLength;
-
+            double croll = store.forces.getCroll();
+            // 计算 cm cyaw croll
+            //需要计算 getcm getcyaw getcn getcside rocketmass.cm
             // Compute moments
             double momX = -Cyaw * dynP * refArea * refLength;
             double momY = Cm * dynP * refArea * refLength;
@@ -413,7 +451,7 @@ public class RK4SimulationStepper extends AbstractSimulationStepper {
             AccelerationRequest.server_cn2.add(store.angularAcceleration);
 
             StabilityRequest stabilityRequest = new StabilityRequest(store.forces.getCP().x, store.rocketMass.getCM().x, refArea, System.nanoTime());
-            StabilityRequest.server_cn.add((store.forces.getCP().x-store.rocketMass.getCM().x)/refArea);
+            StabilityRequest.server_cn.add((store.forces.getCP().x - store.rocketMass.getCM().x) / refArea);
             OpenRocket.eduCoderService.calculateStability(stabilityRequest).enqueue(new Callback<Result>() {
                 @Override
                 public void onResponse(Call<Result> call, Response<Result> response) {
@@ -440,13 +478,13 @@ public class RK4SimulationStepper extends AbstractSimulationStepper {
                     try {
                         ArrayList<ArrayList<Double>> result = (ArrayList) response.body().getResult();
                         synchronized (AccelerationRequest.client_cn) {
-                            AccelerationRequest.client_cn.add(new Coordinate(result.get(0).get(0),result.get(0).get(1),result.get(0).get(2)));
+                            AccelerationRequest.client_cn.add(new Coordinate(result.get(0).get(0), result.get(0).get(1), result.get(0).get(2)));
                         }
                         synchronized (AccelerationRequest.client_cn2) {
-                            AccelerationRequest.client_cn2.add(new Coordinate(result.get(1).get(0),result.get(1).get(1),result.get(1).get(2)));
+                            AccelerationRequest.client_cn2.add(new Coordinate(result.get(1).get(0), result.get(1).get(1), result.get(1).get(2)));
 
                         }
-                    }catch (Exception e){
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
@@ -505,9 +543,10 @@ public class RK4SimulationStepper extends AbstractSimulationStepper {
 
         // Add very small randomization to yaw & pitch moments to prevent over-perfect flight
         // TODO: HIGH: This should rather be performed as a listener
-        store.forces.setCm(store.forces.getCm() + (PITCH_YAW_RANDOM * 2 * (random.nextDouble() - 0.5)));
-        store.forces.setCyaw(store.forces.getCyaw() + (PITCH_YAW_RANDOM * 2 * (random.nextDouble() - 0.5)));
-
+        double nextDouble = random.nextDouble();
+        TotalMomentRequest.randomDouble = nextDouble;
+        store.forces.setCm(store.forces.getCm() + (PITCH_YAW_RANDOM * 2 * (nextDouble - 0.5)));
+        store.forces.setCyaw(store.forces.getCyaw() + (PITCH_YAW_RANDOM * 2 * (nextDouble - 0.5)));
 
         // Call post-listeners
         store.forces = SimulationListenerHelper.firePostAerodynamicCalculation(status, store.forces);
