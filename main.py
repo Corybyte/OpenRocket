@@ -8,6 +8,7 @@ from calculateFinsetPCD.calculateFinsetPressureCDHelper import calculateFSPCD
 from calculateFrictionCD.calculateFrictionCDHelper import calculateFriectionCDHelper
 from calculateSymComponentPCD import calculateSymPCDHelper
 from calculateStability.calculateStabilityHelper import calculateStabilityHelper
+from calculateTotalPressureCD.totalPressureCDHelper import calculatePressureCDHelper
 from calculateTubeFinSetHullCG.utils import Coordinate
 from totalMoment.totalMomentHelper import calculateTotalMomentHelper
 from utils import *
@@ -1024,7 +1025,6 @@ def check_json_api4():
 
 @app.route('/Wing/calculateCN', methods=['POST'])
 def wing_calculateCN_api():
-    print(request.json)
     app.logger.info(f"{request.json}")
     try:
 
@@ -1038,11 +1038,20 @@ def wing_calculateCN_api():
 def calculateTotalMoment():
     app.logger.info(f"{request.json}")
     try:
-        print(request.json)
         result = calculateTotalMomentHelper(request.json)
         return {"code": 200, "msg": "ok", "result": result}
     except Exception as e:
         print(traceback.format_exc())
+        return jsonify({"code": 200, "msg": "error", "result": str(e)})
+
+
+@app.route('/Projectile/totalPressureCD', methods=['POST'])
+def calculateTotalCD():
+    app.logger.info(f"{request.json}")
+    try:
+        result = calculatePressureCDHelper(request.json)
+        return {"code": 200, "msg": "ok", "result": result}
+    except Exception as e:
         return jsonify({"code": 200, "msg": "error", "result": str(e)})
 
 if __name__ == '__main__':

@@ -3,7 +3,6 @@ import math
 
 def calculateMoment(instanceList, cnaList, cpList, aoa, refLength, nextDouble, finSetFlags, PitchDampingMoment,
                     YawDampingMoment, centerOfMass, tubeFinSetFlags, cRollDamps, cRollForces):
-    print(cRollForces)
     PITCH_YAW_RANDOM = 0.0005
     totalCM = 0
     totalCN = 0
@@ -27,7 +26,6 @@ def calculateMoment(instanceList, cnaList, cpList, aoa, refLength, nextDouble, f
 
     cm = totalCM - totalCN * centerOfMass.x / refLength
     cyaw = totalCyaw - totalCside * centerOfMass.x / refLength
-    print(totalCRoll)
     return cm, cyaw,totalCRoll
 
 
