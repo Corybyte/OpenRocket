@@ -594,10 +594,6 @@ public class SimulationPlotPanel extends JPanel {
             dialog.setLocationRelativeTo(this); // 设置相对于父窗口居中显示
             dialog.setVisible(true); // 显示对话框
             DataRequest request = new DataRequest(BodyPressureCDRequest.client_cn,BodyPressureCDRequest.server_cn);
-            System.out.println(BodyPressureCDRequest.client_cn);
-            System.out.println(BodyPressureCDRequest.server_cn);
-            System.out.println(BodyPressureCDRequest.server_cn.size());
-            System.out.println(BodyPressureCDRequest.client_cn.size());
             //点击测评更新值
             checkButton.addActionListener(e1 -> {
                 OpenRocket.eduCoderService.checkJSON(request).enqueue(new Callback<Result>() {

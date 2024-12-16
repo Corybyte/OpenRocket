@@ -215,6 +215,9 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
         ArrayList<Object> cpList = new ArrayList<>();
         ArrayList<Object> flagList = new ArrayList<>();
         ArrayList<Object> tubeFinSetList = new ArrayList<>();
+        ArrayList<Object> crollForceList = new ArrayList<>();
+        ArrayList<Object> crollDamps = new ArrayList<>();
+
         // iterate across component instances
         for (InstanceContext context : contextList) {
             // specific to this _instance_ of this component:
@@ -229,6 +232,8 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
             instanceForces.setCP(cp_abs);
             cnaList.add(instanceForces.getCNa());
             cpList.add(instanceForces.getCP().x);
+            crollForceList.add(instanceForces.getCrollForce());
+            crollDamps.add(instanceForces.getCrollDamp());
             if (comp instanceof FinSet){
                 flagList.add(true);
             }else {
@@ -250,6 +255,8 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
             TotalMomentRequest.componentInstance.add(contextList.size());
             TotalMomentRequest.flags.add(flagList);
             TotalMomentRequest.tubeFInsetFlags.add(tubeFinSetList);
+            TotalMomentRequest.cRollForces.add(crollForceList);
+            TotalMomentRequest.cRollDamps.add(crollDamps);
 
         }
         componentForces.setComponent(comp);

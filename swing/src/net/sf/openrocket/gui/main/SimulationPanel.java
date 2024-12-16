@@ -1121,9 +1121,12 @@ public class SimulationPanel extends JPanel {
 
 			TotalMomentRequest.Server_cn1.clear();
 			TotalMomentRequest.Server_cn2.clear();
+			TotalMomentRequest.Server_cn3.clear();
 			TotalMomentRequest.Client_cn1.clear();
 			TotalMomentRequest.Client_cn2.clear();
+			TotalMomentRequest.Client_cn3.clear();
 			runSimulation();
+
 		}
 
 		@Override

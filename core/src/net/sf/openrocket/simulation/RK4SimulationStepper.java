@@ -387,10 +387,11 @@ public class RK4SimulationStepper extends AbstractSimulationStepper {
                 FlightConditions conditions = store.flightConditions;
                 DataRequest3 totalMomentRequest = new DataRequest3(TotalMomentRequest.componentInstance, TotalMomentRequest.cnaLists,
                         TotalMomentRequest.cpLists, TotalMomentRequest.flags, conditions.getAOA(), conditions.getRefLength(), TotalMomentRequest.randomDouble,
-                        TotalMomentRequest.PitchDampingMoment, TotalMomentRequest.YawDampingMoment, store.rocketMass.getCM(), TotalMomentRequest.tubeFInsetFlags);
+                        TotalMomentRequest.PitchDampingMoment, TotalMomentRequest.YawDampingMoment, store.rocketMass.getCM(), TotalMomentRequest.tubeFInsetFlags,TotalMomentRequest.cRollDamps,TotalMomentRequest.cRollForces);
 
                 TotalMomentRequest.Server_cn1.add(store.forces.getCm() - store.forces.getCN() * store.rocketMass.getCM().x / refLength);
                 TotalMomentRequest.Server_cn2.add(store.forces.getCyaw() - store.forces.getCside() * store.rocketMass.getCM().x / refLength);
+                TotalMomentRequest.Server_cn3.add(store.forces.getCroll());
                 OpenRocket.eduCoderService.calculateTotalMoment(totalMomentRequest).enqueue(new Callback<Result>() {
                     @Override
                     public void onResponse(Call<Result> call, Response<Result> response) {
@@ -402,8 +403,9 @@ public class RK4SimulationStepper extends AbstractSimulationStepper {
                         synchronized (TotalMomentRequest.Client_cn2) {
                             TotalMomentRequest.Client_cn2.add(list.get(1));
                         }
-                        System.out.println(TotalMomentRequest.Client_cn1.size());
-                        System.out.println(TotalMomentRequest.Client_cn2.size());
+                        synchronized (TotalMomentRequest.Client_cn3) {
+                            TotalMomentRequest.Client_cn3.add(list.get(2));
+                        }
 
                     }
 
@@ -416,9 +418,12 @@ public class RK4SimulationStepper extends AbstractSimulationStepper {
                 TotalMomentRequest.cnaLists.clear();
                 TotalMomentRequest.cpLists.clear();
                 TotalMomentRequest.flags.clear();
+                TotalMomentRequest.cRollForces.clear();
+                TotalMomentRequest.cRollDamps.clear();
                 TotalMomentRequest.PitchDampingMoment = 0.0;
                 TotalMomentRequest.randomDouble = 0.0;
                 TotalMomentRequest.YawDampingMoment = 0.0;
+                TotalMomentRequest.tubeFInsetFlags.clear();
             }
             // Shift moments to CG
             double Cm = store.forces.getCm() - store.forces.getCN() * store.rocketMass.getCM().x / refLength;
