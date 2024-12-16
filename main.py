@@ -961,6 +961,8 @@ def check_json_api():
             f.write("比对成功")
     else:
         print("false")
+        with open(file_path, 'w+') as f:
+            f.write("比对失败")
 
     return jsonify({"code": 200, "msg": ret})
 
@@ -1020,6 +1022,7 @@ def check_json_api4():
 
 @app.route('/Wing/calculateCN', methods=['POST'])
 def wing_calculateCN_api():
+    print(request.json)
     app.logger.info(f"{request.json}")
     try:
 
