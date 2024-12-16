@@ -969,7 +969,6 @@ def check_json_api():
 
 @app.route('/Projectile/checkJson2', methods=['POST'])
 def check_json_api2():
-    print(request.json)
     # 及时清除上次结果
     file_path = "/data/workspace/myshixun/result.txt"
     if os.path.exists(file_path):  # 检查文件是否存在
@@ -1005,12 +1004,15 @@ def check_json_api4():
     json_b = data.get('Server_List1', {})
     json_a2 = data.get('Client_List2', {})
     json_b2 = data.get('Server_List2', {})
+    json_a3 = data.get('Server_List3', {})
+    json_b3 = data.get('Server_List3', {})
     # 原json比较
     # ret = check_json(json_a, json_b)
     # 新无序列表比较
     ret = check_list(json_a, json_b)
     ret2 = check_list(json_a2, json_b2)
-    if ret and ret2:
+    ret3 = check_list(json_a3, json_b3)
+    if ret and ret2 and ret3:
         print("success")
         with open(file_path, 'w+') as f:
             f.write("比对成功")
@@ -1036,6 +1038,7 @@ def wing_calculateCN_api():
 def calculateTotalMoment():
     app.logger.info(f"{request.json}")
     try:
+        print(request.json)
         result = calculateTotalMomentHelper(request.json)
         return {"code": 200, "msg": "ok", "result": result}
     except Exception as e:
