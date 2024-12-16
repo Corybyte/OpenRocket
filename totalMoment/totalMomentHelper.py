@@ -12,8 +12,10 @@ def calculateTotalMomentHelper(param):
     finSetFlags = param['flags']
     PitchDampingMoment = param['PitchDampingMoment']
     YawDampingMoment = param['YawDampingMoment']
-    tubeFinSetFlags = param['YawDampingMoment']
+    tubeFinSetFlags = param['tubeFinsetList']
+    cRollDamps = param['cRollDamps']
+    cRollForces = param['cRollForces']
     cm = param['cm']
-    centerOfMass = Coordinate(cm['x'], cm['y'], cm['z'],0)
+    centerOfMass = Coordinate(cm['x'], cm['y'], cm['z'], 0)
     return calculateMoment(componentInstance, cnaLists, cpLists, aoa, refLength, randomDoubles, finSetFlags,
-                           PitchDampingMoment, YawDampingMoment,centerOfMass,tubeFinSetFlags)
+                           PitchDampingMoment, YawDampingMoment, centerOfMass, tubeFinSetFlags, cRollDamps, cRollForces)
