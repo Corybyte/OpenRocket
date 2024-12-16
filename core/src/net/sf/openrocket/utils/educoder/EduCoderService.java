@@ -537,4 +537,7 @@ public interface EduCoderService {
     Call<Result> calculateTotalMoment(@Body DataRequest3 totalMomentRequest);
 
 
+    @POST("Projectile/totalPressureCD")
+    Call<Result> calculateTotalPressureCD(@Body TotalPressureCDRequest request);
+
 }

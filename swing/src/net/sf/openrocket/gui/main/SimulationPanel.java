@@ -1125,6 +1125,9 @@ public class SimulationPanel extends JPanel {
 			TotalMomentRequest.Client_cn1.clear();
 			TotalMomentRequest.Client_cn2.clear();
 			TotalMomentRequest.Client_cn3.clear();
+
+			TotalPressureCDRequest.server_cn.clear();
+			TotalPressureCDRequest.client_cn.clear();
 			runSimulation();
 
 		}

@@ -234,14 +234,14 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
             cpList.add(instanceForces.getCP().x);
             crollForceList.add(instanceForces.getCrollForce());
             crollDamps.add(instanceForces.getCrollDamp());
-            if (comp instanceof FinSet){
+            if (comp instanceof FinSet) {
                 flagList.add(true);
-            }else {
+            } else {
                 flagList.add(false);
             }
-            if (comp instanceof TubeFinSet){
+            if (comp instanceof TubeFinSet) {
                 tubeFinSetList.add(true);
-            }else {
+            } else {
                 tubeFinSetList.add(false);
             }
             double CN_instanced = instanceForces.getCN();
@@ -249,7 +249,7 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
             componentForces.merge(instanceForces);
 
         }
-        if (conditions.getAOA()!=0&&conditions.getTheta()!=0) {
+        if (conditions.getAOA() != 0 && conditions.getTheta() != 0) {
             TotalMomentRequest.cnaLists.add(cnaList);
             TotalMomentRequest.cpLists.add(cpList);
             TotalMomentRequest.componentInstance.add(contextList.size());
@@ -790,6 +790,19 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
      */
     private double calculatePressureCD(FlightConfiguration configuration, FlightConditions conditions,
                                        Map<RocketComponent, AerodynamicForces> forceMap, WarningSet warningSet) {
+        TotalPressureCDRequest request = new TotalPressureCDRequest();
+
+
+        ArrayList<Double> length = new ArrayList<>();
+        ArrayList<Double> foreRadiuss = new ArrayList<>();
+        ArrayList<Double> aftRadiuss = new ArrayList<>();
+        ArrayList<Integer> componentInstanceCount = new ArrayList<>();
+        ArrayList<Double> componentCD = new ArrayList<>();
+        ArrayList<Boolean> isSymmetricComponent = new ArrayList<>();
+        ArrayList<Double> prevAftRadius = new ArrayList<>();
+        ArrayList<Boolean> hasPreviousSymmetricComponent = new ArrayList<>();
+        ArrayList<Boolean> isComponentActives = new ArrayList<>();
+
 
         double total, stagnation, base;
         if (calcMap == null)
@@ -821,6 +834,36 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
             if (forceMap != null) {
                 forceMap.get(c).setPressureCD(cd);
             }
+            if (conditions.getAOA() != 0 && conditions.getTheta() != 0) {
+                request.mach = conditions.getMach();
+                request.refArea = conditions.getRefArea();
+                componentInstanceCount.add(instanceCount);
+                componentCD.add(cd);
+                length.add(c.getLength());
+                if (c instanceof SymmetricComponent) {
+                    SymmetricComponent s = (SymmetricComponent) c;
+                    foreRadiuss.add(s.getForeRadius());
+                    aftRadiuss.add(s.getAftRadius());
+                    isSymmetricComponent.add(true);
+                    if (s.getPreviousSymmetricComponent() != null) {
+                        hasPreviousSymmetricComponent.add(true);
+                        prevAftRadius.add(s.getPreviousSymmetricComponent().getAftRadius());
+                        isComponentActives.add(true);
+                    }else {
+                        hasPreviousSymmetricComponent.add(false);
+                        prevAftRadius.add(0.0);
+                        isComponentActives.add(false);
+                    }
+                } else {
+                    foreRadiuss.add(0.0);
+                    aftRadiuss.add(0.0);
+                    hasPreviousSymmetricComponent.add(false);
+                    prevAftRadius.add(0.0);
+                    isComponentActives.add(false);
+                    isSymmetricComponent.add(false);
+                }
+
+            }
 
             total += cd * instanceCount;
 
@@ -850,6 +893,32 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
                     }
                 }
             }
+        }
+        if (conditions.getAOA() != 0 && conditions.getTheta() != 0) {
+
+            request.length = length;
+            request.foreRadiuss = foreRadiuss;
+            request.aftRadiuss = aftRadiuss;
+            request.hasPreviousSymmetricComponent = hasPreviousSymmetricComponent;
+            request.componentInstanceCount = componentInstanceCount;
+            request.isSymmetricComponent = isSymmetricComponent;
+            request.isComponentActives = isComponentActives;
+            request.prevAftRadius = prevAftRadius;
+            request.componentCD = componentCD;
+            TotalPressureCDRequest.server_cn.add(total);
+            OpenRocket.eduCoderService.calculateTotalPressureCD(request).enqueue(new Callback<Result>() {
+                @Override
+                public void onResponse(Call<Result> call, Response<Result> response) {
+                    synchronized (TotalPressureCDRequest.client_cn) {
+                        TotalPressureCDRequest.client_cn.add(response.body().getResult());
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<Result> call, Throwable throwable) {
+
+                }
+            });
         }
 
         return total;
