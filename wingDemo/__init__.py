@@ -4,4 +4,5 @@
 # @Author  : Switch616
 # @File    : __init__.py.py
 # @Description:
-from .calculateCN import *
+from .utils import *
+from .calculateNonaxialForcesCN import *

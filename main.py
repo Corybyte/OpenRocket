@@ -59,6 +59,7 @@ from bodyTubeCP import body_tube_cp_helper
 import traceback
 import logging
 from calculateTubeFinSetHullCG import demo
+from wingDemo import calculate_nonaxial_forces
 
 app = Flask(__name__)
 
@@ -1010,9 +1011,9 @@ def check_json_api2():
 def wing_calculateCN_api():
     app.logger.info(f"{request.json}")
     try:
+        cna = calculate_nonaxial_forces(request.json)
 
-
-        return {"code": 200, "msg": "ok", "cna": ""}
+        return {"code": 200, "msg": "ok", "cna": cna}
     except Exception as e:
         return jsonify({"code": 200, "msg": "error", "result": str(e)})
 
