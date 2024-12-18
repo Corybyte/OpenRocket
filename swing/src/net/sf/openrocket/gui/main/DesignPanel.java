@@ -2,9 +2,11 @@ package net.sf.openrocket.gui.main;
 
 import net.miginfocom.swing.MigLayout;
 import net.sf.openrocket.document.OpenRocketDocument;
+import net.sf.openrocket.document.OpenRocketDocumentFactory;
 import net.sf.openrocket.gui.configdialog.ComponentConfigDialog;
 import net.sf.openrocket.gui.main.componenttree.ComponentTree;
 import net.sf.openrocket.gui.util.GUIUtil;
+import net.sf.openrocket.gui.util.OpenFileWorker;
 import net.sf.openrocket.gui.util.UITheme;
 import net.sf.openrocket.gui.widgets.IconButton;
 import net.sf.openrocket.l10n.Translator;
@@ -50,6 +52,8 @@ import static net.sf.openrocket.gui.main.BasicFrame.SHORTCUT_KEY;
  * for adding components.
  */
 public class DesignPanel extends JSplitPane {
+    //默认插入位置为主发动机后面
+    public static RocketComponent chickComponent = OpenRocketDocumentFactory.mydoc.getRocket().getChild(0);
     private static final Translator trans = Application.getTranslator();
     private final Component tree;
 
@@ -78,6 +82,7 @@ public class DesignPanel extends JSplitPane {
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_N, SHORTCUT_KEY), "none");
 
         // Highlight all child components of a stage/rocket/podset when it is selected
+        //突出所有子组件
         tree.getSelectionModel().addTreeSelectionListener(new TreeSelectionListener() {
             @Override
             public void valueChanged(TreeSelectionEvent e) {
@@ -111,6 +116,7 @@ public class DesignPanel extends JSplitPane {
                     if (selPath == null) return;
 
                     // Double-click
+                    //双击
                     if ((e.getButton() == MouseEvent.BUTTON1) && (e.getClickCount() == 2) && !ComponentConfigDialog.isDialogVisible()) {
                         RocketComponent component = (RocketComponent) selPath.getLastPathComponent();
                         component.clearConfigListeners();
@@ -135,8 +141,14 @@ public class DesignPanel extends JSplitPane {
 
                         ComponentConfigDialog.showDialog(parent, document, component);
                     }
+                    if (e.getButton()==MouseEvent.BUTTON1&&(e.getClickCount()==1)){
+                        RocketComponent component = (RocketComponent) selPath.getLastPathComponent();
+                        chickComponent = component;
+                    }
                     // Context menu
+                    //菜单
                     else if ((e.getButton() == MouseEvent.BUTTON3) && (e.getClickCount() == 1)) {
+                        System.out.println("click....");
                         if (!tree.isPathSelected(selPath)) {
                             // Select new path
                             tree.setSelectionPath(selPath);

@@ -1,5 +1,6 @@
 package net.sf.openrocket.document;
 
+import net.sf.openrocket.gui.main.DesignPanel;
 import net.sf.openrocket.l10n.Translator;
 import net.sf.openrocket.rocketcomponent.Rocket;
 import net.sf.openrocket.rocketcomponent.AxialStage;
@@ -20,12 +21,15 @@ public class OpenRocketDocumentFactory {
 		OpenRocketDocument doc = new OpenRocketDocument(rocket);
 		doc.setSaved(true);
 		mydoc = doc;
+		DesignPanel.chickComponent = mydoc.getRocket().getChild(0);
 		return doc;
 	}
 	
 	public static OpenRocketDocument createDocumentFromRocket(Rocket r) {
 		OpenRocketDocument doc = new OpenRocketDocument(r);
 		mydoc = doc;
+		DesignPanel.chickComponent = mydoc.getRocket().getChild(0);
+
 		return doc;
 	}
 	
@@ -33,6 +37,8 @@ public class OpenRocketDocumentFactory {
 		Rocket rocket = new Rocket();
 		OpenRocketDocument doc = new OpenRocketDocument(rocket);
 		mydoc = doc;
+		DesignPanel.chickComponent = mydoc.getRocket();
+
 		return doc;
 	}
 	
