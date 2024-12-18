@@ -1,19 +1,21 @@
 package net.sf.openrocket.rocketcomponent;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import net.sf.openrocket.l10n.Translator;
 import net.sf.openrocket.rocketcomponent.position.AxialMethod;
 import net.sf.openrocket.startup.Application;
 import net.sf.openrocket.util.Coordinate;
-
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE)
 public class AxialStage extends ComponentAssembly implements FlightConfigurableComponent {
-	
+	@JsonIgnore
 	private static final Translator trans = Application.getTranslator();
-
+	@JsonIgnore
 	/** list of separations to be happening*/
 	protected FlightConfigurableParameterSet<StageSeparationConfiguration> separations;
 	/** number of stages */
 	protected int stageNumber;
-	
+
 	/**
 	 * default constructor, builds a rocket with zero stages
 	 */

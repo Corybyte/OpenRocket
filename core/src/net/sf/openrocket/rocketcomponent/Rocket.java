@@ -3,6 +3,7 @@ package net.sf.openrocket.rocketcomponent;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,45 +28,59 @@ import net.sf.openrocket.util.UniqueID;
  */
 @SuppressWarnings("serial")
 public class Rocket extends ComponentAssembly {
+	@JsonIgnore
 	private static final Logger log = LoggerFactory.getLogger(Rocket.class);
+	@JsonIgnore
 	private static final Translator trans = Application.getTranslator();
-	
+	@JsonIgnore
 	protected static final double DEFAULT_REFERENCE_LENGTH = 0.01;
 
 	/**
 	 * List of component change listeners.
 	 */
+	@JsonIgnore
 	private Set<EventListener> listenerList = new HashSet<>();
 	
 	/**
 	 * When freezeList != null, events are not dispatched but stored in the list.
 	 * When the structure is thawed, a single combined event will be fired.
 	 */
+	@JsonIgnore
 	private List<ComponentChangeEvent> freezeList = null;
-	
-	
+
+	@JsonIgnore
 	private int modID;
+	@JsonIgnore
 	private int massModID;
+	@JsonIgnore
 	private int aeroModID;
+	@JsonIgnore
 	private int treeModID;
+	@JsonIgnore
 	private int functionalModID;
-	
+	@JsonIgnore
 	private boolean eventsEnabled=false;
-	
+	@JsonIgnore
 	private ReferenceType refType = ReferenceType.MAXIMUM; // Set in constructor
+	@JsonIgnore
 	private double customReferenceLength = DEFAULT_REFERENCE_LENGTH;
-	
-	
+
+	@JsonIgnore
 	private String designer = "";
+	@JsonIgnore
 	private String revision = "";
 	
 	
 	// Flight configuration list
+	@JsonIgnore
 	private FlightConfiguration selectedConfiguration;
+	@JsonIgnore
 	private FlightConfigurableParameterSet<FlightConfiguration> configSet;
+	@JsonIgnore
 	private ConcurrentHashMap<Integer, AxialStage> stageMap = new ConcurrentHashMap<>();
 	
 	// Does the rocket have a perfect finish (a notable amount of laminar flow)
+	@JsonIgnore
 	private boolean perfectFinish = false;
 	
 	
@@ -190,7 +205,7 @@ public class Rocket extends ComponentAssembly {
 	public int getFunctionalModID() {
 		return functionalModID;
 	}
-	
+	@JsonIgnore
 	public Collection<AxialStage> getStageList() {
 		return this.stageMap.values();
 	}

@@ -2,6 +2,8 @@ package net.sf.openrocket.rocketcomponent;
 
 import java.util.Iterator;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import net.sf.openrocket.l10n.Translator;
 import net.sf.openrocket.motor.Motor;
 import net.sf.openrocket.motor.MotorConfiguration;
@@ -16,20 +18,23 @@ import net.sf.openrocket.util.*;
  *
  * @author Sampo Niskanen <sampo.niskanen@iki.fi>
  */
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE)
 
 public class BodyTube extends SymmetricComponent implements BoxBounded, MotorMount, Coaxial, InsideColorComponent {
 	private static final Translator trans = Application.getTranslator();
 	
 	private double outerRadius = 0;
 	private boolean autoRadius = false; // Radius chosen automatically based on parent component
-
+	@JsonIgnore
 	private SymmetricComponent refComp = null;	// Reference component that is used for the autoRadius
 	
 	// When changing the inner radius, thickness is modified
 	private double overhang = 0;
 	private boolean isActingMount = false;
-	
+	@JsonIgnore
+
 	private MotorConfigurationSet motors;
+	@JsonIgnore
 
 	private InsideColorComponentHandler insideColorComponentHandler = new InsideColorComponentHandler(this);
 	

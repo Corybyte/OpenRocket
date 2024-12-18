@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import net.sf.openrocket.aerodynamics.AerodynamicCalculator;
 import net.sf.openrocket.aerodynamics.AerodynamicForces;
 import net.sf.openrocket.aerodynamics.BarrowmanCalculator;
@@ -44,10 +47,12 @@ import net.sf.openrocket.util.UniqueID;
 /**
  * 	Master class that defines components of rockets
  *	almost all hardware from the rocket extends from this abstract class
- *	
+ *
  */
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE)
 public abstract class RocketComponent implements ChangeSource, Cloneable, Iterable<RocketComponent> {
 	@SuppressWarnings("unused")
+	@JsonIgnore
 	private static final Logger log = LoggerFactory.getLogger(RocketComponent.class);
 	
 	// Because of changes to Java 1.7.0-45's mechanism to construct DataFlavor objects (used in Drag and Drop)
@@ -58,17 +63,20 @@ public abstract class RocketComponent implements ChangeSource, Cloneable, Iterab
 	/**
 	 * A safety mutex that can be used to prevent concurrent access to this component.
 	 */
+	@JsonIgnore
 	protected SafetyMutex mutex = SafetyMutex.newInstance();
 	
 	////////  Parent/child trees
 	/**
 	 * Parent component of the current component, or null if none exists.
 	 */
+	@JsonIgnore
 	protected RocketComponent parent = null;
 	
 	/**
 	 * List of child components of this component.
 	 */
+	@JsonIgnore
 	protected ArrayList<RocketComponent> children = new ArrayList<RocketComponent>();
 	
 	
@@ -85,6 +93,7 @@ public abstract class RocketComponent implements ChangeSource, Cloneable, Iterab
 	/**
 	 * How this component is axially positioned, possibly in relative to the parent component.
 	 */
+	@JsonIgnore
 	protected AxialMethod axialMethod = AxialMethod.AFTER;
 	
 	/**
@@ -109,18 +118,24 @@ public abstract class RocketComponent implements ChangeSource, Cloneable, Iterab
     protected double overrideMass = 0;
 	protected boolean massOverridden = false;
 	private boolean overrideSubcomponentsMass = false;
+	@JsonIgnore
 	private RocketComponent massOverriddenBy = null;	// The (super-)parent component that overrides the mass of this component
 
 	// Override CG
 	private double overrideCGX = 0;
 	private boolean cgOverridden = false;
 	private boolean overrideSubcomponentsCG = false;
+	@JsonIgnore
 	private RocketComponent CGOverriddenBy = null;	// The (super-)parent component that overrides the CG of this component
 
 	// Override CD
+	@JsonIgnore
+
 	private double overrideCD = 0;
+	@JsonIgnore
 	private boolean cdOverridden = false;
 	private boolean overrideSubcomponentsCD = false;
+	@JsonIgnore
 	private RocketComponent CDOverriddenBy = null;	// The (super-)parent component that overrides the CD of this component
 
 	private boolean cdOverriddenByAncestor = false;
@@ -136,12 +151,16 @@ public abstract class RocketComponent implements ChangeSource, Cloneable, Iterab
 	private String id = null;
 	
 	// Preset component this component is based upon
+	@JsonIgnore
 	private ComponentPreset presetComponent = null;
 
 	// If set to true, presets will not be cleared
+	@JsonIgnore
 	private boolean ignorePresetClearing = false;
 	
 	// The realistic appearance of this component
+	@JsonIgnore
+
 	private Appearance appearance = null;
 
 	// If true, component change events will not be fired
@@ -151,11 +170,13 @@ public abstract class RocketComponent implements ChangeSource, Cloneable, Iterab
 	/**
 	 * Used to invalidate the component after calling {@link #copyFrom(RocketComponent)}.
 	 */
+	@JsonIgnore
 	private final Invalidator invalidator = new Invalidator(this);
 
 	/**
 	 * List of components that will set their properties to the same as the current component
 	 */
+	@JsonIgnore
 	protected List<RocketComponent> configListeners = new LinkedList<>();
 
 
@@ -491,6 +512,7 @@ public abstract class RocketComponent implements ChangeSource, Cloneable, Iterab
 	 *
 	 * @return The component's realistic appearance, or <code>null</code>
 	 */
+	@JsonIgnore
 	public Appearance getAppearance() {
 		return appearance;
 	}
@@ -546,7 +568,7 @@ public abstract class RocketComponent implements ChangeSource, Cloneable, Iterab
 		fireComponentChangeEvent(ComponentChangeEvent.NONFUNCTIONAL_CHANGE);
 	}
 	
-	
+	@JsonIgnore
 	public final LineStyle getLineStyle() {
 		mutex.verify();
 		return lineStyle;
@@ -2125,6 +2147,7 @@ public abstract class RocketComponent implements ChangeSource, Cloneable, Iterab
 	 * The order is the same as you would read in the component tree (disregarding parent-child relations; just top to
 	 * bottom).
 	 */
+	@JsonIgnore
 	public final List<RocketComponent> getAllChildren() {
 		checkState();
 		this.checkComponentStructure();
@@ -2166,6 +2189,7 @@ public abstract class RocketComponent implements ChangeSource, Cloneable, Iterab
 	 *
 	 * @return  The parent of this component or <code>null</code>.
 	 */
+	@JsonIgnore
 	public final RocketComponent getParent() {
 		checkState();
 		return parent;
@@ -2175,6 +2199,7 @@ public abstract class RocketComponent implements ChangeSource, Cloneable, Iterab
 	 * Get all the parent and super-parent components of this component.
 	 * @return parent and super-parents of this component
 	 */
+	@JsonIgnore
 	public final List<RocketComponent> getParents() {
 		checkState();
 		List<RocketComponent> result = new LinkedList<>();
@@ -2229,6 +2254,7 @@ public abstract class RocketComponent implements ChangeSource, Cloneable, Iterab
 	 *
 	 * @return  The root component of the component tree.
 	 */
+	@JsonIgnore
 	public final RocketComponent getRoot() {
 		checkState();
 		RocketComponent gp = this;
@@ -2245,6 +2271,7 @@ public abstract class RocketComponent implements ChangeSource, Cloneable, Iterab
 	 * @return  The root Rocket component of the component tree.
 	 * @throws  IllegalStateException  If the root component is not a Rocket.
 	 */
+	@JsonIgnore
 	public final Rocket getRocket() {
 		checkState();
 		RocketComponent r = getRoot();

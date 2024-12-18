@@ -3,6 +3,7 @@ package net.sf.openrocket.rocketcomponent;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import net.sf.openrocket.l10n.Translator;
 import net.sf.openrocket.preset.ComponentPreset;
 import net.sf.openrocket.preset.ComponentPreset.Type;
@@ -14,18 +15,18 @@ import net.sf.openrocket.util.MathUtil;
 
 
 public class LaunchLug extends Tube implements AnglePositionable, BoxBounded, LineInstanceable, InsideColorComponent {
-	
+	@JsonIgnore
 	private static final Translator trans = Application.getTranslator();
-	
 	private double radius;
+
 	private double thickness;
-	
+
 	private double angleOffsetRad = Math.PI;
 	private double radialOffset = 0;
 	
 	private int instanceCount = 1;
 	private double instanceSeparation = 0; // front-front along the positive rocket axis. i.e. [1,0,0];
-
+	@JsonIgnore
 	private InsideColorComponentHandler insideColorComponentHandler = new InsideColorComponentHandler(this);
 	
 	public LaunchLug() {

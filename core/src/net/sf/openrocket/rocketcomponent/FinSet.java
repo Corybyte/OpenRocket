@@ -5,6 +5,8 @@ import java.util.*;
 import java.util.ArrayList;
 
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import net.sf.openrocket.rocketcomponent.position.AnglePositionable;
 import net.sf.openrocket.util.*;
 import org.slf4j.Logger;
@@ -20,9 +22,13 @@ import net.sf.openrocket.rocketcomponent.position.RadiusMethod;
 import net.sf.openrocket.startup.Application;
 
 import net.sf.openrocket.rocketcomponent.Transition.Shape;
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE)
 
 public abstract class FinSet extends ExternalComponent implements AxialPositionable, BoxBounded, RingInstanceable, InsideColorComponent {
+	@JsonIgnore
 	private static final Logger log = LoggerFactory.getLogger(FinSet.class);
+	@JsonIgnore
+
 	private static final Translator trans = Application.getTranslator();
 
 	/**
@@ -73,14 +79,19 @@ public abstract class FinSet extends ExternalComponent implements AxialPositiona
 	/**
 	 * Rotation about the x-axis by 2*PI/fins.
 	 */
+	@JsonIgnore
 	private Transformation finRotationIncrement = Transformation.IDENTITY;
 
 
 	/**
 	 * Rotation angle of the first fin.  Zero corresponds to the positive y-axis.
 	 */
+	@JsonIgnore
+
 	private AngleMethod angleMethod = AngleMethod.RELATIVE;
 	private double firstFinOffsetRadians = 0;
+	@JsonIgnore
+
 	private Transformation baseRotation = Transformation.IDENTITY;  // initially, rotate by 0 degrees.
 
 	/**
@@ -89,9 +100,13 @@ public abstract class FinSet extends ExternalComponent implements AxialPositiona
 	private double cantRadians = 0;
 	
 	/* Cached value: */
+	@JsonIgnore
+
 	private Transformation cantRotation = null;
 	
 	// fixed to body surface...
+	@JsonIgnore
+
 	final private RadiusMethod radiusMethod = RadiusMethod.SURFACE;
 		
 	/**
@@ -102,6 +117,8 @@ public abstract class FinSet extends ExternalComponent implements AxialPositiona
 	/**
 	 * The cross-section shape of the fins.
 	 */
+	@JsonIgnore
+
 	private CrossSection crossSection = CrossSection.SQUARE;
 	
 	
@@ -113,6 +130,8 @@ public abstract class FinSet extends ExternalComponent implements AxialPositiona
 	private double tabLength = 0.05;
 	// this is always measured from the root-lead point.
 	private double tabPosition = 0.0;
+	@JsonIgnore
+
 	private AxialMethod tabOffsetMethod = AxialMethod.MIDDLE;
 	private double tabOffset = 0.;
 
@@ -129,6 +148,7 @@ public abstract class FinSet extends ExternalComponent implements AxialPositiona
 	private double singlePlanformArea = Double.NaN;
 	private double totalVolume = Double.NaN;
 	private Coordinate centerOfMass = Coordinate.NaN;
+	@JsonIgnore
 
 	private InsideColorComponentHandler insideColorComponentHandler = new InsideColorComponentHandler(this);
 	

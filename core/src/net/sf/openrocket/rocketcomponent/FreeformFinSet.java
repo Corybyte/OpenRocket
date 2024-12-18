@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,9 +16,14 @@ import net.sf.openrocket.rocketcomponent.position.AxialMethod;
 import net.sf.openrocket.startup.Application;
 import net.sf.openrocket.util.Coordinate;
 
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE)
 
 public class FreeformFinSet extends FinSet {
+	@JsonIgnore
+
 	private static final Logger log = LoggerFactory.getLogger(FreeformFinSet.class);
+	@JsonIgnore
+
 	private static final Translator trans = Application.getTranslator();
 
 	// this class uses certain features of 'ArrayList' which are not implemented in other 'List' implementations.

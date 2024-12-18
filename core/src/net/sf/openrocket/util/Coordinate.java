@@ -2,6 +2,7 @@ package net.sf.openrocket.util;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,9 +14,12 @@ import org.slf4j.LoggerFactory;
  * @author Sampo Niskanen <sampo.niskanen@iki.fi>
  */
 public final class Coordinate implements Cloneable, Serializable {
+	@JsonIgnore
 	private static final Logger log = LoggerFactory.getLogger(Coordinate.class);
 	
 	// Defined for backwards compatibility after adding clone().
+	@JsonIgnore
+
 	static final long serialVersionUID = 585574649794259293L;
 	
 	////////  Debug section
@@ -57,8 +61,8 @@ public final class Coordinate implements Cloneable, Serializable {
 	}
 	
 	////////  End debug section
-	
-	
+
+
 	public static final Coordinate ZERO = new Coordinate(0, 0, 0, 0);
 	public static final Coordinate NUL = new Coordinate(0, 0, 0, 0);
 	public static final Coordinate NaN = new Coordinate(Double.NaN, Double.NaN,Double.NaN, Double.NaN);

@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import net.sf.openrocket.util.BoundingBox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,17 +28,24 @@ import net.sf.openrocket.util.MathUtil;
  *
  * @author Sampo Niskanen <sampo.niskanen@iki.fi>
  */
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE)
 public class InnerTube extends ThicknessRingComponent implements AxialPositionable, BoxBounded, Clusterable, RadialParent, MotorMount, InsideColorComponent {
+	@JsonIgnore
 	private static final Translator trans = Application.getTranslator();
+	@JsonIgnore
+
 	private static final Logger log = LoggerFactory.getLogger(InnerTube.class);
-	
+	@JsonIgnore
+
 	private ClusterConfiguration cluster = ClusterConfiguration.SINGLE;
 	private double clusterScale = 1.0;
 	private double clusterRotation = 0.0;
 	
 	private double overhang = 0;
 	private boolean isActingMount;
+	@JsonIgnore
 	private MotorConfigurationSet motors;
+	@JsonIgnore
 
 	private InsideColorComponentHandler insideColorComponentHandler = new InsideColorComponentHandler(this);
 	

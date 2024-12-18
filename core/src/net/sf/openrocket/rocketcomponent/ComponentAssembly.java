@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import net.sf.openrocket.util.BoundingBox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +25,7 @@ import net.sf.openrocket.util.Coordinate;
  * @author Sampo Niskanen <sampo.niskanen@iki.fi>
  */
 public abstract class ComponentAssembly extends RocketComponent implements AxialPositionable, BoxBounded {
+	@JsonIgnore
 	private static final Logger log = LoggerFactory.getLogger(ComponentAssembly.class);
 	
 	/**

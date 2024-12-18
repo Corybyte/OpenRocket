@@ -1,11 +1,15 @@
 package net.sf.openrocket.rocketcomponent;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import net.sf.openrocket.l10n.Translator;
 import net.sf.openrocket.startup.Application;
 import net.sf.openrocket.util.Coordinate;
 import net.sf.openrocket.util.MathUtil;
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE)
 
 public class EllipticalFinSet extends FinSet {
+	@JsonIgnore
 	private static final Translator trans = Application.getTranslator();
 	
 	private static final int POINTS = 31;

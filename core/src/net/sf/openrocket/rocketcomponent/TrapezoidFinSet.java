@@ -3,6 +3,8 @@ package net.sf.openrocket.rocketcomponent;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import net.sf.openrocket.l10n.Translator;
 import net.sf.openrocket.startup.Application;
 import net.sf.openrocket.util.Coordinate;
@@ -14,8 +16,10 @@ import net.sf.openrocket.util.MathUtil;
  *
  * @author Sampo Niskanen <sampo.niskanen@iki.fi>
  */
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE)
 
 public class TrapezoidFinSet extends FinSet {
+	@JsonIgnore
 	private static final Translator trans = Application.getTranslator();
 	
 	public static final double MAX_SWEEP_ANGLE = (89 * Math.PI / 180.0);

@@ -2,6 +2,7 @@ package net.sf.openrocket.rocketcomponent;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import net.sf.openrocket.l10n.Translator;
 import net.sf.openrocket.material.Material;
 import net.sf.openrocket.preset.ComponentPreset;
@@ -77,8 +78,9 @@ public abstract class ExternalComponent extends RocketComponent {
 	/**
 	 * The material of the component.
 	 */
+	@JsonIgnore
 	protected Material material = null;
-	
+	@JsonIgnore
 	protected Finish finish = Finish.NORMAL;
 	
 	
