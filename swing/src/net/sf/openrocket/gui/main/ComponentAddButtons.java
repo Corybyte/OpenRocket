@@ -451,21 +451,8 @@ public class ComponentAddButtons extends JPanel implements Scrollable {
                 component = (RocketComponent) constructor.newInstance();
                 if (component.getClass() == Glider.class) {
                     //获取当前选择的组件 默认为：主发动机
-                    String name = DesignPanel.chickComponent.getName();
                     //获取当前组件的树形结构
-                    Object[] path = p.getPath();
-                    //在树形结构中找到当前已选择组件
-                    RocketComponent rocket = (Rocket) path[0];
-                    //递归查找前一个组件
-                    // 判断bootstrap或axial？？？？？
-                    if (DesignPanel.chickComponent instanceof AxialStage){
-                        System.out.println("axial的组件......");
-                        build(DesignPanel.chickComponent,0);
-                    }else {
-                        RocketComponent preComponent = findComponent(rocket, DesignPanel.chickComponent);
-                        System.out.println("当前选中组件的的父级为:" + preComponent);
-                        addComponent(preComponent, DesignPanel.chickComponent);
-                    }
+                    build(OpenRocketDocumentFactory.mydoc.getRocket().getChild(0),0);
                 }
             } catch (InstantiationException e) {
                 throw new BugException("Could not construct new instance of class " + constructor, e);
