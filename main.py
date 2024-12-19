@@ -900,6 +900,7 @@ def Acceleration():
             f.write(traceback.format_exc())
         return {"code": 500, "msg": "error", "result": traceback.format_exc()}
 
+
 # plt 三维图
 @app.route('/Projectile/position', methods=['POST'])
 def AccelerationPosition():
@@ -1027,12 +1028,8 @@ def check_json_api4():
 @app.route('/Wing/calculateCN', methods=['POST'])
 def wing_calculateCN_api():
     app.logger.info(f"{request.json}")
-    try:
-        cna = calculate_nonaxial_forces(request.json)
-
-        return {"code": 200, "msg": "ok", "cna": cna}
-    except Exception as e:
-        return jsonify({"code": 200, "msg": "error", "result": str(e)})
+    cna = calculate_nonaxial_forces(request.json)
+    return {"code": 200, "msg": "ok", "ret": cna}
 
 
 @app.route('/Projectile/totalMoment', methods=['POST'])
@@ -1054,6 +1051,7 @@ def calculateTotalCD():
         return {"code": 200, "msg": "ok", "result": result}
     except Exception as e:
         return jsonify({"code": 200, "msg": "error", "result": str(e)})
+
 
 if __name__ == '__main__':
     app.run(host="127.0.0.1", port=8080, debug=True)
