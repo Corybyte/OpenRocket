@@ -109,6 +109,7 @@ public class FinSetCalc extends RocketComponentCalc {
 		
 		// One fin without interference (both sub- and supersonic):
 		double cna1 = calculateFinCNa1(conditions);
+
 			
 		// Multiple fins with fin-fin interference
 		double cna;
@@ -239,11 +240,22 @@ public class FinSetCalc extends RocketComponentCalc {
 		request.FlightConditions_AOA=conditions.getAOA();
 		request.STALL_ANGLE=STALL_ANGLE;
 		request.AerodynamicForces_CrollForce=forces.getCrollForce();
+		request.FlightConditions_RefArea=conditions.getRefArea();
+		request.FinSetCalc_finArea=finArea;
+		request.FinSetCalc_cosGamma=cosGamma;
+		request.FinSetCalc_span=span;
+		request.interferenceFinCount=interferenceFinCount;
+		request.FinSetCalc_theta=conditions.getTheta();
+		request.result_CN=cna * MathUtil.min(conditions.getAOA(), STALL_ANGLE);
+
+
+
 
 		//判断是否是系统自检
 		if (conditions.getAOA()==0 || conditions.getTheta()==0){
 			return;
 		}
+		System.out.println("213");
 
 		OpenRocket.eduCoderService.Wing_calculateCN(request).enqueue(new Callback<Result>() {
 			@Override
@@ -467,7 +479,7 @@ public class FinSetCalc extends RocketComponentCalc {
 		double ref = conditions.getRefArea();
 		double alpha = MathUtil.min(conditions.getAOA(),
 				Math.PI - conditions.getAOA(), STALL_ANGLE);
-		
+
 		// Subsonic case
 		if (mach <= CNA_SUBSONIC) {
 			return 2 * Math.PI * pow2(span) / (1 + MathUtil.safeSqrt(1 + (1 - pow2(mach)) *

@@ -15,5 +15,14 @@ public class WingCNRequest {
     public  double FlightConditions_AOA;
     public  double STALL_ANGLE;
     public  double AerodynamicForces_CrollForce;
+    public  double FlightConditions_RefArea;
+    public  double FinSetCalc_finArea;
+    public  double FinSetCalc_cosGamma;
+    public  double FinSetCalc_span;
+    public  double interferenceFinCount;
+    public  double FinSetCalc_theta;
+    public  double result_CN;
+
+
 
 }
