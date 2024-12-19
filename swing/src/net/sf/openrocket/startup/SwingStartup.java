@@ -127,14 +127,15 @@ public class SwingStartup {
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
         scheduler.scheduleAtFixedRate(() -> {
             try {
-                serializeObjectToJsonFile(OpenRocketDocumentFactory.mydoc.getRocket().getSelectedConfiguration().getActiveInstances(), "/data/workspace/downloadfiles/object.json");
+                System.out.println("json....");
+                serializeObjectToJsonFile(OpenRocketDocumentFactory.mydoc.getRocket().getSelectedConfiguration().getActiveInstances(), "/data/workspace/downloadfiles/bject.json");
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }, 0, 1, TimeUnit.MINUTES);
+        }, 0, 10, TimeUnit.SECONDS);
     }
 
-    // 序列化对象到 JSON 文件
+
     public static void serializeObjectToJsonFile(InstanceMap obj, String filePath) throws IOException {
         // 创建 ObjectMapper 实例
         ObjectMapper mapper = new ObjectMapper();
@@ -153,6 +154,7 @@ public class SwingStartup {
             return;
         }
 
+        // 遍历 key 集合并构建 JSON 数据
         for (RocketComponent key : obj.keySet()) {
             try {
                 if (!(key instanceof Rocket)) {
@@ -164,12 +166,32 @@ public class SwingStartup {
             }
         }
 
-        System.out.println("Serialized keys size: " + keysAsJson.size());
-        // 将对象集合写入到文件
+
+        // 根据 position.x 排序（假设你知道每个元素有 position.x）
+        keysAsJson.sort((o1, o2) -> {
+            // 提取 position.x 并进行比较
+            double x1 = extractPositionX(o1);
+            double x2 = extractPositionX(o2);
+            return Double.compare(x1, x2);
+        });
+
+
+        // 将排序后的对象集合写入到文件
         mapper.writeValue(file, keysAsJson);
 
-        // 打印日志
         System.out.println("Object serialized to file: " + filePath + " at " + System.currentTimeMillis());
+    }
+
+    // 提取 position.x 值的方法（假设每个对象都有 position 字段）
+    private static double extractPositionX(Object obj) {
+        try {
+            // 假设 obj 包含 position 字段，并且 position 是一个 Map
+            Map<String, Object> position = (Map<String, Object>) ((Map) obj).get("position");
+            return (Double) position.get("x");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0; // 如果没有找到 x，返回默认值
+        }
     }
 
     public static void watchDirectory(String directoryPath) {
