@@ -5,9 +5,9 @@ import java.util.List;
 public class DataResult {
     private final Integer code;
     private final String msg;
-    private final List<List<Double>> result;
+    private final List<List<Object>> result;
 
-    public DataResult(Integer code, String msg, List<List<Double>> result) {
+    public DataResult(Integer code, String msg, List<List<Object>> result) {
         this.code = code;
         this.msg = msg;
         this.result = result;
@@ -21,7 +21,7 @@ public class DataResult {
         return msg;
     }
 
-    public List<List<Double>> getResult() {
+    public List<List<Object>> getResult() {
         return result;
     }
 }
