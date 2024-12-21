@@ -257,10 +257,16 @@ public class NoseConeConfig extends RocketComponentConfig {
                         public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result> response) {
                             net.sf.openrocket.utils.educoder.Result result = response.body();
                             if (result == null) return;
-                            SwingUtilities.invokeLater(() -> {
-                                checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult());
-                                answerLabel.setText(trans.get("NoseConeCfg.lbl.answer") + ": " + component.getComponentCG().x);
-                            });
+                            Integer code = response.body().getCode();
+                            if (code == 200) {
+                                SwingUtilities.invokeLater(() -> {
+                                    checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult());
+                                    answerLabel.setText(trans.get("NoseConeCfg.lbl.answer") + ": " + component.getComponentCG().x);
+                                });
+                            } else {
+                                SwingUtilities.invokeLater(() ->
+                                        JOptionPane.showMessageDialog(parent, response.body().getResult(), "Error", JOptionPane.ERROR_MESSAGE));
+                            }
                         }
 
 
@@ -338,10 +344,16 @@ public class NoseConeConfig extends RocketComponentConfig {
                         public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result> response) {
                             net.sf.openrocket.utils.educoder.Result result = response.body();
                             if (result == null) return;
-                            SwingUtilities.invokeLater(() -> {
-                                checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult());
-                                answerLabel.setText(trans.get("NoseConeCfg.lbl.answer") + ": " + calculation.getCM().x);
-                            });
+                            Integer code = response.body().getCode();
+                            if (code == 200) {
+                                SwingUtilities.invokeLater(() -> {
+                                    checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult());
+                                    answerLabel.setText(trans.get("NoseConeCfg.lbl.answer") + ": " + calculation.getCM().x);
+                                });
+                            } else {
+                                SwingUtilities.invokeLater(() ->
+                                        JOptionPane.showMessageDialog(parent, response.body().getResult(), "Error", JOptionPane.ERROR_MESSAGE));
+                            }
                         }
 
                         @Override
@@ -424,10 +436,17 @@ public class NoseConeConfig extends RocketComponentConfig {
                         public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result> response) {
                             net.sf.openrocket.utils.educoder.Result result = response.body();
                             if (result == null) return;
-                            SwingUtilities.invokeLater(() -> {
-                                checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult());
-                                answerLabel.setText(trans.get("NoseConeCfg.lbl.answer") + ": " + forces.getCP().x);
-                            });
+                            Integer code = response.body().getCode();
+                            if (code == 200) {
+
+                                SwingUtilities.invokeLater(() -> {
+                                    checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult());
+                                    answerLabel.setText(trans.get("NoseConeCfg.lbl.answer") + ": " + forces.getCP().x);
+                                });
+                            } else {
+                                SwingUtilities.invokeLater(() ->
+                                        JOptionPane.showMessageDialog(parent, response.body().getResult(), "Error", JOptionPane.ERROR_MESSAGE));
+                            }
                         }
 
                         @Override
@@ -569,10 +588,16 @@ public class NoseConeConfig extends RocketComponentConfig {
                         public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result> response) {
                             net.sf.openrocket.utils.educoder.Result result = response.body();
                             if (result == null) return;
-                            SwingUtilities.invokeLater(() -> {
-                                checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult());
-                                answerLabel.setText(trans.get("NoseConeCfg.lbl.answer") + ": " + cp.x);
-                            });
+                            Integer code = response.body().getCode();
+                            if (code == 200) {
+                                SwingUtilities.invokeLater(() -> {
+                                    checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult());
+                                    answerLabel.setText(trans.get("NoseConeCfg.lbl.answer") + ": " + cp.x);
+                                });
+                            } else {
+                                SwingUtilities.invokeLater(() ->
+                                        JOptionPane.showMessageDialog(parent, response.body().getResult(), "Error", JOptionPane.ERROR_MESSAGE));
+                            }
                         }
 
                         @Override
@@ -675,10 +700,16 @@ public class NoseConeConfig extends RocketComponentConfig {
                         public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result2> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result2> response) {
                             net.sf.openrocket.utils.educoder.Result2 result = response.body();
                             if (result == null) return;
-                            SwingUtilities.invokeLater(() -> {
-                                checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult()[0] + "," + result.getResult()[1]);
-                                answerLabel.setText(trans.get("NoseConeCfg.lbl.answer") + ": " + component.getRotationalUnitInertia() + "," + component.getLongitudinalUnitInertia());
-                            });
+                            Integer code = response.body().getCode();
+                            if (code == 200) {
+                                SwingUtilities.invokeLater(() -> {
+                                    checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult()[0] + "," + result.getResult()[1]);
+                                    answerLabel.setText(trans.get("NoseConeCfg.lbl.answer") + ": " + component.getRotationalUnitInertia() + "," + component.getLongitudinalUnitInertia());
+                                });
+                            } else {
+                                SwingUtilities.invokeLater(() ->
+                                        JOptionPane.showMessageDialog(parent, response.body().getResult(), "Error", JOptionPane.ERROR_MESSAGE));
+                            }
                         }
 
                         @Override
@@ -756,10 +787,16 @@ public class NoseConeConfig extends RocketComponentConfig {
                         public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result2> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result2> response) {
                             net.sf.openrocket.utils.educoder.Result2 result = response.body();
                             if (result == null) return;
-                            SwingUtilities.invokeLater(() -> {
-                                checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult()[0] + "," + result.getResult()[1]);
-                                answerLabel.setText(trans.get("NoseConeCfg.lbl.answer") + ": " + rigidBody.Ixx + "," + rigidBody.Iyy);
-                            });
+                            Integer code = response.body().getCode();
+                            if (code == 200) {
+                                SwingUtilities.invokeLater(() -> {
+                                    checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult()[0] + "," + result.getResult()[1]);
+                                    answerLabel.setText(trans.get("NoseConeCfg.lbl.answer") + ": " + rigidBody.Ixx + "," + rigidBody.Iyy);
+                                });
+                            } else {
+                                SwingUtilities.invokeLater(() ->
+                                        JOptionPane.showMessageDialog(parent, response.body().getResult(), "Error", JOptionPane.ERROR_MESSAGE));
+                            }
                         }
 
                         @Override

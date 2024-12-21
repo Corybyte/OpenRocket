@@ -346,7 +346,7 @@ public abstract class FinSetConfig extends RocketComponentConfig {
                         f.setAccessible(true);
                         String labelText = trans.get("FinSet.lbl." + f.getName()) + ": " + f.get(request);
                         String constraints = "newline, height 30!";
-                        if (f.getName().equals("answer") ) break;
+                        if (f.getName().equals("answer")) break;
                         dialog.add(new JLabel(labelText), constraints);
                     }
 
@@ -362,10 +362,16 @@ public abstract class FinSetConfig extends RocketComponentConfig {
                         public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result> response) {
                             net.sf.openrocket.utils.educoder.Result result = response.body();
                             if (result == null) return;
-                            SwingUtilities.invokeLater(() -> {
-                                checkResult.setText(trans.get("FinSet.lbl.checkResult") + ": " + result.getResult());
-                                answerLabel.setText(trans.get("FinSet.lbl.answer") + ": " + component.getComponentCG().x);
-                            });
+                            Integer code = response.body().getCode();
+                            if (code == 200) {
+                                SwingUtilities.invokeLater(() -> {
+                                    checkResult.setText(trans.get("FinSet.lbl.checkResult") + ": " + result.getResult());
+                                    answerLabel.setText(trans.get("FinSet.lbl.answer") + ": " + component.getComponentCG().x);
+                                });
+                            } else {
+                                SwingUtilities.invokeLater(() ->
+                                        JOptionPane.showMessageDialog(parent, response.body().getResult(), "Error", JOptionPane.ERROR_MESSAGE));
+                            }
                         }
 
                         @Override
@@ -437,10 +443,16 @@ public abstract class FinSetConfig extends RocketComponentConfig {
                         public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result> response) {
                             net.sf.openrocket.utils.educoder.Result result = response.body();
                             if (result == null) return;
-                            SwingUtilities.invokeLater(() -> {
-                                checkResult.setText(trans.get("FinSet.lbl.checkResult") + ": " + result.getResult());
-                                answerLabel.setText(trans.get("FinSet.lbl.answer") + ": " + forces.getCP().x);
-                            });
+                            Integer code = response.body().getCode();
+                            if (code == 200) {
+                                SwingUtilities.invokeLater(() -> {
+                                    checkResult.setText(trans.get("FinSet.lbl.checkResult") + ": " + result.getResult());
+                                    answerLabel.setText(trans.get("FinSet.lbl.answer") + ": " + forces.getCP().x);
+                                });
+                            } else {
+                                SwingUtilities.invokeLater(() ->
+                                        JOptionPane.showMessageDialog(parent, response.body().getResult(), "Error", JOptionPane.ERROR_MESSAGE));
+                            }
                         }
 
                         @Override
@@ -466,44 +478,43 @@ public abstract class FinSetConfig extends RocketComponentConfig {
                 dialog.setLocationRelativeTo(null);
                 dialog.setLayout(new MigLayout("fill, gap 4!, ins panel, hidemode 3", "[]:5[]", "[]:5[]"));
                 final net.sf.openrocket.utils.educoder.FinSetMOIRequest request = new net.sf.openrocket.utils.educoder.FinSetMOIRequest();
-                request.setAnswer(new Double[]{component.getRotationalUnitInertia(),component.getLongitudinalUnitInertia()});
+                request.setAnswer(new Double[]{component.getRotationalUnitInertia(), component.getLongitudinalUnitInertia()});
                 String[] methodNames = {"getBodyRadius"};
-                String[] fieldNames = { "span", "finArea"};
-				FinSetCalc componentCalc = new FinSetCalc((FinSet) component);
+                String[] fieldNames = {"span", "finArea"};
+                FinSetCalc componentCalc = new FinSetCalc((FinSet) component);
                 request.setSinglePlanformArea(((FinSet) component).getPlanformArea());
                 try {
                     for (String methodName : methodNames) {
                         Method declaredMethod = FinSet.class.getDeclaredMethod(methodName);
-						Method requestMethod = net.sf.openrocket.utils.educoder.FinSetMOIRequest.class.getDeclaredMethod(methodName.replaceFirst("get", "set"),Double.class);
-						declaredMethod.setAccessible(true);
-						requestMethod.setAccessible(true);
-						Double value = (Double) declaredMethod.invoke(component);
-						requestMethod.invoke(request, value);
-						String labelText = trans.get("FinSet.lbl." + methodName.replaceFirst("get", "")) + ": " + value;
-						dialog.add(new JLabel(labelText), "newline, height 30!");
-					}
+                        Method requestMethod = net.sf.openrocket.utils.educoder.FinSetMOIRequest.class.getDeclaredMethod(methodName.replaceFirst("get", "set"), Double.class);
+                        declaredMethod.setAccessible(true);
+                        requestMethod.setAccessible(true);
+                        Double value = (Double) declaredMethod.invoke(component);
+                        requestMethod.invoke(request, value);
+                        String labelText = trans.get("FinSet.lbl." + methodName.replaceFirst("get", "")) + ": " + value;
+                        dialog.add(new JLabel(labelText), "newline, height 30!");
+                    }
                     request.setLength(component.getLength());
-                    String LengthlabelText = trans.get("FinSet.lbl.length" ) + ": " + request.getLength();
+                    String LengthlabelText = trans.get("FinSet.lbl.length") + ": " + request.getLength();
                     dialog.add(new JLabel(LengthlabelText), "spanx, newline, height 30!");
 
-					for (String fieldName:fieldNames) {
-						Field declaredField = FinSetCalc.class.getDeclaredField(fieldName);
-						Field reqField = net.sf.openrocket.utils.educoder.FinSetMOIRequest.class.getDeclaredField(fieldName);
-						declaredField.setAccessible(true);
-						reqField.setAccessible(true);
-						Double value = (Double) declaredField.get(componentCalc);
-						reqField.set(request,value);
-						String labelText = trans.get("FinSet.lbl." + fieldName) + ": " + value;
-						String constraints = (fieldName.equals(fieldNames[0])) ? "spanx, height 30!" : "newline, height 30!";
-						dialog.add(new JLabel(labelText), constraints);
-					}
+                    for (String fieldName : fieldNames) {
+                        Field declaredField = FinSetCalc.class.getDeclaredField(fieldName);
+                        Field reqField = net.sf.openrocket.utils.educoder.FinSetMOIRequest.class.getDeclaredField(fieldName);
+                        declaredField.setAccessible(true);
+                        reqField.setAccessible(true);
+                        Double value = (Double) declaredField.get(componentCalc);
+                        reqField.set(request, value);
+                        String labelText = trans.get("FinSet.lbl." + fieldName) + ": " + value;
+                        String constraints = (fieldName.equals(fieldNames[0])) ? "spanx, height 30!" : "newline, height 30!";
+                        dialog.add(new JLabel(labelText), constraints);
+                    }
                     Field field = FinSetCalc.class.getDeclaredField("finCount");
                     field.setAccessible(true);
                     Integer findCount = (Integer) field.get(componentCalc);
                     request.setFinCount(findCount);
                     String labelText = trans.get("FinSet.lbl.finCount") + ": " + findCount;
                     dialog.add(new JLabel(labelText), "newline, height 30!");
-
 
 
                     JButton checkButton = new JButton(trans.get("FinSet.lbl.check"));
@@ -517,10 +528,16 @@ public abstract class FinSetConfig extends RocketComponentConfig {
                         public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result2> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result2> response) {
                             net.sf.openrocket.utils.educoder.Result2 result = response.body();
                             if (result == null) return;
-                            SwingUtilities.invokeLater(() -> {
-                                checkResult.setText(trans.get("FinSet.lbl.checkResult") + ": " + result.getResult()[0]+","+result.getResult()[1]);
-                                answerLabel.setText(trans.get("FinSet.lbl.answer") + ": " + component.getRotationalUnitInertia()+","+component.getLongitudinalUnitInertia());
-                            });
+                            Integer code = response.body().getCode();
+                            if (code == 200) {
+                                SwingUtilities.invokeLater(() -> {
+                                    checkResult.setText(trans.get("FinSet.lbl.checkResult") + ": " + result.getResult()[0] + "," + result.getResult()[1]);
+                                    answerLabel.setText(trans.get("FinSet.lbl.answer") + ": " + component.getRotationalUnitInertia() + "," + component.getLongitudinalUnitInertia());
+                                });
+                            } else {
+                                SwingUtilities.invokeLater(() ->
+                                        JOptionPane.showMessageDialog(parent, response.body().getResult(), "Error", JOptionPane.ERROR_MESSAGE));
+                            }
                         }
 
                         @Override

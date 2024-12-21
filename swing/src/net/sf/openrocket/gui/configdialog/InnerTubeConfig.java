@@ -167,39 +167,38 @@ public class InnerTubeConfig extends RocketComponentConfig {
                 String constraints = "newline, height 30!";
                 dialog.add(new JLabel(labelText1), constraints);
 
-				// Material Density
-				double density = ((InnerTube) component).getMaterial().getDensity();
+                // Material Density
+                double density = ((InnerTube) component).getMaterial().getDensity();
                 Coordinate[] instanceOffsets = component.getInstanceOffsets();
-                Double[][] offsets=new Double[instanceOffsets.length][3];
+                Double[][] offsets = new Double[instanceOffsets.length][3];
                 for (int i = 0; i < offsets.length; i++) {
-                    offsets[i][0]=instanceOffsets[i].x;
-                    offsets[i][1]=instanceOffsets[i].y;
-                    offsets[i][2]=instanceOffsets[i].z;
+                    offsets[i][0] = instanceOffsets[i].x;
+                    offsets[i][1] = instanceOffsets[i].y;
+                    offsets[i][2] = instanceOffsets[i].z;
                 }
                 request.setInstanceOffsets(offsets);
                 request.setDensity(density);
-				String lengthLabelText = trans.get("InnerTube.lbl.Density") + ": " + density;
-				dialog.add(new JLabel(lengthLabelText), "newline, height 30!");
-				int instanceCount = component.getInstanceCount();
-				request.setInstanceCount(instanceCount);
-				String instanceCountLabelText =  "instanceCount : " + request.getInstanceCount();
-				dialog.add(new JLabel(instanceCountLabelText), "newline, height 30!");
-				String[] methodNames = { "getOuterRadius", "getInnerRadius"};
+                String lengthLabelText = trans.get("InnerTube.lbl.Density") + ": " + density;
+                dialog.add(new JLabel(lengthLabelText), "newline, height 30!");
+                int instanceCount = component.getInstanceCount();
+                request.setInstanceCount(instanceCount);
+                String instanceCountLabelText = "instanceCount : " + request.getInstanceCount();
+                dialog.add(new JLabel(instanceCountLabelText), "newline, height 30!");
+                String[] methodNames = {"getOuterRadius", "getInnerRadius"};
                 try {
                     for (String methodName : methodNames) {
                         Method method = RingComponent.class.getDeclaredMethod(methodName);
-						Method reqMethod = net.sf.openrocket.utils.educoder.InnerTubeCgRequest.class.getDeclaredMethod(methodName.replaceFirst("get", "set"),Double.class);
-						method.setAccessible(true);
-						reqMethod.setAccessible(true);
-						Double value = (Double) method.invoke(component);
-						reqMethod.invoke(request,value);
-						String labelText = trans.get("InnerTube.lbl." + methodName.replaceFirst("get", "")) + ": " + value;
-						dialog.add(new JLabel(labelText), "newline, height 30!");
+                        Method reqMethod = net.sf.openrocket.utils.educoder.InnerTubeCgRequest.class.getDeclaredMethod(methodName.replaceFirst("get", "set"), Double.class);
+                        method.setAccessible(true);
+                        reqMethod.setAccessible(true);
+                        Double value = (Double) method.invoke(component);
+                        reqMethod.invoke(request, value);
+                        String labelText = trans.get("InnerTube.lbl." + methodName.replaceFirst("get", "")) + ": " + value;
+                        dialog.add(new JLabel(labelText), "newline, height 30!");
                     }
                 } catch (Exception exception) {
-					exception.printStackTrace();
+                    exception.printStackTrace();
                 }
-
 
 
                 JButton checkButton = new JButton(trans.get("InnerTube.lbl.check"));
@@ -214,11 +213,18 @@ public class InnerTubeConfig extends RocketComponentConfig {
                     public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result> response) {
                         net.sf.openrocket.utils.educoder.Result result = response.body();
                         if (result == null) return;
-                        SwingUtilities.invokeLater(() -> {
-                            checkResult.setText(trans.get("InnerTube.lbl.checkResult") + ": " + result.getResult());
-                            answerLabel.setText(trans.get("InnerTube.lbl.answer") + ": " + component.getComponentCG().x);
-                        });
+                        Integer code = response.body().getCode();
+                        if (code == 200) {
+                            SwingUtilities.invokeLater(() -> {
+                                checkResult.setText(trans.get("InnerTube.lbl.checkResult") + ": " + result.getResult());
+                                answerLabel.setText(trans.get("InnerTube.lbl.answer") + ": " + component.getComponentCG().x);
+                            });
+                        } else {
+                            SwingUtilities.invokeLater(() ->
+                                    JOptionPane.showMessageDialog(parent, response.body().getResult(), "Error", JOptionPane.ERROR_MESSAGE));
+                        }
                     }
+
 
                     @Override
                     public void onFailure(@NotNull Call<Result> call, @NotNull Throwable throwable) {
@@ -242,17 +248,17 @@ public class InnerTubeConfig extends RocketComponentConfig {
 
                 final net.sf.openrocket.utils.educoder.InnerTubeMOIRequest request = new net.sf.openrocket.utils.educoder.InnerTubeMOIRequest();
                 request.setLength(c.getLength());
-                request.setAnswer(new Double[]{component.getRotationalUnitInertia(),component.getLongitudinalUnitInertia()});
+                request.setAnswer(new Double[]{component.getRotationalUnitInertia(), component.getLongitudinalUnitInertia()});
 
-                String[] methodNames = { "getOuterRadius", "getInnerRadius"};
+                String[] methodNames = {"getOuterRadius", "getInnerRadius"};
                 try {
                     for (String methodName : methodNames) {
                         Method method = RingComponent.class.getDeclaredMethod(methodName);
-                        Method reqMethod = net.sf.openrocket.utils.educoder.InnerTubeMOIRequest.class.getDeclaredMethod(methodName.replaceFirst("get", "set"),Double.class);
+                        Method reqMethod = net.sf.openrocket.utils.educoder.InnerTubeMOIRequest.class.getDeclaredMethod(methodName.replaceFirst("get", "set"), Double.class);
                         method.setAccessible(true);
                         reqMethod.setAccessible(true);
                         Double value = (Double) method.invoke(component);
-                        reqMethod.invoke(request,value);
+                        reqMethod.invoke(request, value);
                         String labelText = trans.get("InnerTube.lbl." + methodName.replaceFirst("get", "")) + ": " + value;
                         dialog.add(new JLabel(labelText), "newline, height 30!");
                     }
@@ -273,11 +279,17 @@ public class InnerTubeConfig extends RocketComponentConfig {
                     public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result2> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result2> response) {
                         net.sf.openrocket.utils.educoder.Result2 result = response.body();
                         if (result == null) return;
-                        SwingUtilities.invokeLater(() -> {
-                            checkResult.setText(trans.get("TubeFinSet.lbl.checkResult") + ": " + result.getResult()[0]+","+result.getResult()[1]);
-                            answerLabel.setText(trans.get("TubeFinSet.lbl.answer") + ": " + component.getRotationalUnitInertia()+","+component.getLongitudinalUnitInertia());
+                        Integer code = response.body().getCode();
+                        if (code == 200) {
+                            SwingUtilities.invokeLater(() -> {
+                                checkResult.setText(trans.get("TubeFinSet.lbl.checkResult") + ": " + result.getResult()[0] + "," + result.getResult()[1]);
+                                answerLabel.setText(trans.get("TubeFinSet.lbl.answer") + ": " + component.getRotationalUnitInertia() + "," + component.getLongitudinalUnitInertia());
 
-                        });
+                            });
+                        } else {
+                            SwingUtilities.invokeLater(() ->
+                                    JOptionPane.showMessageDialog(parent, response.body().getResult(), "Error", JOptionPane.ERROR_MESSAGE));
+                        }
                     }
 
                     @Override

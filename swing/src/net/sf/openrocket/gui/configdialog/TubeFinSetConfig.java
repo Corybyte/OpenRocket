@@ -182,10 +182,16 @@ public class TubeFinSetConfig extends RocketComponentConfig {
                         public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result> response) {
                             net.sf.openrocket.utils.educoder.Result result = response.body();
                             if (result == null) return;
-                            SwingUtilities.invokeLater(() -> {
-                                checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult());
-                                answerLabel.setText(trans.get("NoseConeCfg.lbl.answer") + ": " + component.getComponentCG().x);
-                            });
+                            Integer code = response.body().getCode();
+                            if (code == 200) {
+                                SwingUtilities.invokeLater(() -> {
+                                    checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult());
+                                    answerLabel.setText(trans.get("NoseConeCfg.lbl.answer") + ": " + component.getComponentCG().x);
+                                });
+                            } else {
+                                SwingUtilities.invokeLater(() ->
+                                        JOptionPane.showMessageDialog(parent, response.body().getResult(), "Error", JOptionPane.ERROR_MESSAGE));
+                            }
                         }
 
                         @Override
@@ -236,7 +242,7 @@ public class TubeFinSetConfig extends RocketComponentConfig {
                     double[] doubles = (double[]) field1.get(componentCalc);
                     request.setPloy(doubles);
                     String labelText2 = trans.get("TubeFinSet.lbl.OuterRadius") + "：" + o;
-                    dialog.add(new JLabel(labelText2),"spanx, height 30!");
+                    dialog.add(new JLabel(labelText2), "spanx, height 30!");
 //                    String labelText3 = trans.get("TubeFinSet.lbl.ar") + Arrays.toString(doubles);
 //                    dialog.add(new JLabel(labelText3),"spanx, height 30!");
 
@@ -274,10 +280,16 @@ public class TubeFinSetConfig extends RocketComponentConfig {
                         public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result> response) {
                             net.sf.openrocket.utils.educoder.Result result = response.body();
                             if (result == null) return;
-                            SwingUtilities.invokeLater(() -> {
-                                checkResult.setText(trans.get("TubeFinSet.lbl.checkResult") + ": " + result.getResult());
-                                answerLabel.setText(trans.get("TubeFinSet.lbl.answer") + ": " + forces.getCP().x);
-                            });
+                            Integer code = response.body().getCode();
+                            if (code == 200) {
+                                SwingUtilities.invokeLater(() -> {
+                                    checkResult.setText(trans.get("TubeFinSet.lbl.checkResult") + ": " + result.getResult());
+                                    answerLabel.setText(trans.get("TubeFinSet.lbl.answer") + ": " + forces.getCP().x);
+                                });
+                            } else {
+                                SwingUtilities.invokeLater(() ->
+                                        JOptionPane.showMessageDialog(parent, response.body().getResult(), "Error", JOptionPane.ERROR_MESSAGE));
+                            }
                         }
 
                         @Override
@@ -307,13 +319,13 @@ public class TubeFinSetConfig extends RocketComponentConfig {
                 final net.sf.openrocket.utils.educoder.TubeFinSetMOIRequest request = new net.sf.openrocket.utils.educoder.TubeFinSetMOIRequest();
                 // answer = rotationalUnitInertia
                 component.getRotationalUnitInertia();
-                request.setAnswer(new Double[]{component.getRotationalUnitInertia(),component.getLongitudinalUnitInertia()});
-                String[] MethodNames = {"getOuterRadius","getBodyRadius","getInnerRadius"};
-                String[] fieldNames = {"thickness","fins"};
+                request.setAnswer(new Double[]{component.getRotationalUnitInertia(), component.getLongitudinalUnitInertia()});
+                String[] MethodNames = {"getOuterRadius", "getBodyRadius", "getInnerRadius"};
+                String[] fieldNames = {"thickness", "fins"};
 
-                try{
+                try {
                     //get and set  properties
-                    for (String fieldName:fieldNames){
+                    for (String fieldName : fieldNames) {
                         Field field = TubeFinSet.class.getDeclaredField(fieldName);
                         Field reqField = net.sf.openrocket.utils.educoder.TubeFinSetMOIRequest.class.getDeclaredField(fieldName);
                         field.setAccessible(true);
@@ -348,10 +360,16 @@ public class TubeFinSetConfig extends RocketComponentConfig {
                         public void onResponse(@NotNull Call<net.sf.openrocket.utils.educoder.Result2> call, @NotNull Response<net.sf.openrocket.utils.educoder.Result2> response) {
                             net.sf.openrocket.utils.educoder.Result2 result = response.body();
                             if (result == null) return;
-                            SwingUtilities.invokeLater(() -> {
-                                checkResult.setText(trans.get("TubeFinSet.lbl.checkResult") + ": " + result.getResult()[0]+","+result.getResult()[1]);
-                                answerLabel.setText(trans.get("TubeFinSet.lbl.answer") + ": " + component.getRotationalUnitInertia()+","+component.getLongitudinalUnitInertia());
-                            });
+                            Integer code = response.body().getCode();
+                            if (code == 200) {
+                                SwingUtilities.invokeLater(() -> {
+                                    checkResult.setText(trans.get("TubeFinSet.lbl.checkResult") + ": " + result.getResult()[0] + "," + result.getResult()[1]);
+                                    answerLabel.setText(trans.get("TubeFinSet.lbl.answer") + ": " + component.getRotationalUnitInertia() + "," + component.getLongitudinalUnitInertia());
+                                });
+                            } else {
+                                SwingUtilities.invokeLater(() ->
+                                        JOptionPane.showMessageDialog(parent, response.body().getResult(), "Error", JOptionPane.ERROR_MESSAGE));
+                            }
                         }
 
                         @Override
@@ -361,7 +379,7 @@ public class TubeFinSetConfig extends RocketComponentConfig {
                         }
                     }));
 
-                }catch (Exception ex){
+                } catch (Exception ex) {
                     //ignored
                 }
                 dialog.setVisible(true);
