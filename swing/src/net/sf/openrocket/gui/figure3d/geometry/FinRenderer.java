@@ -12,14 +12,23 @@ import com.jogamp.opengl.glu.GLUtessellatorCallbackAdapter;
 import net.sf.openrocket.rocketcomponent.EllipticalFinSet;
 import net.sf.openrocket.rocketcomponent.FinSet;
 import net.sf.openrocket.rocketcomponent.InsideColorComponent;
+import net.sf.openrocket.util.ArrayList;
 import net.sf.openrocket.util.BoundingBox;
 import net.sf.openrocket.util.Coordinate;
 import net.sf.openrocket.gui.figure3d.geometry.Geometry.Surface;
+
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 public class FinRenderer {
 	private GLUtessellator tess = GLU.gluNewTess();
 	
 	public void renderFinSet(final GL2 gl, FinSet finSet, Surface which) {
+		ArrayList<Coordinate> outerPoints =  new ArrayList<>();
 		
 	    BoundingBox bounds = finSet.getInstanceBoundingBox();
 		gl.glMatrixMode(GL.GL_TEXTURE);
@@ -37,13 +46,13 @@ public class FinRenderer {
 		Coordinate[] finPoints = finSet.getFinPointsWithLowResRoot();
 		Coordinate[] tabPoints = finSet.getTabPointsWithRootLowRes();
 
+
 		{
 		    gl.glPushMatrix();
 
             gl.glTranslated(0, - finSet.getBodyRadius(), 0);		// Move to the parent centerline
             
             gl.glRotated( Math.toDegrees(finSet.getCantAngle()), 0, 1, 0);
-
             GLUtessellatorCallback cb = new GLUtessellatorCallbackAdapter() {
 				@Override
 				public void vertex(Object vertexData) {
@@ -76,8 +85,9 @@ public class FinRenderer {
 			GLU.gluTessCallback(tess, GLU.GLU_TESS_BEGIN, cb);
 			GLU.gluTessCallback(tess, GLU.GLU_TESS_END, cb);
 			GLU.gluTessCallback(tess, GLU.GLU_TESS_COMBINE, cb);
-
+			// 内表面
 			// fin side: +z
+			//绕z轴的两侧 右侧
 			if (finSet.getSpan() > 0 && which == Surface.INSIDE) {		// Right side
 				GLU.gluTessBeginPolygon(tess, null);
 				GLU.gluTessBeginContour(tess);
@@ -104,7 +114,7 @@ public class FinRenderer {
 				GLU.gluTessEndContour(tess);
 				GLU.gluTessEndPolygon(tess);
 			}
-			
+			//外表面
 			// fin side: -z
 			if (finSet.getSpan() > 0 && which == Surface.OUTSIDE) {		// Left side
 				GLU.gluTessBeginPolygon(tess, null);
@@ -114,7 +124,7 @@ public class FinRenderer {
 					double[] p = new double[]{c.x, c.y + finSet.getBodyRadius(),
 							c.z - finSet.getThickness() / 2.0};
 					GLU.gluTessVertex(tess, p, 0, p);
-
+					outerPoints.add(c); // 存储外表点
 				}
 				GLU.gluTessEndContour(tess);
 				GLU.gluTessEndPolygon(tess);
@@ -128,7 +138,9 @@ public class FinRenderer {
 					Coordinate c = tabPoints[i];
 					double[] p = new double[]{c.x, c.y + finSet.getBodyRadius(),
 							c.z - finSet.getThickness() / 2.0};
+
 					GLU.gluTessVertex(tess, p, 0, p);
+					outerPoints.add(c); // 存储外表点
 
 				}
 				GLU.gluTessEndContour(tess);
@@ -187,6 +199,29 @@ public class FinRenderer {
 		gl.glMatrixMode(GL.GL_TEXTURE);
 		gl.glPopMatrix();
 		gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
+		saveOuterCoordinates(outerPoints);
 		
+	}
+	public void saveOuterCoordinates(List<Coordinate> coordinates) {
+		// 定义文件路径
+		String filePath = "E://finset_coordinates.txt";
+
+		// 使用 FileWriter 的追加模式
+		try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath, true))) { // true 表示追加模式
+			// 遍历坐标列表，将每个坐标写入文件
+			for (Coordinate coordinate : coordinates) {
+				String formattedCoordinate = String.format("(%s, %s, %s),",
+						coordinate.x, coordinate.y, coordinate.z);
+				writer.write(formattedCoordinate);
+				writer.newLine(); // 换行
+			}
+
+			writer.newLine(); // 添加额外的空行作为分隔
+
+
+			System.out.println("Coordinates saved to " + filePath);
+		} catch (IOException e) {
+			System.err.println("Error writing to file: " + e.getMessage());
+		}
 	}
 }

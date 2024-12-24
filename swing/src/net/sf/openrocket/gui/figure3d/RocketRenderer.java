@@ -2,11 +2,8 @@ package net.sf.openrocket.gui.figure3d;
 
 import java.awt.Point;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.nio.FloatBuffer;
+import java.util.*;
 
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
@@ -14,6 +11,8 @@ import com.jogamp.opengl.GL2GL3;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.fixedfunc.GLLightingFunc;
 
+import com.jogamp.opengl.glu.GLU;
+import net.sf.openrocket.rocketcomponent.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,11 +22,6 @@ import net.sf.openrocket.gui.figure3d.geometry.Geometry;
 import net.sf.openrocket.gui.figure3d.geometry.Geometry.Surface;
 import net.sf.openrocket.motor.Motor;
 import net.sf.openrocket.motor.MotorConfiguration;
-import net.sf.openrocket.rocketcomponent.FlightConfiguration;
-import net.sf.openrocket.rocketcomponent.InstanceContext;
-import net.sf.openrocket.rocketcomponent.InstanceMap;
-import net.sf.openrocket.rocketcomponent.MotorMount;
-import net.sf.openrocket.rocketcomponent.RocketComponent;
 import net.sf.openrocket.util.Coordinate;
 import net.sf.openrocket.util.Transformation;
 

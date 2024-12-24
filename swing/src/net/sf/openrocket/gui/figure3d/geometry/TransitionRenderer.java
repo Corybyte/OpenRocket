@@ -116,16 +116,24 @@ package net.sf.openrocket.gui.figure3d.geometry;
 
 import com.jogamp.opengl.GL2;
 
+import net.sf.openrocket.rocketcomponent.NoseCone;
 import net.sf.openrocket.rocketcomponent.Transition;
+import net.sf.openrocket.util.Coordinate;
+
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
 
 final class TransitionRenderer {
-	
+
 	private TransitionRenderer() {
 	}
 	
 	static void drawTransition(final GL2 gl, final Transition tr,
-			final int slices, final int stacks, final double offsetRadius) {
-		
+							   final int slices, final int stacks, final double offsetRadius, Geometry.Surface which) {
+		ArrayList<Coordinate> surfacePoints = new ArrayList<>();
+
 		double da, r, dzBase;
 		double x, y, z, nz, lnz = 0;
 		int i;
@@ -179,19 +187,45 @@ final class TransitionRenderer {
 				} else {
 					normal3d(gl, x, y, lnz);
 				}
+				// 保存当前层顶点
+				surfacePoints.add(new Coordinate(x * r, y * r, z));
 				gl.glTexCoord2d(s, z / tr.getLength());
 				gl.glVertex3d((x * r), (y * r), z);
 				
 				normal3d(gl, x, y, nz);
 				gl.glTexCoord2d(s, zNext / tr.getLength());
 				gl.glVertex3d((x * rNext), (y * rNext), zNext);
-				
+				// 保存下一层顶点
+				surfacePoints.add(new Coordinate(x * rNext, y * rNext, zNext));
+
 				s += ds;
 			} // for slices
 			gl.glEnd();
 			lnz = nz;
 			z = Math.min(z + dz, tr.getLength());
 		} // for stacks
+		//save....
+		String fileName = "";
+		if (tr instanceof NoseCone) {
+			fileName = "noseCone";
+		}else {
+			fileName = "transition";
+		}
+		if (which== Geometry.Surface.OUTSIDE) {
+			try (BufferedWriter writer = new BufferedWriter(new FileWriter("E://"+fileName+".txt"))) {
+				writer.write(tr.getComponentName());
+				writer.newLine();
+				for (Coordinate point : surfacePoints) {
+					String formattedCoordinate = String.format("(%s, %s, %s),",
+							point.x, point.y, point.z);
+					writer.write(formattedCoordinate);
+					writer.newLine();
+				}
+			} catch (IOException e) {
+				System.err.println("Error writing to file: " + e.getMessage());
+			}
+		}
+
 		
 	}
 	
