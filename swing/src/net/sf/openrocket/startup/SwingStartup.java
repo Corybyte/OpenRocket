@@ -78,6 +78,9 @@ public class SwingStartup {
      * OpenRocket 启动主方法。
      */
     public static void main(final String[] args) throws Exception {
+        System.setProperty("jogl.disable.openglcore", "true"); // 禁用硬件加速
+
+
 
         //在执行其他任何操作之前检查“openrocket.debug”属性
         checkDebugStatus();
@@ -128,7 +131,7 @@ public class SwingStartup {
         scheduler.scheduleAtFixedRate(() -> {
             try {
                 System.out.println("json....");
-                serializeObjectToJsonFile(OpenRocketDocumentFactory.mydoc.getRocket().getSelectedConfiguration().getActiveInstances(), "/data/workspace/downloadfiles/bject.json");
+                serializeObjectToJsonFile(OpenRocketDocumentFactory.mydoc.getRocket().getSelectedConfiguration().getActiveInstances(), "E://object.json");
             } catch (IOException e) {
                 e.printStackTrace();
             }
