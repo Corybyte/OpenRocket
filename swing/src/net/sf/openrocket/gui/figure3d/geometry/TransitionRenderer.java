@@ -213,7 +213,6 @@ final class TransitionRenderer {
 		}
 		if (which== Geometry.Surface.OUTSIDE) {
 			try (BufferedWriter writer = new BufferedWriter(new FileWriter("E://"+fileName+".txt"))) {
-				writer.write(tr.getComponentName());
 				writer.newLine();
 				for (Coordinate point : surfacePoints) {
 					String formattedCoordinate = String.format("(%s, %s, %s),",

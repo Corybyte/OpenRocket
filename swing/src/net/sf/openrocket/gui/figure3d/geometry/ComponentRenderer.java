@@ -138,10 +138,6 @@ public class ComponentRenderer {
     }
 
     private void renderTransition(GL2 gl, Transition t, Surface which) {
-        System.out.println(t.getName());
-        if (t instanceof Transition){
-            System.out.println("....");
-        }
         if (which == Surface.OUTSIDE || which == Surface.INSIDE) {
             gl.glPushMatrix();
             gl.glRotated(90, 0, 1.0, 0);
@@ -238,7 +234,7 @@ public class ComponentRenderer {
         if (which == Surface.OUTSIDE) {
             glu.gluCylinder(q, oR, oR, len, LOD, 1);
             // 提取外表坐标
-            List<Coordinate> outerCoordinates = extractOuterCoordinates(gl, oR, len, LOD);
+            List<Coordinate> outerCoordinates = extractOuterCoordinates(gl, oR, len, LOD,90);
             if (component instanceof BodyTube){
                 saveOuterCoordinates(outerCoordinates);
             }
@@ -261,22 +257,29 @@ public class ComponentRenderer {
         }
         gl.glPopMatrix();
     }
-
-    private List<Coordinate> extractOuterCoordinates(final GL2 gl, final double oR, final double len, final int LOD) {
+    private List<Coordinate> extractOuterCoordinates(final GL2 gl, final double oR, final double len, final int LOD, final int zDivisions) {
         List<Coordinate> coordinates = new ArrayList<>();
 
-        // 计算圆周上的点
-        int numSegments = LOD;  // 分段数
+        // 圆周上的分段数，LOD 控制圆周密度
+        int numSegments = LOD;
         double angleStep = 2 * Math.PI / numSegments;
 
-        // 对每个分段进行采样
-        for (int i = 0; i < numSegments; i++) {
-            double angle = i * angleStep;
-            double x = oR * Math.cos(angle);
-            double y = oR * Math.sin(angle);
+        // Z 方向的分段步长，zDivisions 控制高度方向的密度
+        double zStep = len / zDivisions;
 
-            // z坐标范围从0到len，均匀分布
-            for (double z = 0; z <= len; z += len / 10) {  // 每10个单位采样一次
+        // 从 Z=0 开始逐层采样
+        for (int j = 0; j <= zDivisions; j++) {
+            double z = j * zStep; // 当前高度
+
+            // 在当前高度的圆周上采样点
+            for (int i = 0; i < numSegments; i++) {
+                double angle = i * angleStep; // 当前角度
+
+                // 计算圆周点的 X 和 Y 坐标
+                double x = oR * Math.cos(angle);
+                double y = oR * Math.sin(angle);
+
+                // 添加点到列表
                 coordinates.add(new Coordinate(x, y, z));
             }
         }
@@ -284,17 +287,37 @@ public class ComponentRenderer {
         return coordinates;
     }
 
+
+
+
+    // 插值方法
+    private void interpolateCoordinates(List<Coordinate> coordinates, double oR, double len, int numSegments, int zDivisions) {
+        double angleStep = Math.PI / (2 * numSegments); // 半角步长
+        double zStep = len / (2 * zDivisions); // 半高度步长
+
+        // 对原点之间进行插值
+        List<Coordinate> interpolated = new ArrayList<>();
+        for (Coordinate coord : coordinates) {
+            interpolated.add(new Coordinate(coord.x, coord.y, coord.z));
+            interpolated.add(new Coordinate(
+                    coord.x + oR * Math.cos(angleStep),
+                    coord.y + oR * Math.sin(angleStep),
+                    coord.z + zStep
+            ));
+        }
+        coordinates.addAll(interpolated);
+    }
+
+
+
     public void saveOuterCoordinates(List<Coordinate> coordinates) {
         System.out.println("Captured outer surface coordinates:");
 
         // 定义文件路径
-        String filePath = "E://coordinates.txt";
+        String filePath = "E://bodytube.txt";
 
         // 使用 FileWriter 的追加模式
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath, true))) { // true 表示追加模式
-            writer.write("----- New Coordinates Batch -----");
-            writer.newLine(); // 添加一行分隔符
-
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) { // true 表示追加模式
             // 遍历坐标列表，将每个坐标写入文件
             for (Coordinate coordinate : coordinates) {
                 String formattedCoordinate = String.format("(%s, %s, %s),",
@@ -303,9 +326,6 @@ public class ComponentRenderer {
                 writer.newLine(); // 换行
             }
 
-            writer.newLine(); // 添加额外的空行作为分隔
-            writer.write("=================================");
-            writer.newLine(); // 再添加一个分隔符
 
             System.out.println("Coordinates saved to " + filePath);
         } catch (IOException e) {

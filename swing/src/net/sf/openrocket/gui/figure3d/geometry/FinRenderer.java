@@ -28,7 +28,8 @@ public class FinRenderer {
 	private GLUtessellator tess = GLU.gluNewTess();
 	
 	public void renderFinSet(final GL2 gl, FinSet finSet, Surface which) {
-		ArrayList<Coordinate> outerPoints =  new ArrayList<>();
+		System.out.println("finset...");
+		ArrayList<double[]> outerPoints =  new ArrayList<>();
 		
 	    BoundingBox bounds = finSet.getInstanceBoundingBox();
 		gl.glMatrixMode(GL.GL_TEXTURE);
@@ -96,6 +97,8 @@ public class FinRenderer {
 					Coordinate c = finPoints[i];
 					double[] p = new double[]{c.x, c.y + finSet.getBodyRadius(),
 							c.z + finSet.getThickness() / 2.0};
+					outerPoints.add(p); // 存储外表点
+
 					GLU.gluTessVertex(tess, p, 0, p);
 				}
 				GLU.gluTessEndContour(tess);
@@ -124,7 +127,8 @@ public class FinRenderer {
 					double[] p = new double[]{c.x, c.y + finSet.getBodyRadius(),
 							c.z - finSet.getThickness() / 2.0};
 					GLU.gluTessVertex(tess, p, 0, p);
-					outerPoints.add(c); // 存储外表点
+
+//					outerPoints.add(p); // 存储外表点
 				}
 				GLU.gluTessEndContour(tess);
 				GLU.gluTessEndPolygon(tess);
@@ -138,9 +142,8 @@ public class FinRenderer {
 					Coordinate c = tabPoints[i];
 					double[] p = new double[]{c.x, c.y + finSet.getBodyRadius(),
 							c.z - finSet.getThickness() / 2.0};
-
 					GLU.gluTessVertex(tess, p, 0, p);
-					outerPoints.add(c); // 存储外表点
+//					outerPoints.add(p); // 存储外表点
 
 				}
 				GLU.gluTessEndContour(tess);
@@ -199,29 +202,141 @@ public class FinRenderer {
 		gl.glMatrixMode(GL.GL_TEXTURE);
 		gl.glPopMatrix();
 		gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
-		saveOuterCoordinates(outerPoints);
+		generateWings(outerPoints,finSet.getThickness(),0.03,finSet.getFinCount(),-bounds.min.x,-bounds.min.y,finSet.getBodyRadius());
 		
 	}
-	public void saveOuterCoordinates(List<Coordinate> coordinates) {
+	public static void generateWings(List<double[]> coordinates, double thickness, double density, int count,double x,double y,double bodyRadius) {
+		if (coordinates.size()==0)return;
+		 applyTransformation(coordinates, x, y, bodyRadius);
+
 		// 定义文件路径
-		String filePath = "E://finset_coordinates.txt";
+		String filePath = "E://finset.txt";
 
-		// 使用 FileWriter 的追加模式
-		try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath, true))) { // true 表示追加模式
-			// 遍历坐标列表，将每个坐标写入文件
-			for (Coordinate coordinate : coordinates) {
-				String formattedCoordinate = String.format("(%s, %s, %s),",
-						coordinate.x, coordinate.y, coordinate.z);
-				writer.write(formattedCoordinate);
-				writer.newLine(); // 换行
+		// 构造底面点
+		List<double[]> bottomSurface = new ArrayList<>();
+		for (double[] point : coordinates) {
+			bottomSurface.add(new double[]{point[0], point[1], point[2] - thickness});
+		}
+
+		// 计算旋转角度间隔
+		double angleStep = 360.0 / count;
+
+		// 存储所有机翼的密集化点
+		List<double[]> allPoints = new ArrayList<>();
+
+		// 遍历每个机翼
+		for (int i = 0; i < count; i++) {
+			double angle = Math.toRadians(i * angleStep);
+			List<double[]> rotatedTop = rotateWing(coordinates, angle);
+			List<double[]> rotatedBottom = rotateWing(bottomSurface, angle);
+
+			// 密集化顶面和底面
+			allPoints.addAll(gridifySurface(rotatedTop, density));
+			allPoints.addAll(gridifySurface(rotatedBottom, density));
+
+			// 密集化侧面
+			for (int j = 0; j < rotatedTop.size(); j++) {
+				double[] top1 = rotatedTop.get(j);
+				double[] bottom1 = rotatedBottom.get(j);
+				double[] top2 = rotatedTop.get((j + 1) % rotatedTop.size());
+				double[] bottom2 = rotatedBottom.get((j + 1) % rotatedBottom.size());
+				allPoints.addAll(gridifySide(top1, top2, bottom1, bottom2, 0.01));
 			}
+		}
 
-			writer.newLine(); // 添加额外的空行作为分隔
-
-
-			System.out.println("Coordinates saved to " + filePath);
+		// 保存点到文件
+		try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+			for (double[] point : allPoints) {
+				writer.write(String.format("(%f, %f, %f)\n", point[0], point[1], point[2]));
+			}
+			System.out.println("Multi-wing structure saved to " + filePath);
 		} catch (IOException e) {
 			System.err.println("Error writing to file: " + e.getMessage());
 		}
 	}
+
+	// 绕y轴旋转
+	private static List<double[]> rotateWing(List<double[]> wing, double angle) {
+		List<double[]> rotatedWing = new ArrayList<>();
+		double cosTheta = Math.cos(angle);
+		double sinTheta = Math.sin(angle);
+		for (double[] point : wing) {
+			double x = point[0];
+			double y = point[1];
+			double z = point[2];
+			double newX = cosTheta * x + sinTheta * z;
+			double newZ = -sinTheta * x + cosTheta * z;
+			rotatedWing.add(new double[]{newX, y, newZ});
+		}
+		return rotatedWing;
+	}
+
+	// 顶面和底面密集化
+	private static List<double[]> gridifySurface(List<double[]> surface, double density) {
+		List<double[]> gridPoints = new ArrayList<>();
+		double minX = Double.MAX_VALUE, maxX = Double.MIN_VALUE;
+		double minY = Double.MAX_VALUE, maxY = Double.MIN_VALUE;
+
+		for (double[] point : surface) {
+			minX = Math.min(minX, point[0]);
+			maxX = Math.max(maxX, point[0]);
+			minY = Math.min(minY, point[1]);
+			maxY = Math.max(maxY, point[1]);
+		}
+
+		for (double x = minX; x <= maxX; x += density) {
+			for (double y = minY; y <= maxY; y += density) {
+				if (isInsidePolygon(x, y, surface)) {
+					double z = surface.get(0)[2];
+					gridPoints.add(new double[]{x, y, z});
+				}
+			}
+		}
+		return gridPoints;
+	}
+
+	// 判断点是否在多边形内
+	private static boolean isInsidePolygon(double x, double y, List<double[]> polygon) {
+		int intersections = 0;
+		for (int i = 0; i < polygon.size(); i++) {
+			double[] p1 = polygon.get(i);
+			double[] p2 = polygon.get((i + 1) % polygon.size());
+			if ((p1[1] > y) != (p2[1] > y) &&
+					x < (p2[0] - p1[0]) * (y - p1[1]) / (p2[1] - p1[1]) + p1[0]) {
+				intersections++;
+			}
+		}
+		return (intersections % 2) != 0;
+	}
+
+	// 侧面密集化
+	private static List<double[]> gridifySide(double[] top1, double[] top2, double[] bottom1, double[] bottom2, double density) {
+		List<double[]> gridPoints = new ArrayList<>();
+		for (double t1 = 0; t1 <= 1; t1 += density) {
+			for (double t2 = 0; t2 <= 1; t2 += density) {
+				double[] point = new double[]{
+						(1 - t1) * ((1 - t2) * top1[0] + t2 * top2[0]) + t1 * ((1 - t2) * bottom1[0] + t2 * bottom2[0]),
+						(1 - t1) * ((1 - t2) * top1[1] + t2 * top2[1]) + t1 * ((1 - t2) * bottom1[1] + t2 * bottom2[1]),
+						(1 - t1) * ((1 - t2) * top1[2] + t2 * top2[2]) + t1 * ((1 - t2) * bottom1[2] + t2 * bottom2[2])
+				};
+				gridPoints.add(point);
+			}
+		}
+		return gridPoints;
+	}
+
+	// 应用平移变换
+	public static void applyTransformation(List<double[]> coordinates, double minX, double minY, double bodyRadius) {
+		// 遍历原数组中的每个点，直接修改
+		for (double[] point : coordinates) {
+			// 应用第一步平移
+			point[0] -= minX;
+			point[1] -= minY + bodyRadius;
+
+			// 应用第二步平移
+			point[1] -= bodyRadius;
+		}
+	}
+
+
 }
