@@ -452,7 +452,7 @@ public class ComponentAddButtons extends JPanel implements Scrollable {
                 if (component.getClass() == Glider.class) {
                     //获取当前选择的组件 默认为：主发动机
                     //获取当前组件的树形结构
-                    build(OpenRocketDocumentFactory.mydoc.getRocket().getChild(0),0);
+                    build(OpenRocketDocumentFactory.mydoc.getRocket(),0);
                 }
             } catch (InstantiationException e) {
                 throw new BugException("Could not construct new instance of class " + constructor, e);
@@ -829,8 +829,12 @@ public class ComponentAddButtons extends JPanel implements Scrollable {
     }
     //需要在当前父级组件的children中第i个位置插入。
     public void build(RocketComponent component,int flag){
+        System.out.println(component);
         //头锥
         try {
+            //stage
+            Constructor<AxialStage> stageConstructor = AxialStage.class.getConstructor();
+            AxialStage stage = stageConstructor.newInstance();
             Constructor<NoseCone> coneConstructor = NoseCone.class.getConstructor();
             NoseCone noseCone = coneConstructor.newInstance();
             //箭体
@@ -840,9 +844,11 @@ public class ComponentAddButtons extends JPanel implements Scrollable {
             Constructor<FreeformFinSet> freeformFinSetConstructor = FreeformFinSet.class.getConstructor();
             FreeformFinSet freeformFinSet = freeformFinSetConstructor.newInstance();
             bodyTube.addChild(freeformFinSet);
+            stage.addChild(noseCone,flag);
+            stage.addChild(bodyTube,flag+1);
+            stage.setName("滑翔机");
+            component.addChild(stage,0);
 
-            component.addChild(noseCone,flag);
-            component.addChild(bodyTube,flag+1);
 //            children.add(flag+1,bodyTube);
         } catch (Exception e) {
             e.printStackTrace();
