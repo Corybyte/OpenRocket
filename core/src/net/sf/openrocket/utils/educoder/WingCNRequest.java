@@ -1,5 +1,9 @@
 package net.sf.openrocket.utils.educoder;
 
+import net.sf.openrocket.util.ArrayList;
+
+import java.lang.reflect.Array;
+
 public class WingCNRequest {
     public  double Tau;
     public  double Cna;
@@ -22,6 +26,13 @@ public class WingCNRequest {
     public  double interferenceFinCount;
     public  double FinSetCalc_theta;
     public  double result_CN;
+    public static ArrayList Client_CN = new ArrayList();
+    public static ArrayList Server_CN = new ArrayList();
+
+    public WingCNRequest(ArrayList client_cn, ArrayList server_cn) {
+        Client_CN = client_cn;
+        Server_CN = server_cn;
+    }
 
 
 

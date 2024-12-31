@@ -1,5 +1,4 @@
 package net.sf.openrocket.gui.simulation;
-
 import net.miginfocom.swing.MigLayout;
 import net.sf.openrocket.document.OpenRocketDocument;
 import net.sf.openrocket.document.Simulation;

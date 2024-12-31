@@ -205,7 +205,7 @@ public class FinSetCalc extends RocketComponentCalc {
 		forces.setCN(cna * MathUtil.min(conditions.getAOA(), STALL_ANGLE));
 		forces.setCP(new Coordinate(x, 0, 0, cna));
 		forces.setCm(forces.getCN() * x / conditions.getRefLength());
-		
+
 		/*
 		 * TODO: HIGH:  Compute actual side force and yaw moment.
 		 * This is not currently performed because it produces strange results for
@@ -225,7 +225,7 @@ public class FinSetCalc extends RocketComponentCalc {
 
 
 
-		WingCNRequest request = new WingCNRequest();
+		WingCNRequest request = new WingCNRequest(WingCNRequest.Client_CN,WingCNRequest.Server_CN);
 		request.Tau=tau;
 		request.Cna=cna;
 		request.Cna1=cna1;
@@ -246,8 +246,6 @@ public class FinSetCalc extends RocketComponentCalc {
 		request.FinSetCalc_span=span;
 		request.interferenceFinCount=interferenceFinCount;
 		request.FinSetCalc_theta=conditions.getTheta();
-		request.result_CN=cna * MathUtil.min(conditions.getAOA(), STALL_ANGLE);
-
 
 
 
@@ -255,17 +253,24 @@ public class FinSetCalc extends RocketComponentCalc {
 		if (conditions.getAOA()==0 || conditions.getTheta()==0){
 			return;
 		}
-		System.out.println("213");
 
+
+		double finalCna = cna;
 		OpenRocket.eduCoderService.Wing_calculateCN(request).enqueue(new Callback<Result>() {
 			@Override
 			public void onResponse(Call<Result> call, Response<Result> response) {
+				synchronized (request.Client_CN){
+					request.Client_CN.add(response.body().getResult());
+					System.out.println(response.body().getResult());
+				}
+				synchronized (request.Server_CN){
+					request.Server_CN.add(finalCna * MathUtil.min(conditions.getAOA(), STALL_ANGLE));
+				}
 
 			}
 
 			@Override
 			public void onFailure(Call<Result> call, Throwable throwable) {
-
 			}
 		});
 		
