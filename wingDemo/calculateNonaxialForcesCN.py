@@ -66,4 +66,4 @@ def calculate_nonaxial_forces(param):
 
     cn = cna * min(flight_conditions_aoa, STALL_ANGLE)
 
-    return {'cn': cn}
+    return cn

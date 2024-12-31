@@ -1027,9 +1027,10 @@ def check_json_api4():
 
 @app.route('/Wing/calculateCN', methods=['POST'])
 def wing_calculateCN_api():
+    print(request.json)
     app.logger.info(f"{request.json}")
     cna = calculate_nonaxial_forces(request.json)
-    return {"code": 200, "msg": "ok", "ret": cna}
+    return {"code": 200, "msg": "ok", "result": cna}
 
 
 @app.route('/Projectile/totalMoment', methods=['POST'])
