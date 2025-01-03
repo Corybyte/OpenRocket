@@ -15,13 +15,22 @@ def get_calculate_nonaxial_forces_required_params(param):
     :return: 获取到的各个参数
     :raises ValueError: 如果缺少任何必需的参数
     """
+    # required_keys = [
+    #     'Tau', 'Cna', 'Cna1', 'MacLead', 'MacLength', 'MacSpen', 'BodyRadius',
+    #     'CantAngle', 'FlightConditions_Mach', 'FlightConditions_Beta',
+    #     'FlightConditions_RefLength', 'FlightConditions_AOA', 'STALL_ANGLE', 'AerodynamicForces_CrollForce',
+    #     # 需要新增
+    #     'FinSetCalc_theta', 'interferenceFinCount', 'FinSetCalc_span', 'FinSetCalc_finArea', 'FinSetCalc_cosGamma',
+    #     'STALL_ANGLE'
+    # ]
+
     required_keys = [
         'Tau', 'Cna', 'Cna1', 'MacLead', 'MacLength', 'MacSpen', 'BodyRadius',
         'CantAngle', 'FlightConditions_Mach', 'FlightConditions_Beta',
         'FlightConditions_RefLength', 'FlightConditions_AOA', 'STALL_ANGLE', 'AerodynamicForces_CrollForce',
         # 需要新增
         'FinSetCalc_theta', 'interferenceFinCount', 'FinSetCalc_span', 'FinSetCalc_finArea', 'FinSetCalc_cosGamma',
-        'STALL_ANGLE'
+        'STALL_ANGLE','angle'
     ]
 
     # 遍历每个必需的键，检查是否在 param 中
@@ -51,10 +60,12 @@ def get_calculate_nonaxial_forces_required_params(param):
     fin_area = param['FinSetCalc_finArea']
     cos_gamma = param['FinSetCalc_cosGamma']
     STALL_ANGLE = param['STALL_ANGLE']
+    angle = param['angle']
 
     return (
         tau, cna, cna1, mac_lead, mac_length, mac_spen, body_radius, cant_angle,
         flight_conditions_mach, flight_conditions_beta, flight_conditions_ref_length,
         flight_conditions_aoa, stall_angle, aerodynamic_forces_croll_force,
-        theta, interferenceFinCount, span, fin_area, cos_gamma, STALL_ANGLE
+        theta, interferenceFinCount, span, fin_area, cos_gamma, STALL_ANGLE,
+        angle
     )

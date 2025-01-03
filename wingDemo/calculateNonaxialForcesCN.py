@@ -33,12 +33,13 @@ def calculate_nonaxial_forces(param):
         tau, cna, cna1, mac_lead, mac_length, mac_spen, body_radius, cant_angle,
         flight_conditions_mach, flight_conditions_beta, flight_conditions_ref_length,
         flight_conditions_aoa, stall_angle, aerodynamic_forces_croll_force,
-        theta, interferenceFinCount, span, fin_area, cos_gamma, STALL_ANGLE
+        theta, interferenceFinCount, span, fin_area, cos_gamma, STALL_ANGLE,
+        angle
     ) = get_calculate_nonaxial_forces_required_params(param)
     cna1 = calculateFinCNa1(param)
     # 计算基本的 CNa（不考虑干扰效应）
     # 基本的 CNa 值通过正弦函数计算，考虑了theta与angle的差异
-    cna = cna1 * pow2(math.sin(theta - cant_angle))
+    cna = cna1 * pow2(math.sin(theta - angle))
     # 根据鳍片数量调整 CNa，考虑鳍片间的干扰效应
     if interferenceFinCount == 5:
         cna *= 0.948  # 对于5片鳍片，应用系数0.948
@@ -63,7 +64,6 @@ def calculate_nonaxial_forces(param):
 
     # 应用机身与鳍片的干扰效应
     cna *= (1 + tau)  # Barrowman公式，用于计算机身与鳍片的干扰效应
-
     cn = cna * min(flight_conditions_aoa, STALL_ANGLE)
 
-    return cn
+    return {'cn': cn, 'cna1': cna1}
