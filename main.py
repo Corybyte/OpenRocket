@@ -1030,6 +1030,7 @@ def wing_calculateCN_api():
     print(request.json)
     app.logger.info(f"{request.json}")
     cna = calculate_nonaxial_forces(request.json)
+    print("edu",cna)
     return {"code": 200, "msg": "ok", "result": cna}
 
 

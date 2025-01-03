@@ -66,4 +66,4 @@ def calculate_nonaxial_forces(param):
     cna *= (1 + tau)  # Barrowman公式，用于计算机身与鳍片的干扰效应
     cn = cna * min(flight_conditions_aoa, STALL_ANGLE)
 
-    return {'cn': cn, 'cna1': cna1}
+    return cn
