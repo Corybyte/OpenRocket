@@ -539,5 +539,9 @@ public interface EduCoderService {
 
     @POST("Projectile/totalPressureCD")
     Call<Result> calculateTotalPressureCD(@Body TotalPressureCDRequest request);
+    @POST("Projectile/glideDistance")
+    Call<Result> calculateGlideDistance(@Body GlidingDistance request);
+    @POST("Projectile/glideCharacter")
+    Call<Result> calculateGlidingCharacter(@Body GlidingCharacter request);
 
 }
