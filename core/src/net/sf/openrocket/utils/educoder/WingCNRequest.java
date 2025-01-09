@@ -26,7 +26,7 @@ public class WingCNRequest {
     public  double interferenceFinCount;
     public  double FinSetCalc_theta;
     public  double result_CN;
-    public  double edu;
+    public  double angle;
     public static ArrayList Client_CN = new ArrayList();
     public static ArrayList Server_CN = new ArrayList();
 
@@ -37,7 +37,7 @@ public class WingCNRequest {
 
     public String toString() {
         return "{" +
-                "\"edu\":" + edu + "," +
+                "\"angle\":" + angle + "," +
                 "\"Tau\":" + Tau + "," +
                 "\"Cna\":" + Cna + "," +
                 "\"Cna1\":" + Cna1 + "," +
