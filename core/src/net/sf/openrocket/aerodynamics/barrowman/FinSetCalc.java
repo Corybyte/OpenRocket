@@ -21,7 +21,6 @@ import net.sf.openrocket.util.Transformation;
 import net.sf.openrocket.utils.educoder.FinsetPressureCDRequest;
 import net.sf.openrocket.utils.educoder.Result;
 import net.sf.openrocket.utils.educoder.WingCNRequest;
-import org.apache.commons.collections4.CollectionUtils;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -225,10 +224,7 @@ public class FinSetCalc extends RocketComponentCalc {
 		forces.setCyaw(0);
 
 
-		//判断是否是系统自检
-		if (conditions.getAOA()==0 || conditions.getTheta()==0){
-			return;
-		}
+
 
 		WingCNRequest request = new WingCNRequest(WingCNRequest.Client_CN,WingCNRequest.Server_CN);
 		request.Tau=tau;
@@ -252,29 +248,24 @@ public class FinSetCalc extends RocketComponentCalc {
 		request.interferenceFinCount=interferenceFinCount;
 		request.FinSetCalc_theta=conditions.getTheta();
 		request.result_CN=cna * MathUtil.min(conditions.getAOA(), STALL_ANGLE);
-		request.edu=cna1 * MathUtil.pow2(Math.sin(theta - angle));
+		request.angle=angle;
 
-		System.out.println(request.toString());
+		//判断是否是系统自检
+		if (conditions.getAOA()==0 || conditions.getTheta()==0){
+			return;
+		}
+
 		double finalCna = cna;
 		OpenRocket.eduCoderService.Wing_calculateCN(request).enqueue(new Callback<Result>() {
 			@Override
 			public void onResponse(Call<Result> call, Response<Result> response) {
-//				synchronized (request.Client_CN){
-//					request.Client_CN.add(response.body().getResult());
-//
-//				}
-//				synchronized (request.Server_CN){
-//					request.Server_CN.add(finalCna * MathUtil.min(conditions.getAOA(), STALL_ANGLE));
-//				}
+				synchronized (request.Client_CN){
+					request.Client_CN.add(response.body().getResult());
 
-				synchronized (this){
-					if (CollectionUtils.isEqualCollection(WingCNRequest.Client_CN, WingCNRequest.Server_CN) != true) {
-						System.out.println(response.body().getResult());
-						System.out.println(request.toString());
-					}
 				}
-
-
+				synchronized (request.Server_CN){
+					request.Server_CN.add(finalCna * MathUtil.min(conditions.getAOA(), STALL_ANGLE));
+				}
 			}
 
 			@Override
