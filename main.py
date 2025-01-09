@@ -1,3 +1,5 @@
+import math
+
 from flask import Flask, request, jsonify
 
 from calculateAcceleration.pltImages import plot_rocket_from_json
@@ -10,6 +12,8 @@ from calculateSymComponentPCD import calculateSymPCDHelper
 from calculateStability.calculateStabilityHelper import calculateStabilityHelper
 from calculateTotalPressureCD.totalPressureCDHelper import calculatePressureCDHelper
 from calculateTubeFinSetHullCG.utils import Coordinate
+from calculateGlideDistance.calculateGlideDistanceHelper import calculateGlideDistancehelper
+from calculateGlideCharacter.calculateGlideCharacterHelper import calculateGlideCharacterhelper
 from totalMoment.totalMomentHelper import calculateTotalMomentHelper
 from utils import *
 from podsCG import pods_cg_helper
@@ -959,11 +963,9 @@ def check_json_api():
     # 新无序列表比较
     ret = check_list(json_a, json_b)
     if ret:
-        print("success")
         with open(file_path, 'w+') as f:
             f.write("比对成功")
     else:
-        print("false")
         with open(file_path, 'w+') as f:
             f.write("比对失败")
 
@@ -987,7 +989,6 @@ def check_json_api2():
     ret = check_list2(json_a, json_b)
     ret2 = check_list2(json_a2, json_b2)
     if ret and ret2:
-        print("success")
         with open(file_path, 'w+') as f:
             f.write("比对成功")
     else:
@@ -1027,10 +1028,10 @@ def check_json_api4():
 
 @app.route('/Wing/calculateCN', methods=['POST'])
 def wing_calculateCN_api():
-    print(request.json)
+    # print(request.json)
     app.logger.info(f"{request.json}")
     cna = calculate_nonaxial_forces(request.json)
-    print("edu",cna)
+    # print("edu",cna)
     return {"code": 200, "msg": "ok", "result": cna}
 
 
@@ -1053,6 +1054,63 @@ def calculateTotalCD():
         return {"code": 200, "msg": "ok", "result": result}
     except Exception as e:
         return jsonify({"code": 200, "msg": "error", "result": str(e)})
+
+
+@app.route('/Projectile/glideDistance', methods=['POST'])
+def calculateglideDistance():
+    app.logger.info(f"{request.json}")
+    try:
+        print("--------")
+        print(request.json)
+        result = calculateGlideDistancehelper(request.json)
+
+        # answer
+        height = request.json['height']
+        c_l = request.json['c_l']
+        c_d = request.json['c_d']
+        answer = height / (1 / (c_l / c_d))
+
+        # check
+        if result == answer:
+            text = "比对成功，答案正确"
+        else:
+            text = "比对失败"
+        with open(os.path.join("calculateGlideDistance", "result.txt"), 'w') as f:
+            f.write(text)
+        return {"code": 200, "msg": "ok", "result": result}
+    except Exception as e:
+        return jsonify({"code": 200, "msg": "error", "result": 0})
+
+
+@app.route('/Projectile/glideCharacter', methods=['POST'])
+def calculateglideCharacter():
+    app.logger.info(f"{request.json}")
+    try:
+        print("--------")
+        print(request.json)
+        result = calculateGlideCharacterhelper(request.json)
+        print(result)
+
+        # answer
+        cl_max = request.json['max_cl']
+        n_max = cl_max / request.json['w']
+        refArea = request.json['refArea']
+        w = request.json['w']
+        # 标准空气密度
+        p = 1.225
+        V = math.sqrt((2 * n_max * w) / p * cl_max * refArea)
+        answer = V * V / (9.8 * math.sqrt(n_max * n_max - 1))
+        print(r)
+        # check
+        if result == answer:
+            text = "比对成功，答案正确"
+        else:
+            text = "比对失败"
+        with open(os.path.join("calculateGlideCharacter", "result.txt"), 'w') as f:
+            f.write(text)
+        return {"code": 200, "msg": "ok", "result": 0}
+    except Exception as e:
+        return jsonify({"code": 200, "msg": "error", "result": 0})
 
 
 if __name__ == '__main__':
