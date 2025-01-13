@@ -1100,7 +1100,7 @@ def calculateglideCharacter():
         p = 1.225
         V = math.sqrt((2 * n_max * w) / p * cl_max * refArea)
         answer = V * V / (9.8 * math.sqrt(n_max * n_max - 1))
-        print(r)
+        # print(r)
         # check
         if result == answer:
             text = "比对成功，答案正确"
@@ -1112,6 +1112,29 @@ def calculateglideCharacter():
     except Exception as e:
         return jsonify({"code": 200, "msg": "error", "result": 0})
 
+
+@app.route('/Wing/aerodynamic_forces', methods=['POST'])
+def wing_aerodynamic_forces_api():
+    # 1. 获取传递过来的 JSON 数据
+    data = request.json
+
+    # 打印接收到的数据（可选的调试信息）
+    app.logger.info(f"Received data: {data}")
+
+    # 2. 检查是否包含 modID，并尝试转换为整数
+    if 'modID' in data:
+        try:
+            # 转换 modID 为整数
+            modID = int(data['modID'])
+            # 自增 modID
+            data['modID'] = modID + 1
+        except ValueError:
+            return jsonify({"code": 400, "msg": "modID must be an integer"}), 400
+    else:
+        return jsonify({"code": 400, "msg": "modID is required"}), 400
+
+    # 3. 返回原样传递的 JSON 数据并修改 modID
+    return jsonify({"code": 200, "msg": "ok", "ret": data})
 
 if __name__ == '__main__':
     app.run(host="127.0.0.1", port=8080, debug=True)
