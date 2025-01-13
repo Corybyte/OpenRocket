@@ -1113,8 +1113,8 @@ def calculateglideCharacter():
         return jsonify({"code": 200, "msg": "error", "result": 0})
 
 
-@app.route('/Wing/aerodynamic_forces', methods=['POST'])
-def wing_aerodynamic_forces_api():
+@app.route('/Wing/calculateComponentNonAxialForces', methods=['POST'])
+def wing_calculateComponentNonAxialForces_api():
     # 1. 获取传递过来的 JSON 数据
     data = request.json
 
