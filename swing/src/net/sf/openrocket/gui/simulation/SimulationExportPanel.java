@@ -14,7 +14,6 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
-import javax.xml.crypto.Data;
 
 import net.miginfocom.swing.MigLayout;
 import net.sf.openrocket.document.Simulation;
@@ -71,8 +70,8 @@ public class SimulationExportPanel extends JPanel {
 		JPanel panel;
 		JButton button;
 		JButton edu_button;
-		JButton edu_all_button;
-		
+		JButton edu_calculateCN_button;
+		JButton edu_calculateComponentNonAxialForces_button;
 		this.simulation = sim;
 		
 		final FlightData data = simulation.getSimulatedData();
@@ -161,7 +160,7 @@ public class SimulationExportPanel extends JPanel {
 		});
 		panel.add(button, "growx 1, sizegroup selectbutton, wrap");
 
-		edu_button = new SelectColorButton(trans.get("SimExpPan.but.Edu"));
+		edu_button = new SelectColorButton(trans.get("SimExpPan.but.calculateCN"));
 		edu_button.addActionListener(e -> {
 					// 创建一个模态对话框，父窗口为当前组件的顶层窗口
 					JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "弹体法向力系数评测", Dialog.ModalityType.MODELESS);
@@ -224,8 +223,8 @@ public class SimulationExportPanel extends JPanel {
 				});
 		panel.add(edu_button, "growx 1, sizegroup selectbutton, wrap");
 
-		edu_all_button = new SelectColorButton(trans.get("SimExpPan.but.AllEdu"));
-		edu_all_button.addActionListener(e -> {
+		edu_calculateCN_button = new SelectColorButton(trans.get("SimExpPan.but.Wing_calculateCN"));
+		edu_calculateCN_button.addActionListener(e -> {
 			// 创建一个模态对话框，父窗口为当前组件的顶层窗口
 			JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "总体弹体法向力系数", Dialog.ModalityType.MODELESS);
 
@@ -285,7 +284,72 @@ public class SimulationExportPanel extends JPanel {
 			dialog.setLocationRelativeTo(this); // 设置相对于父窗口居中显示
 			dialog.setVisible(true); // 显示对话框
 		});
-		panel.add(edu_all_button, "growx 1, sizegroup selectbutton, wrap");
+		panel.add(edu_calculateCN_button, "growx 1, sizegroup selectbutton, wrap");
+
+
+		edu_calculateComponentNonAxialForces_button = new SelectColorButton(trans.get("SImExpPan.but.calculateComponentNonAxialForces"));
+		edu_calculateComponentNonAxialForces_button.addActionListener(e -> {
+			// 创建一个模态对话框，父窗口为当前组件的顶层窗口
+			JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "总体法向力系数", Dialog.ModalityType.MODELESS);
+
+			// 设置对话框的主布局为 BorderLayout
+			dialog.setLayout(new BorderLayout());
+
+			// 创建主内容面板，使用 GridLayout 管理两部分内容
+			JPanel mainPanel = new JPanel(new GridLayout(1, 2, 10, 0)); // 1 行 2 列，水平间距 10
+
+			// 左边的大文本框
+			JTextArea leftTextArea = new JTextArea();
+			leftTextArea.setLineWrap(true); // 自动换行
+			leftTextArea.setWrapStyleWord(true); // 仅在单词边界处换行
+			leftTextArea.setFont(new Font("Monospaced", Font.PLAIN, 14)); // 设置字体
+			leftTextArea.setText(componentForcesRequest.Server_CN.toString());
+			JScrollPane leftScrollPane = new JScrollPane(leftTextArea);
+			mainPanel.add(leftScrollPane);
+
+			// 右边的小文本框
+			JTextArea rightTextArea = new JTextArea();
+			rightTextArea.setLineWrap(true); // 自动换行
+			rightTextArea.setWrapStyleWord(true); // 仅在单词边界处换行
+			rightTextArea.setFont(new Font("Monospaced", Font.PLAIN, 14)); // 设置字体
+			rightTextArea.setText(componentForcesRequest.Client_CN.toString());
+			JScrollPane rightScrollPane = new JScrollPane(rightTextArea);
+			mainPanel.add(rightScrollPane);
+
+			// 将主面板添加到对话框的中间区域
+			dialog.add(mainPanel, BorderLayout.CENTER);
+
+			// 创建关闭按钮
+			JButton closeButton = new JButton("关闭");
+			closeButton.addActionListener(ev -> dialog.dispose()); // 点击按钮时关闭对话框
+
+			// 创建一个新的按钮
+			DataRequest request = new DataRequest(componentForcesRequest.Server_CN,componentForcesRequest.Server_CN);
+			JButton checkButton = new JButton("评测");
+			checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.checkJSON(request).enqueue(new Callback<Result>() {
+				@Override
+				public void onResponse(Call<Result> call, Response<Result> response) {
+					JOptionPane.showMessageDialog(dialog, "请点击平台评测按钮");
+				}
+				@Override
+				public void onFailure(Call<Result> call, Throwable throwable) {
+					System.out.println(throwable.getMessage());
+				}
+			}));
+			// 创建按钮面板
+			JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0)); // 水平间距 10
+			buttonPanel.add(closeButton); // 添加关闭按钮
+			buttonPanel.add(checkButton);   // 添加新按钮
+			dialog.add(buttonPanel, BorderLayout.SOUTH); // 将按钮面板放置在底部
+
+			// 设置对话框属性
+			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE); // 关闭时释放对话框资源
+			dialog.setSize(800, 400); // 设置窗口宽度更大，适应两个文本框
+			dialog.setLocationRelativeTo(this); // 设置相对于父窗口居中显示
+			dialog.setVisible(true); // 显示对话框
+		});
+		panel.add(edu_calculateComponentNonAxialForces_button, "growx 1, sizegroup selectbutton, wrap");
+
 
 
 		SelectColorButton edu_button2 = new SelectColorButton("弹道轨迹测评");

@@ -531,6 +531,9 @@ public interface EduCoderService {
     @POST("/Wing/calculateCN")
     Call<Result> Wing_calculateCN(@Body WingCNRequest wingCNRequest);
 
+    @POST("/calculateComponentNonAxialForces")
+    Call<Result> calculateComponentNonAxialForces(@Body componentForcesRequest componentForcesRequest);
+
 
 
     @POST("Projectile/totalMoment")

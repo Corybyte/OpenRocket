@@ -421,9 +421,7 @@ public class AerodynamicForces implements Cloneable, Monitorable {
 		this.Croll = Croll + other.getCroll();
 		this.CrollDamp = CrollDamp + other.getCrollDamp();
 		this.CrollForce = CrollForce + other.getCrollForce();
-	
 		modID++;
-		
 		return this;
 	}
 	

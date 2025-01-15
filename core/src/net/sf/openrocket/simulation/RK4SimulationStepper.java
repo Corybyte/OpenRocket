@@ -427,11 +427,13 @@ public class RK4SimulationStepper extends AbstractSimulationStepper {
             }
             // Shift moments to CG
             double Cm = store.forces.getCm() - store.forces.getCN() * store.rocketMass.getCM().x / refLength;
+
             double Cyaw = store.forces.getCyaw() - store.forces.getCside() * store.rocketMass.getCM().x / refLength;
             double croll = store.forces.getCroll();
             // 计算 cm cyaw croll
             //需要计算 getcm getcyaw getcn getcside rocketmass.cm
             // Compute moments
+
             double momX = -Cyaw * dynP * refArea * refLength;
             double momY = Cm * dynP * refArea * refLength;
             double momZ = store.forces.getCroll() * dynP * refArea * refLength;
