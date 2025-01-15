@@ -1121,20 +1121,15 @@ def wing_calculateComponentNonAxialForces_api():
     # 打印接收到的数据（可选的调试信息）
     app.logger.info(f"Received data: {data}")
 
-    # 2. 检查是否包含 modID，并尝试转换为整数
-    if 'modID' in data:
-        try:
-            # 转换 modID 为整数
-            modID = int(data['modID'])
-            # 自增 modID
-            data['modID'] = modID + 1
-        except ValueError:
-            return jsonify({"code": 400, "msg": "modID must be an integer"}), 400
+    if 'cn' in data:
+        cn = data['cn']
     else:
-        return jsonify({"code": 400, "msg": "modID is required"}), 400
+        cn = None
+        return jsonify({"code": 400, "msg": "cn is required"}), 400
 
     # 3. 返回原样传递的 JSON 数据并修改 modID
-    return jsonify({"code": 200, "msg": "ok", "ret": data})
+    return jsonify({"code": 200, "msg": "ok", "result": cn})
+
 
 if __name__ == '__main__':
     app.run(host="127.0.0.1", port=8080, debug=True)
