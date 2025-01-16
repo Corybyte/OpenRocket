@@ -14,6 +14,7 @@ from calculateTotalPressureCD.totalPressureCDHelper import calculatePressureCDHe
 from calculateTubeFinSetHullCG.utils import Coordinate
 from calculateGlideDistance.calculateGlideDistanceHelper import calculateGlideDistancehelper
 from calculateGlideCharacter.calculateGlideCharacterHelper import calculateGlideCharacterhelper
+from calculatecomponentNonAxialForces import extract_cn_from_json
 from totalMoment.totalMomentHelper import calculateTotalMomentHelper
 from utils import *
 from podsCG import pods_cg_helper
@@ -1115,19 +1116,11 @@ def calculateglideCharacter():
 
 @app.route('/calculateComponentNonAxialForces', methods=['POST'])
 def calculateComponentNonAxialForces_api():
-    # 1. 获取传递过来的 JSON 数据
     data = request.json
-
-    # 打印接收到的数据（可选的调试信息）
     app.logger.info(f"Received data: {data}")
-
-    if 'cn' in data:
-        cn = data['cn']
-    else:
-        cn = None
+    cn = extract_cn_from_json(data)
+    if cn is None:
         return jsonify({"code": 400, "msg": "cn is required"}), 400
-
-    # 3. 返回原样传递的 JSON 数据并修改 modID
     return jsonify({"code": 200, "msg": "ok", "result": cn})
 
 
