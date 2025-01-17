@@ -2,24 +2,32 @@ package net.sf.openrocket.aerodynamics;
 
 import net.sf.openrocket.rocketcomponent.Rocket;
 import net.sf.openrocket.rocketcomponent.RocketComponent;
+import net.sf.openrocket.startup.OpenRocket;
 import net.sf.openrocket.util.BugException;
 import net.sf.openrocket.util.Coordinate;
 import net.sf.openrocket.util.MathUtil;
 import net.sf.openrocket.util.Monitorable;
+import net.sf.openrocket.utils.educoder.Result;
+import net.sf.openrocket.utils.educoder.componentForcesRequest;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class AerodynamicForces implements Cloneable, Monitorable {
-	
-	/** 
+
+	/**
 	 * The component this data is referring to.  Used in analysis methods.
-	 * A total value is indicated by the component being the Rocket component. 
+	 * A total value is indicated by the component being the Rocket component.
 	 */
 	private RocketComponent component = null;
-	
 
-	/** CP and CNa. */
+
+	/**
+	 * CP and CNa.
+	 */
 	private Coordinate cp = null;
-	
-	
+
+
 	/**
 	 * Normal force coefficient derivative.  At values close to zero angle of attack
 	 * this value may be poorly defined or NaN if the calculation method does not
@@ -27,68 +35,94 @@ public class AerodynamicForces implements Cloneable, Monitorable {
 	 */
 	private double CNa = Double.NaN;
 
-	
-	/** Normal force coefficient. */
+
+	/**
+	 * Normal force coefficient.
+	 */
 	private double CN = Double.NaN;
 
-	/** Pitching moment coefficient, relative to the coordinate origin. */
+	/**
+	 * Pitching moment coefficient, relative to the coordinate origin.
+	 */
 	private double Cm = Double.NaN;
-	
-	/** Side force coefficient, Cy */
-	private double Cside = Double.NaN;
-	
-	/** Yaw moment coefficient, Cn, relative to the coordinate origin. */
-	private double Cyaw = Double.NaN;
-	
-	/** Roll moment coefficient, Cl, relative to the coordinate origin. */
-	private double Croll = Double.NaN;
-	
-	/** Roll moment damping coefficient */
-	private double CrollDamp = Double.NaN;
-	
-	/** Roll moment forcing coefficient */
-	private double CrollForce = Double.NaN;
-	
 
-	
-	/** Axial drag coefficient, CA */
+	/**
+	 * Side force coefficient, Cy
+	 */
+	private double Cside = Double.NaN;
+
+	/**
+	 * Yaw moment coefficient, Cn, relative to the coordinate origin.
+	 */
+	private double Cyaw = Double.NaN;
+
+	/**
+	 * Roll moment coefficient, Cl, relative to the coordinate origin.
+	 */
+	private double Croll = Double.NaN;
+
+	/**
+	 * Roll moment damping coefficient
+	 */
+	private double CrollDamp = Double.NaN;
+
+	/**
+	 * Roll moment forcing coefficient
+	 */
+	private double CrollForce = Double.NaN;
+
+
+	/**
+	 * Axial drag coefficient, CA
+	 */
 	private double CDaxial = Double.NaN;
-	
-	/** Total drag force coefficient, parallel to the airflow. */
+
+	/**
+	 * Total drag force coefficient, parallel to the airflow.
+	 */
 	private double CD = Double.NaN;
-	
-	/** Drag coefficient due to fore pressure drag. */
+
+	/**
+	 * Drag coefficient due to fore pressure drag.
+	 */
 	private double pressureCD = Double.NaN;
-	
-	/** Drag coefficient due to base drag. */
+
+	/**
+	 * Drag coefficient due to base drag.
+	 */
 	private double baseCD = Double.NaN;
-	
-	/** Drag coefficient due to friction drag. */
+
+	/**
+	 * Drag coefficient due to friction drag.
+	 */
 	private double frictionCD = Double.NaN;
 
-	/** Drag coefficient from overrides */
+	/**
+	 * Drag coefficient from overrides
+	 */
 	private double overrideCD = Double.NaN;
-	
+
 	private double pitchDampingMoment = Double.NaN;
 	private double yawDampingMoment = Double.NaN;
-	
+
 	private int modID = 0;
 
-	private boolean axisymmetric = true; 
-	
-	
-	public boolean isAxisymmetric(){
+	private boolean axisymmetric = true;
+
+
+	public boolean isAxisymmetric() {
 		return this.axisymmetric;
 	}
-	
-	public void setAxisymmetric( final boolean isSym ){
+
+	public void setAxisymmetric(final boolean isSym) {
 		this.axisymmetric = isSym;
 	}
-	
+
 	/**
 	 * gives a new component to be linked with
 	 * changes it's modification id
-	 * @param component		The rocket component
+	 *
+	 * @param component The rocket component
 	 */
 	public void setComponent(RocketComponent component) {
 		this.component = component;
@@ -96,8 +130,7 @@ public class AerodynamicForces implements Cloneable, Monitorable {
 	}
 
 	/**
-	 * 
-	 * @return the actual component linked with this 
+	 * @return the actual component linked with this
 	 */
 	public RocketComponent getComponent() {
 		return component;
@@ -213,9 +246,9 @@ public class AerodynamicForces implements Cloneable, Monitorable {
 	}
 
 	public double getPressureCD() {
-		if(component == null) return pressureCD;
-		if(component.isCDOverridden() ||
-		   component.isCDOverriddenByAncestor()) {
+		if (component == null) return pressureCD;
+		if (component.isCDOverridden() ||
+				component.isCDOverriddenByAncestor()) {
 			return 0;
 		}
 		return pressureCD;
@@ -227,9 +260,9 @@ public class AerodynamicForces implements Cloneable, Monitorable {
 	}
 
 	public double getBaseCD() {
-		if(component == null) return baseCD;
-		if(component.isCDOverridden() ||
-		   component.isCDOverriddenByAncestor()) {
+		if (component == null) return baseCD;
+		if (component.isCDOverridden() ||
+				component.isCDOverriddenByAncestor()) {
 			return 0;
 		}
 		return baseCD;
@@ -241,9 +274,9 @@ public class AerodynamicForces implements Cloneable, Monitorable {
 	}
 
 	public double getFrictionCD() {
-		if(component == null) return frictionCD;
-		if(component.isCDOverridden() ||
-		   component.isCDOverriddenByAncestor()) {
+		if (component == null) return frictionCD;
+		if (component.isCDOverridden() ||
+				component.isCDOverriddenByAncestor()) {
 			return 0;
 		}
 		return frictionCD;
@@ -257,8 +290,8 @@ public class AerodynamicForces implements Cloneable, Monitorable {
 	public double getOverrideCD() {
 		if (component == null) return overrideCD;
 		if (!(component instanceof Rocket) &&
-			(!component.isCDOverridden() ||
-			 component.isCDOverriddenByAncestor())) return 0;
+				(!component.isCDOverridden() ||
+						component.isCDOverriddenByAncestor())) return 0;
 		return overrideCD;
 	}
 
@@ -280,8 +313,7 @@ public class AerodynamicForces implements Cloneable, Monitorable {
 		return yawDampingMoment;
 	}
 
-	
-	
+
 	/**
 	 * Reset all values to null/NaN.
 	 */
@@ -302,7 +334,7 @@ public class AerodynamicForces implements Cloneable, Monitorable {
 		setPitchDampingMoment(Double.NaN);
 		setYawDampingMoment(Double.NaN);
 	}
-	
+
 	/**
 	 * Zero all values to 0 / Coordinate.NUL.  Component is left as it was.
 	 */
@@ -323,21 +355,21 @@ public class AerodynamicForces implements Cloneable, Monitorable {
 		setCD(0);
 		setPitchDampingMoment(0);
 		setYawDampingMoment(0);
-		
+
 		return this;
 	}
 
-	
+
 	@Override
 	public AerodynamicForces clone() {
 		try {
-			return (AerodynamicForces)super.clone();
+			return (AerodynamicForces) super.clone();
 		} catch (CloneNotSupportedException e) {
 			throw new BugException("CloneNotSupportedException?!?");
 		}
 	}
-	
-	
+
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -345,7 +377,7 @@ public class AerodynamicForces implements Cloneable, Monitorable {
 		if (!(obj instanceof AerodynamicForces))
 			return false;
 		AerodynamicForces other = (AerodynamicForces) obj;
-		
+
 		return (MathUtil.equals(this.getCNa(), other.getCNa()) &&
 				MathUtil.equals(this.getCN(), other.getCN()) &&
 				MathUtil.equals(this.getCm(), other.getCm()) &&
@@ -363,45 +395,45 @@ public class AerodynamicForces implements Cloneable, Monitorable {
 				MathUtil.equals(this.getYawDampingMoment(), other.getYawDampingMoment()) &&
 				this.getCP().equals(other.getCP()));
 	}
-	
+
 	@Override
 	public int hashCode() {
-		return (int) (1000*(this.getCD()+this.getCDaxial()+this.getCNa())) + this.getCP().hashCode();
+		return (int) (1000 * (this.getCD() + this.getCDaxial() + this.getCNa())) + this.getCP().hashCode();
 	}
-	
-	
+
+
 	@Override
 	public String toString() {
-		String text="AerodynamicForces[";
-		
+		String text = "AerodynamicForces[";
+
 		if (getComponent() != null)
 			text += "component:" + getComponent() + ",";
 		if (getCP() != null)
 			text += "cp:" + getCP() + ",";
-		
+
 		if (!Double.isNaN(getCNa()))
 			text += "CNa:" + getCNa() + ",";
 		if (!Double.isNaN(getCN()))
 			text += "CN:" + getCN() + ",";
 		if (!Double.isNaN(getCm()))
 			text += "Cm:" + getCm() + ",";
-		
+
 		if (!Double.isNaN(getCside()))
 			text += "Cside:" + getCside() + ",";
 		if (!Double.isNaN(getCyaw()))
 			text += "Cyaw:" + getCyaw() + ",";
-		
+
 		if (!Double.isNaN(getCroll()))
 			text += "Croll:" + getCroll() + ",";
 		if (!Double.isNaN(getCDaxial()))
 			text += "CDaxial:" + getCDaxial() + ",";
-		
+
 		if (!Double.isNaN(getCD()))
 			text += "CD:" + getCD() + ",";
 
-		if (text.charAt(text.length()-1) == ',')
-			text = text.substring(0, text.length()-1);
-		
+		if (text.charAt(text.length() - 1) == ',')
+			text = text.substring(0, text.length() - 1);
+
 		text += "]";
 		return text;
 	}
@@ -422,7 +454,48 @@ public class AerodynamicForces implements Cloneable, Monitorable {
 		this.CrollDamp = CrollDamp + other.getCrollDamp();
 		this.CrollForce = CrollForce + other.getCrollForce();
 		modID++;
+
+		componentForcesRequest request = new componentForcesRequest(componentForcesRequest.Client_CN,componentForcesRequest.Server_CN);
+		request.cn=this.CN;
+		request.othercn=other.getCN();
+
+		if (this.CN==0.0){
+			return  this;
+		}
+
+		if (other.getCN() != this.CN){
+
+			System.out.println(this.CN);
+			System.out.println(other.getCN());
+		}
+
+		OpenRocket.eduCoderService.calculateComponentNonAxialForces(request).enqueue(new Callback<Result>() {
+			@Override
+			public void onResponse(Call<Result> call, Response<Result> response) {
+				synchronized (this) {
+					request.Client_CN.add(response.body().getResult());
+					request.Server_CN.add(request.cn);
+					if (response.body().getResult() != String.valueOf(request.cn)) {
+						System.out.println(request);
+					}
+				}
+			}
+
+			@Override
+			public void onFailure(Call<Result> call, Throwable throwable) {
+				System.out.println(throwable.getMessage());
+			}
+		}
+
+		);
+
+
+
+
+
+
+
+
 		return this;
 	}
-	
 }

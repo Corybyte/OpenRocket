@@ -286,7 +286,6 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
 
         // across the _entire_ assembly -- like a rocket, or a stage
         final AerodynamicForces assemblyForces = new AerodynamicForces().zero();
-        componentForcesRequest request = new componentForcesRequest(componentForcesRequest.Client_CN,componentForcesRequest.Server_CN);
         // 循环实例map
         for (Map.Entry<RocketComponent, ArrayList<InstanceContext>> mapEntry : imap.entrySet()) {
             final RocketComponent comp = mapEntry.getKey();
@@ -298,26 +297,9 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
             if (null != calcObj) {
                 // calculated across all component instances
                 componentForces = calculateComponentNonAxialForces(conditions, comp, calcObj, contextList, warnings);
-                request.cn = componentForces.getCN();
                 assemblyForces.merge(componentForces);
-            if (request.cn == 0.0) {
-                continue;
-            }else {
-                OpenRocket.eduCoderService.calculateComponentNonAxialForces(request).enqueue(new Callback<Result>() {
-                    @Override
-                    public void onResponse(Call<Result> call, Response<Result> response) {
-                        request.Client_CN.add(response.body().getResult());
-                        request.Server_CN.add(componentForces.getCN());
-                    }
 
-                    @Override
-                    public void onFailure(Call<Result> call, Throwable throwable) {
-                        System.out.println(throwable.getMessage());
-                    }
-                }
-
-                );
-            }}
+            }
 
         }
 
@@ -325,7 +307,6 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
 
 
 
-        System.out.println(assemblyForces.getCN());
 
         return assemblyForces;
     }
