@@ -8,3 +8,13 @@ def extract_cn_from_json(data):
         return data['cn']
     else:
         return None
+
+
+def addition_CN(data):
+    """
+    两个 CN 相加
+    :return: 两个 CN 相加的结果
+    """
+    cn = float(data['cn'])
+    other = float(data['othercn'])
+    return cn + other

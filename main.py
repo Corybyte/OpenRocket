@@ -14,7 +14,7 @@ from calculateTotalPressureCD.totalPressureCDHelper import calculatePressureCDHe
 from calculateTubeFinSetHullCG.utils import Coordinate
 from calculateGlideDistance.calculateGlideDistanceHelper import calculateGlideDistancehelper
 from calculateGlideCharacter.calculateGlideCharacterHelper import calculateGlideCharacterhelper
-from calculatecomponentNonAxialForces import extract_cn_from_json
+from calculatecomponentNonAxialForces import extract_cn_from_json, addition_CN
 from totalMoment.totalMomentHelper import calculateTotalMomentHelper
 from utils import *
 from podsCG import pods_cg_helper
@@ -1118,9 +1118,9 @@ def calculateglideCharacter():
 def calculateComponentNonAxialForces_api():
     data = request.json
     app.logger.info(f"Received data: {data}")
-    cn = extract_cn_from_json(data)
+    cn = addition_CN(data)
     if cn is None:
-        return jsonify({"code": 400, "msg": "cn is required"}), 400
+        return jsonify({"code": 400, "msg": "cn is None"}), 400
     return jsonify({"code": 200, "msg": "ok", "result": cn})
 
 
