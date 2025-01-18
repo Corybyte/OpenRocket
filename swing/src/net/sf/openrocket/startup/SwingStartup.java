@@ -131,7 +131,7 @@ public class SwingStartup {
         scheduler.scheduleAtFixedRate(() -> {
             try {
                 System.out.println("json....");
-                serializeObjectToJsonFile(OpenRocketDocumentFactory.mydoc.getRocket().getSelectedConfiguration().getActiveInstances(), "E://object.json");
+                serializeObjectToJsonFile(OpenRocketDocumentFactory.mydoc.getRocket().getSelectedConfiguration().getActiveInstances(), "E:/object.json");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -162,7 +162,9 @@ public class SwingStartup {
             try {
                 if (!(key instanceof Rocket)) {
                     // 直接将键序列化为对象形式，避免多层嵌套的字符串
-                    keysAsJson.add(mapper.convertValue(key, Map.class));
+                    Map map = mapper.convertValue(key, Map.class);
+                    map.put("rocketComponent",key.getClass().getSimpleName());
+                    keysAsJson.add(map);
                 }
             } catch (Exception e) {
                 e.printStackTrace();

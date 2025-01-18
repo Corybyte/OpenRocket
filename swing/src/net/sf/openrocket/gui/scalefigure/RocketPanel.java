@@ -925,7 +925,7 @@ public class RocketPanel extends JPanel implements TreeSelectionListener, Change
 				sims.add(sim);
 			}
 		}
-		runBackgroundSimulations(sims, duplicate);
+	//	runBackgroundSimulations(sims, duplicate);
 	}
 
 	/**
