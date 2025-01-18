@@ -97,7 +97,7 @@ def check(result, answer, dir):
             flag2 = False
         if flag and flag2:
             with open(os.path.join(dir, "result.txt"), 'w') as f:
-                f.write("Yes")
+                f.write("头歌实践教学平台欢迎你\n请认真作答\nYes")
         elif flag and not flag2:
             with open(os.path.join(dir, "result.txt"), 'w') as f:
                 f.write(" longitudinalUnitInertia Error")
@@ -110,10 +110,10 @@ def check(result, answer, dir):
     else:
         if equals(round(result, 5), round(answer, 5)):
             with open(os.path.join(dir, "result.txt"), 'w') as f:
-                f.write("Yes")
+                f.write("头歌实践教学平台欢迎你\n请认真作答\nYes")
         else:
             with open(os.path.join(dir, "result.txt"), 'w') as f:
-                f.write("No")
+                f.write("头歌实践教学平台欢迎你\n请认真作答\nNo")
 
 
 # NoseCone
@@ -137,7 +137,7 @@ def calculateNoseConeCG():
 def calculateNoseConeCP():
     app.logger.info(f"{request.json}")
     try:
-        cp = nose_cone_cp_helper.calculateCP(request.json)
+        cp = nose_cone_cp_helper.calculateNoseConeCP(request.json)
         error_file_path = "/data/workspace/myshixun/noseConeCP/error.txt"
         if os.path.exists(error_file_path):
             os.remove(error_file_path)
@@ -964,11 +964,13 @@ def check_json_api():
     # 新无序列表比较
     ret = check_list(json_a, json_b)
     if ret:
+        print("success")
         with open(file_path, 'w+') as f:
-            f.write("比对成功")
+            f.write("头歌实践教学平台欢迎你\n请认真作答\n比对成功")
     else:
+        print("fail")
         with open(file_path, 'w+') as f:
-            f.write("比对失败")
+            f.write("头歌实践教学平台欢迎你\n请认真作答\n比对失败")
 
     return jsonify({"code": 200, "msg": ret})
 
@@ -990,10 +992,13 @@ def check_json_api2():
     ret = check_list2(json_a, json_b)
     ret2 = check_list2(json_a2, json_b2)
     if ret and ret2:
+        print("success")
         with open(file_path, 'w+') as f:
-            f.write("比对成功")
+            f.write("头歌实践教学平台欢迎你\n请认真作答\n比对成功")
     else:
-        print("false")
+        print("fail")
+        with open(file_path, 'w+') as f:
+            f.write("头歌实践教学平台欢迎你\n请认真作答\n比对失败")
 
     return jsonify({"code": 200, "msg": ret})
 
@@ -1020,9 +1025,11 @@ def check_json_api4():
     if ret and ret2 and ret3:
         print("success")
         with open(file_path, 'w+') as f:
-            f.write("比对成功")
+            f.write("头歌实践教学平台欢迎你\n请认真作答\n比对成功")
     else:
-        print("false")
+        print("fail")
+        with open(file_path, 'w+') as f:
+            f.write("头歌实践教学平台欢迎你\n请认真作答\n比对失败")
 
     return jsonify({"code": 200, "msg": ret})
 
@@ -1069,17 +1076,31 @@ def calculateglideDistance():
         height = request.json['height']
         c_l = request.json['c_l']
         c_d = request.json['c_d']
-        answer = height / (1 / (c_l / c_d))
 
-        # check
-        if result == answer:
-            text = "比对成功，答案正确"
+        if c_l == 0 or c_d == 0:
+            text = "头歌实践教学平台欢迎你\n请认真作答\n比对成功"
         else:
-            text = "比对失败"
+            answer = height / (1 / (c_l / c_d))
+        # check
+            if result == answer:
+                print("success")
+                text = "头歌实践教学平台欢迎你\n请认真作答\n比对成功"
+            else:
+                print("fail")
+                text = "头歌实践教学平台欢迎你\n请认真作答\n比对失败"
         with open(os.path.join("calculateGlideDistance", "result.txt"), 'w') as f:
+            print(text)
             f.write(text)
         return {"code": 200, "msg": "ok", "result": result}
     except Exception as e:
+        error_message=""
+        if isinstance(e,ZeroDivisionError):
+            error_message += "当前火箭无法分离，请检查火箭模型"
+        with open(os.path.join("calculateGlideDistance", "error.txt"), 'w') as f:
+            print(error_message)
+            f.write(traceback.format_exc())
+            f.write(error_message)
+
         return jsonify({"code": 200, "msg": "error", "result": 0})
 
 
@@ -1089,8 +1110,7 @@ def calculateglideCharacter():
     try:
         print("--------")
         print(request.json)
-        result = calculateGlideCharacterhelper(request.json)
-        print(result)
+        result, result2 = calculateGlideCharacterhelper(request.json)
 
         # answer
         cl_max = request.json['max_cl']
@@ -1099,18 +1119,28 @@ def calculateglideCharacter():
         w = request.json['w']
         # 标准空气密度
         p = 1.225
-        V = math.sqrt((2 * n_max * w) / p * cl_max * refArea)
+        V = math.sqrt((2 * n_max * request.json['w']) / (p * cl_max * refArea))
         answer = V * V / (9.8 * math.sqrt(n_max * n_max - 1))
+        answer2 = 9.8 * math.sqrt(n_max * n_max - 1) / V
         # print(r)
         # check
-        if result == answer:
-            text = "比对成功，答案正确"
+        print(result)
+        print(result2)
+        print(answer)
+        print(answer2)
+        if result == answer and result2 == answer2:
+            print("success")
+            text = "头歌实践教学平台欢迎你\n请认真作答\n比对成功"
         else:
-            text = "比对失败"
+            print("fail")
+
+            text = "头歌实践教学平台欢迎你\n请认真作答\n比对失败"
         with open(os.path.join("calculateGlideCharacter", "result.txt"), 'w') as f:
             f.write(text)
         return {"code": 200, "msg": "ok", "result": 0}
     except Exception as e:
+        with open(os.path.join("calculateGlideCharacter", "error.txt"), 'w') as f:
+            f.write(traceback.format_exc())
         return jsonify({"code": 200, "msg": "error", "result": 0})
 
 
