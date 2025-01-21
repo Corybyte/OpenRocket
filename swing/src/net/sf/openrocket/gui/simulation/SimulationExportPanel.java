@@ -519,6 +519,9 @@ public class SimulationExportPanel extends JPanel {
 			leftTextArea.setLineWrap(true); // 自动换行
 			leftTextArea.setWrapStyleWord(true); // 仅在单词边界处换行
 			leftTextArea.setFont(new Font("Monospaced", Font.PLAIN, 14)); // 设置字体
+
+			System.out.println("size....");
+			System.out.println(TotalMomentRequest.Server_cn1.size());
 			leftTextArea.setText(TotalMomentRequest.Server_cn1.toString()+TotalMomentRequest.Server_cn2.toString()+TotalMomentRequest.Server_cn3.toString());
 			JScrollPane leftScrollPane = new JScrollPane(leftTextArea);
 			mainPanel.add(leftScrollPane);

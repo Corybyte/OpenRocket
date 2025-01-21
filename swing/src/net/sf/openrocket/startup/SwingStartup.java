@@ -445,7 +445,7 @@ public class SwingStartup {
                     if (info != null && info.getException() == null && info.getReleaseStatus() == ReleaseStatus.OLDER &&
                             !preferences.getIgnoreUpdateVersions().contains(info.getLatestRelease().getReleaseName())) {
                         UpdateInfoDialog infoDialog = new UpdateInfoDialog(info);
-                        infoDialog.setVisible(true);
+                     //   infoDialog.setVisible(true);
                     }
                 }
                 count--;

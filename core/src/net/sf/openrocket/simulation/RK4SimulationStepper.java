@@ -387,25 +387,39 @@ public class RK4SimulationStepper extends AbstractSimulationStepper {
                 FlightConditions conditions = store.flightConditions;
                 DataRequest3 totalMomentRequest = new DataRequest3(TotalMomentRequest.componentInstance, TotalMomentRequest.cnaLists,
                         TotalMomentRequest.cpLists, TotalMomentRequest.flags, conditions.getAOA(), conditions.getRefLength(), TotalMomentRequest.randomDouble,
-                        TotalMomentRequest.PitchDampingMoment, TotalMomentRequest.YawDampingMoment, store.rocketMass.getCM(), TotalMomentRequest.tubeFInsetFlags,TotalMomentRequest.cRollDamps,TotalMomentRequest.cRollForces);
+                        TotalMomentRequest.PitchDampingMoment, TotalMomentRequest.YawDampingMoment, store.rocketMass.getCM(), TotalMomentRequest.tubeFInsetFlags, TotalMomentRequest.cRollDamps, TotalMomentRequest.cRollForces);
 
-                TotalMomentRequest.Server_cn1.add(store.forces.getCm() - store.forces.getCN() * store.rocketMass.getCM().x / refLength);
-                TotalMomentRequest.Server_cn2.add(store.forces.getCyaw() - store.forces.getCside() * store.rocketMass.getCM().x / refLength);
-                TotalMomentRequest.Server_cn3.add(store.forces.getCroll());
+                double r1 = store.forces.getCm()-store.forces.getCN()*store.rocketMass.getCM().x/refLength;
+                double r2= store.forces.getCyaw()-store.forces.getCside()*store.rocketMass.getCM().x/refLength;
+                double r3=store.forces.getCroll();
                 OpenRocket.eduCoderService.calculateTotalMoment(totalMomentRequest).enqueue(new Callback<Result>() {
                     @Override
                     public void onResponse(Call<Result> call, Response<Result> response) {
                         ArrayList list = (ArrayList) response.body().getResult();
+                        if (list==null){
+                            list = new ArrayList();
+                            list.add(0);
+                            list.add(0);
+                            list.add(0);
+                        }
                         //ignore
                         synchronized (TotalMomentRequest.Client_cn1) {
                             TotalMomentRequest.Client_cn1.add(list.get(0));
+                            TotalMomentRequest.Server_cn1.add(r1);
+
                         }
                         synchronized (TotalMomentRequest.Client_cn2) {
                             TotalMomentRequest.Client_cn2.add(list.get(1));
+                            TotalMomentRequest.Server_cn2.add(r2);
+
                         }
                         synchronized (TotalMomentRequest.Client_cn3) {
                             TotalMomentRequest.Client_cn3.add(list.get(2));
+                            TotalMomentRequest.Server_cn3.add(r3);
+
                         }
+                        System.out.println(TotalMomentRequest.Server_cn1.size());
+                        System.out.println("size.....");
 
                     }
 
@@ -454,18 +468,18 @@ public class RK4SimulationStepper extends AbstractSimulationStepper {
 
         }
         if (store.flightConditions.getAOA() != 0 && store.flightConditions.getTheta() != 0) {
-            AccelerationRequest.server_cn.add(store.linearAcceleration);
-            AccelerationRequest.server_cn2.add(store.angularAcceleration);
+
 
             StabilityRequest stabilityRequest = new StabilityRequest(store.forces.getCP().x, store.rocketMass.getCM().x, refArea, System.nanoTime());
-            StabilityRequest.server_cn.add((store.forces.getCP().x - store.rocketMass.getCM().x) / refArea);
+            double r = (store.forces.getCP().x - store.rocketMass.getCM().x) / refArea;
+            Coordinate s1 = store.linearAcceleration;
+            Coordinate s2 = store.angularAcceleration;
             OpenRocket.eduCoderService.calculateStability(stabilityRequest).enqueue(new Callback<Result>() {
                 @Override
                 public void onResponse(Call<Result> call, Response<Result> response) {
                     //ignore
-                    synchronized (StabilityRequest.client_cn) {
-                        StabilityRequest.client_cn.add(response.body().getResult());
-                    }
+                    StabilityRequest.server_cn.add(r);
+                    StabilityRequest.client_cn.add(response.body().getResult());
 
                 }
 
@@ -483,14 +497,24 @@ public class RK4SimulationStepper extends AbstractSimulationStepper {
                 public void onResponse(Call<Result> call, Response<Result> response) {
 
                     try {
-                        ArrayList<ArrayList<Double>> result = (ArrayList) response.body().getResult();
-                        synchronized (AccelerationRequest.client_cn) {
-                            AccelerationRequest.client_cn.add(new Coordinate(result.get(0).get(0), result.get(0).get(1), result.get(0).get(2)));
-                        }
-                        synchronized (AccelerationRequest.client_cn2) {
-                            AccelerationRequest.client_cn2.add(new Coordinate(result.get(1).get(0), result.get(1).get(1), result.get(1).get(2)));
+                       Object result = response.body().getResult();
+                        //错误信息
+                        if (result instanceof String){
+                            AccelerationRequest.client_cn.add(result);//正确答案
+                        }else {
+                            ArrayList result2 = (ArrayList) result;
+                            ArrayList<Double> o1 = (ArrayList<Double>) result2.get(0);
+                            ArrayList<Double> o2 = (ArrayList<Double>) result2.get(1);
+                            AccelerationRequest.client_cn.add(new Coordinate(o1.get(0), o1.get(1), o1.get(2)));
+                            AccelerationRequest.client_cn2.add(new Coordinate(o2.get(0),o2.get(1), o2.get(2)));
 
                         }
+                        AccelerationRequest.server_cn.add(s1);
+                        AccelerationRequest.server_cn2.add(s2);
+
+
+
+
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

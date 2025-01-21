@@ -505,7 +505,7 @@ public class GeneralPreferencesPanel extends PreferencesPanel {
 				break;
 			case OLDER:
 				UpdateInfoDialog infoDialog = new UpdateInfoDialog(info);
-				infoDialog.setVisible(true);
+				//infoDialog.setVisible(true);
 		}
 	}
 }

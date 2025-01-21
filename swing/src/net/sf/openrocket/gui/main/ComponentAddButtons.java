@@ -836,16 +836,25 @@ public class ComponentAddButtons extends JPanel implements Scrollable {
             Constructor<AxialStage> stageConstructor = AxialStage.class.getConstructor();
             AxialStage stage = stageConstructor.newInstance();
             Constructor<NoseCone> coneConstructor = NoseCone.class.getConstructor();
+            //头锥
             NoseCone noseCone = coneConstructor.newInstance();
             //箭体
             Constructor<BodyTube> bodyTubeConstructor = BodyTube.class.getConstructor();
             BodyTube bodyTube = bodyTubeConstructor.newInstance();
+            //箭体2
+            Constructor<BodyTube> bodyTubeConstructor2 = BodyTube.class.getConstructor();
+            BodyTube bodyTube2 = bodyTubeConstructor2.newInstance();
             //自由曲面稳定
             Constructor<FreeformFinSet> freeformFinSetConstructor = FreeformFinSet.class.getConstructor();
             FreeformFinSet freeformFinSet = freeformFinSetConstructor.newInstance();
-            bodyTube.addChild(freeformFinSet);
+            //椭圆
+            Constructor<EllipticalFinSet> ellipticalFinSetConstructor = EllipticalFinSet.class.getConstructor();
+            EllipticalFinSet ellipticalFinSet = ellipticalFinSetConstructor.newInstance();
+            bodyTube.addChild(ellipticalFinSet);
+            bodyTube2.addChild(freeformFinSet);
             stage.addChild(noseCone,flag);
             stage.addChild(bodyTube,flag+1);
+            stage.addChild(bodyTube2,flag+2);
             stage.setName("滑翔机");
             component.addChild(stage,0);
 

@@ -271,8 +271,6 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 		// 去除自检
 		if (conditions.getAOA()!=0&&conditions.getTheta()!=0){
 			request.setInterpolatorValue(interpolator.getValue(conditions.getMach()));
-			//server端
-			request.server_cn.add(interpolator.getValue(conditions.getMach()) * frontalArea / conditions.getRefArea());
 			//发送请求
 
 			OpenRocket.eduCoderService.calculatePressureCD(request).enqueue(new Callback<Result>() {
@@ -280,8 +278,14 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 				@Override
 				public void onResponse(Call<Result> call, Response<Result> response) {
 					//ignore
-					Object result = response.body().getResult();
-					BodyPressureCDRequest.client_cn.add(result);
+
+					synchronized (BodyPressureCDRequest.client_cn){
+						Object result = response.body().getResult();
+						BodyPressureCDRequest.client_cn.add(result);
+					}
+					synchronized (BodyPressureCDRequest.server_cn){
+						BodyPressureCDRequest.server_cn.add(interpolator.getValue(conditions.getMach()) * frontalArea / conditions.getRefArea());
+					}
 
 				}
 

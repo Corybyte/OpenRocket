@@ -747,14 +747,19 @@ public class FinSetCalc extends RocketComponentCalc {
 			request.setThickness(thickness);
 			request.setTimestamp(System.nanoTime());
 			request.setRefArea(conditions.getRefArea());
-			FinsetPressureCDRequest.server_cn.add(cd);
+			double cd2= cd;
 			//发送请求
 			OpenRocket.eduCoderService.calculateFinsetPressureCD(request).enqueue(new Callback<Result>() {
 
 				@Override
 				public void onResponse(Call<Result> call, Response<Result> response) {
 					Object result = response.body().getResult();
-					FinsetPressureCDRequest.client_cn.add(result);
+					synchronized (FinsetPressureCDRequest.client_cn) {
+						FinsetPressureCDRequest.client_cn.add(result);
+					}
+					synchronized (FinsetPressureCDRequest.server_cn){
+						FinsetPressureCDRequest.server_cn.add(cd2);
+					}
 
 				}
 
