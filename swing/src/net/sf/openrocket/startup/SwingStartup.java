@@ -6,11 +6,14 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
 import java.util.stream.IntStream;
@@ -73,11 +76,18 @@ public class SwingStartup {
 
     private final static Logger log = LoggerFactory.getLogger(SwingStartup.class);
     private static BasicFrame start = null;
-
     /**
      * OpenRocket 启动主方法。
      */
     public static void main(final String[] args) throws Exception {
+        Thread thread1 = new Thread(()->{
+            watchDirectory("/tmp");
+        });
+        Thread thread2 = new Thread(() -> {
+            watchDirectory2("/data/workspace/myshixun");
+        });
+        thread1.start();
+        thread2.start();
         System.setProperty("jogl.disable.openglcore", "true"); // 禁用硬件加速
 
 
@@ -125,7 +135,10 @@ public class SwingStartup {
         if (args.length > 0) {
             System.out.println(args[0]);
         }
-        watchDirectory("/tmp");
+     //   watchDirectory("/tmp");
+
+      //  watchDirectory2("/data/workspace/myshixun");
+       // watchDirectory2("C:\\Users\\86704\\Desktop\\23cuw9jt");
 		//定时存json
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
         scheduler.scheduleAtFixedRate(() -> {
@@ -248,6 +261,77 @@ public class SwingStartup {
             e.printStackTrace();
         }
     }
+
+
+    public static void watchDirectory2(String directoryPath) {
+        // 存储目录与 WatchKey 的映射
+        Map<WatchKey, Path> keyPathMap = new HashMap<>();
+
+        try (WatchService watchService = FileSystems.getDefault().newWatchService()) {
+            // 确保路径为绝对路径
+            Path rootPath = Paths.get(directoryPath);
+
+            // 注册根目录及其所有子目录
+            Files.walkFileTree(rootPath, new SimpleFileVisitor<Path>() {
+                @Override
+                public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                    WatchKey key = dir.register(watchService, StandardWatchEventKinds.ENTRY_MODIFY);
+                    keyPathMap.put(key, dir);
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+
+            System.out.println("开始监听目录及其子目录: " + rootPath);
+
+            while (true) {
+                // 获取下一个事件
+                WatchKey key = watchService.take();
+
+                Path dir = keyPathMap.get(key);
+                if (dir == null) {
+                    System.err.println("监听器无法识别的事件来源");
+                    continue;
+                }
+
+                for (WatchEvent<?> event : key.pollEvents()) {
+                    // 获取事件类型和文件名
+                    WatchEvent.Kind<?> kind = event.kind();
+                    Path fileName = (Path) event.context();
+
+                    if (kind == StandardWatchEventKinds.ENTRY_MODIFY) {
+                        // 获取被修改文件的完整路径
+
+                        Path modifiedFilePath = dir.resolve(fileName);
+                        if (!modifiedFilePath.toString().contains(".pyc")) {
+                            continue;
+                        }
+
+
+                        // 获取父目录名称
+                        String parentDirectoryName = modifiedFilePath.getParent().getParent().getFileName().toString();
+
+                        System.out.println("文件已修改: " + modifiedFilePath);
+                        System.out.println("父目录名称: " + parentDirectoryName);
+                        // 保存标志
+                        OpenRocket.flag = parentDirectoryName;
+
+                    }
+                }
+
+                // 重置键以接收更多事件
+                if (!key.reset()) {
+                    keyPathMap.remove(key);
+                    if (keyPathMap.isEmpty()) {
+                        break; // 所有目录都已失效，退出监听
+                    }
+                }
+            }
+        } catch (IOException | InterruptedException e) {
+            System.err.println("监听器发生错误: " + e.getMessage());
+        }
+    }
+
+
 
     /**
      * Checks whether the Java Runtime Engine version is supported.

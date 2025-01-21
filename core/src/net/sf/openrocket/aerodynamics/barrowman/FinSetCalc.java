@@ -256,22 +256,24 @@ public class FinSetCalc extends RocketComponentCalc {
 		}
 
 		double finalCna = cna;
-		OpenRocket.eduCoderService.Wing_calculateCN(request).enqueue(new Callback<Result>() {
-			@Override
-			public void onResponse(Call<Result> call, Response<Result> response) {
-				synchronized (request.Client_CN){
-					request.Client_CN.add(response.body().getResult());
+		if (OpenRocket.flag.equals("windDemo")) {
+			OpenRocket.eduCoderService.Wing_calculateCN(request).enqueue(new Callback<Result>() {
+				@Override
+				public void onResponse(Call<Result> call, Response<Result> response) {
+					synchronized (request.Client_CN) {
+						request.Client_CN.add(response.body().getResult());
 
+					}
+					synchronized (request.Server_CN) {
+						request.Server_CN.add(finalCna * MathUtil.min(conditions.getAOA(), STALL_ANGLE));
+					}
 				}
-				synchronized (request.Server_CN){
-					request.Server_CN.add(finalCna * MathUtil.min(conditions.getAOA(), STALL_ANGLE));
-				}
-			}
 
-			@Override
-			public void onFailure(Call<Result> call, Throwable throwable) {
-			}
-		});
+				@Override
+				public void onFailure(Call<Result> call, Throwable throwable) {
+				}
+			});
+		}
 		
 	}
 	
@@ -747,27 +749,28 @@ public class FinSetCalc extends RocketComponentCalc {
 			request.setThickness(thickness);
 			request.setTimestamp(System.nanoTime());
 			request.setRefArea(conditions.getRefArea());
-			double cd2= cd;
+			FinsetPressureCDRequest.server_cn.add(cd);
+
 			//发送请求
-			OpenRocket.eduCoderService.calculateFinsetPressureCD(request).enqueue(new Callback<Result>() {
+			if (OpenRocket.flag.equals("calculateFinsetPCD")) {
+				OpenRocket.eduCoderService.calculateFinsetPressureCD(request).enqueue(new Callback<Result>() {
 
-				@Override
-				public void onResponse(Call<Result> call, Response<Result> response) {
-					Object result = response.body().getResult();
-					synchronized (FinsetPressureCDRequest.client_cn) {
-						FinsetPressureCDRequest.client_cn.add(result);
+					@Override
+					public void onResponse(Call<Result> call, Response<Result> response) {
+						Object result = response.body().getResult();
+						synchronized (FinsetPressureCDRequest.client_cn) {
+							FinsetPressureCDRequest.client_cn.add(result);
+						}
+
+
 					}
-					synchronized (FinsetPressureCDRequest.server_cn){
-						FinsetPressureCDRequest.server_cn.add(cd2);
+
+					@Override
+					public void onFailure(Call<Result> call, Throwable throwable) {
+						//ignore
 					}
-
-				}
-
-				@Override
-				public void onFailure(Call<Result> call, Throwable throwable) {
-					//ignore
-				}
-			});
+				});
+			}
 		}
 		
 		return cd;

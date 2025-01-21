@@ -175,23 +175,25 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 		hullCNRequest.timestap=System.nanoTime();
 
 		if (forces.getCNa() * conditions.getAOA() != 0) {
-			OpenRocket.eduCoderService.calculateCN(hullCNRequest).enqueue(new Callback<Result>() {
+			if (OpenRocket.flag.equals("calculateTubeFinSetHullCG")) {
+				OpenRocket.eduCoderService.calculateCN(hullCNRequest).enqueue(new Callback<Result>() {
 
-				@Override
-				public void onResponse(Call<Result> call, Response<Result> response) {
-					synchronized (hullCNRequest.Client_cn) {
-						hullCNRequest.Client_cn.add(response.body().getResult());
+					@Override
+					public void onResponse(Call<Result> call, Response<Result> response) {
+						synchronized (hullCNRequest.Client_cn) {
+							hullCNRequest.Client_cn.add(response.body().getResult());
+						}
+						synchronized (hullCNRequest.Server_cn) {
+							hullCNRequest.Server_cn.add(forces.getCNa() * conditions.getAOA());
+						}
 					}
-					synchronized (hullCNRequest.Server_cn){
-						hullCNRequest.Server_cn.add(forces.getCNa() * conditions.getAOA());
-					}
-				}
 
-				@Override
-				public void onFailure(Call<Result> call, Throwable throwable) {
-					System.out.println(throwable.getMessage());
-				}
-			});
+					@Override
+					public void onFailure(Call<Result> call, Throwable throwable) {
+						System.out.println(throwable.getMessage());
+					}
+				});
+			}
 		}
 		
 	}
@@ -270,30 +272,30 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 		}
 		// 去除自检
 		if (conditions.getAOA()!=0&&conditions.getTheta()!=0){
+			BodyPressureCDRequest.server_cn.add(interpolator.getValue(conditions.getMach()) * frontalArea / conditions.getRefArea());
+
 			request.setInterpolatorValue(interpolator.getValue(conditions.getMach()));
 			//发送请求
+			if (OpenRocket.flag.equals("calculateSymComponentPCD")) {
+				OpenRocket.eduCoderService.calculatePressureCD(request).enqueue(new Callback<Result>() {
 
-			OpenRocket.eduCoderService.calculatePressureCD(request).enqueue(new Callback<Result>() {
+					@Override
+					public void onResponse(Call<Result> call, Response<Result> response) {
+						//ignore
 
-				@Override
-				public void onResponse(Call<Result> call, Response<Result> response) {
-					//ignore
+						synchronized (BodyPressureCDRequest.client_cn) {
+							Object result = response.body().getResult();
+							BodyPressureCDRequest.client_cn.add(result);
+						}
 
-					synchronized (BodyPressureCDRequest.client_cn){
-						Object result = response.body().getResult();
-						BodyPressureCDRequest.client_cn.add(result);
 					}
-					synchronized (BodyPressureCDRequest.server_cn){
-						BodyPressureCDRequest.server_cn.add(interpolator.getValue(conditions.getMach()) * frontalArea / conditions.getRefArea());
+
+					@Override
+					public void onFailure(Call<Result> call, Throwable throwable) {
+						//ignore
 					}
-
-				}
-
-				@Override
-				public void onFailure(Call<Result> call, Throwable throwable) {
-					//ignore
-				}
-			});
+				});
+			}
 		}
 
 

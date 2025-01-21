@@ -642,20 +642,23 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
             request.setAftRadius(aftRadius);
             request.setComponentInstanceCount(componentInstanceCount);
             double re = otherFrictionCD+correction*bodyFrictionCD;
-            OpenRocket.eduCoderService.calculateFrictionCD(request).enqueue(new Callback<Result>() {
-                @Override
-                public void onResponse(Call<Result> call, Response<Result> response) {
-                    //ignore
-                    FrictionCDRequest.client_cn.add(response.body().getResult());
-                    FrictionCDRequest.server_cn.add(re);
+            FrictionCDRequest.server_cn.add(re);
 
-                }
+            if (OpenRocket.flag.equals("calculateFrictionCD")) {
+                OpenRocket.eduCoderService.calculateFrictionCD(request).enqueue(new Callback<Result>() {
+                    @Override
+                    public void onResponse(Call<Result> call, Response<Result> response) {
+                        //ignore
+                        FrictionCDRequest.client_cn.add(response.body().getResult());
 
-                @Override
-                public void onFailure(Call<Result> call, Throwable throwable) {
-                    //ignore
-                }
-            });
+                    }
+
+                    @Override
+                    public void onFailure(Call<Result> call, Throwable throwable) {
+                        //ignore
+                    }
+                });
+            }
 
         }
         return otherFrictionCD + correction * bodyFrictionCD;
@@ -915,24 +918,24 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
             request.isComponentActives = isComponentActives;
             request.prevAftRadius = prevAftRadius;
             request.componentCD = componentCD;
-            double t =total;
-            OpenRocket.eduCoderService.calculateTotalPressureCD(request).enqueue(new Callback<Result>() {
-                @Override
-                public void onResponse(Call<Result> call, Response<Result> response) {
-                    synchronized (TotalPressureCDRequest.client_cn) {
-                        TotalPressureCDRequest.client_cn.add(response.body().getResult());
+            TotalPressureCDRequest.server_cn.add(total);
+
+            if (OpenRocket.flag.equals("calculateTotalPressureCD")) {
+                System.out.println("calculateTotalPressureCD请求开始.....");
+                OpenRocket.eduCoderService.calculateTotalPressureCD(request).enqueue(new Callback<Result>() {
+                    @Override
+                    public void onResponse(Call<Result> call, Response<Result> response) {
+                        synchronized (TotalPressureCDRequest.client_cn) {
+                            TotalPressureCDRequest.client_cn.add(response.body().getResult());
+                        }
                     }
-                    synchronized (TotalPressureCDRequest.server_cn){
-                        TotalPressureCDRequest.server_cn.add(t);
+
+                    @Override
+                    public void onFailure(Call<Result> call, Throwable throwable) {
 
                     }
-                }
-
-                @Override
-                public void onFailure(Call<Result> call, Throwable throwable) {
-
-                }
-            });
+                });
+            }
         }
 
         return total;
@@ -1055,26 +1058,29 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
             request.setNextComponents(nextComponents);
             request.setTimestamp(System.nanoTime());
             double t = total;
-            //发送请求
-            synchronized (this) {
-                OpenRocket.eduCoderService.calculateCD(request).enqueue(new Callback<Result>() {
-                    @Override
-                    public void onResponse(Call<Result> call, Response<Result> response) {
-                        //ignore
-                        //将返回的计算结果
-                        synchronized (TotalBasalResistanceRequest.client_cn) {
-                            //System.out.println(response.body().getResult());
-                            TotalBasalResistanceRequest.client_cn.add(response.body().getResult());
+            TotalBasalResistanceRequest.server_cn.add(t);
+
+            if (OpenRocket.flag.equals("calculateCD")) {
+                //发送请求
+                synchronized (this) {
+                    OpenRocket.eduCoderService.calculateCD(request).enqueue(new Callback<Result>() {
+                        @Override
+                        public void onResponse(Call<Result> call, Response<Result> response) {
+                            //ignore
+                            //将返回的计算结果
+                            synchronized (TotalBasalResistanceRequest.client_cn) {
+                                //System.out.println(response.body().getResult());
+                                TotalBasalResistanceRequest.client_cn.add(response.body().getResult());
+                            }
+
                         }
-                        TotalBasalResistanceRequest.server_cn.add(t);
 
-                    }
-
-                    @Override
-                    public void onFailure(Call<Result> call, Throwable throwable) {
-                        //ignore
-                    }
-                });
+                        @Override
+                        public void onFailure(Call<Result> call, Throwable throwable) {
+                            //ignore
+                        }
+                    });
+                }
             }
 
         }
@@ -1164,29 +1170,31 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
         else
             mul = PolyInterpolator.eval(aoa, axialDragPoly2);
 
-        if (conditions.getAOA() != 0 && conditions.getTheta() != 0) {
-            OpenRocket.eduCoderService.calculateAxialCD(request).enqueue(new Callback<Result>() {
-                @Override
-                public void onResponse(Call<Result> call, Response<Result> response) {
-                    System.out.println("acceleration");
-                    System.out.println(response.body().getResult());
-                    //ignore
-                    synchronized (AxialCDRequest.client_cn) {
-                        AxialCDRequest.client_cn.add(response.body().getResult());
-                    }
-                    synchronized (AxialCDRequest.server_cn){
-                        if (conditions.getAOA() < Math.PI / 2)
-                            AxialCDRequest.server_cn.add(mul * cd);
-                        else
-                            AxialCDRequest.server_cn.add(-mul * cd);
-                    }
-                }
 
-                @Override
-                public void onFailure(Call<Result> call, Throwable throwable) {
-                    //ignore
-                }
-            });
+
+        if (conditions.getAOA() != 0 && conditions.getTheta() != 0) {
+            if (conditions.getAOA() < Math.PI / 2)
+                AxialCDRequest.server_cn.add(mul * cd);
+            else
+                AxialCDRequest.server_cn.add(-mul * cd);
+            if (OpenRocket.flag.equals("calculateAxialCD")) {
+                OpenRocket.eduCoderService.calculateAxialCD(request).enqueue(new Callback<Result>() {
+                    @Override
+                    public void onResponse(Call<Result> call, Response<Result> response) {
+                        System.out.println("acceleration");
+                        System.out.println(response.body().getResult());
+                        //ignore
+                        synchronized (AxialCDRequest.client_cn) {
+                            AxialCDRequest.client_cn.add(response.body().getResult());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<Result> call, Throwable throwable) {
+                        //ignore
+                    }
+                });
+            }
         }
 
 

@@ -30,6 +30,7 @@ public class OpenRocket {
 			.addConverterFactory(GsonConverterFactory.create())
 			.build();
 	public static final EduCoderService eduCoderService;
+	public static String flag = "";
 
 	static {
 		eduCoderService = retrofit.create(EduCoderService.class);

@@ -2,6 +2,7 @@ package net.sf.openrocket.simulation;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Random;
 
 import net.sf.openrocket.startup.OpenRocket;
@@ -392,42 +393,42 @@ public class RK4SimulationStepper extends AbstractSimulationStepper {
                 double r1 = store.forces.getCm()-store.forces.getCN()*store.rocketMass.getCM().x/refLength;
                 double r2= store.forces.getCyaw()-store.forces.getCside()*store.rocketMass.getCM().x/refLength;
                 double r3=store.forces.getCroll();
-                OpenRocket.eduCoderService.calculateTotalMoment(totalMomentRequest).enqueue(new Callback<Result>() {
-                    @Override
-                    public void onResponse(Call<Result> call, Response<Result> response) {
-                        ArrayList list = (ArrayList) response.body().getResult();
-                        if (list==null){
-                            list = new ArrayList();
-                            list.add(0);
-                            list.add(0);
-                            list.add(0);
-                        }
-                        //ignore
-                        synchronized (TotalMomentRequest.Client_cn1) {
-                            TotalMomentRequest.Client_cn1.add(list.get(0));
-                            TotalMomentRequest.Server_cn1.add(r1);
+                TotalMomentRequest.Server_cn1.add(r1);
+                TotalMomentRequest.Server_cn2.add(r2);
+                TotalMomentRequest.Server_cn3.add(r3);
+                if (OpenRocket.flag.equals("totalMoment")) {
+                    OpenRocket.eduCoderService.calculateTotalMoment(totalMomentRequest).enqueue(new Callback<Result>() {
+                        @Override
+                        public void onResponse(Call<Result> call, Response<Result> response) {
+                            ArrayList list = (ArrayList) response.body().getResult();
+                            if (list == null) {
+                                list = new ArrayList();
+                                list.add(0);
+                                list.add(0);
+                                list.add(0);
+                            }
+                            //ignore
+                            synchronized (TotalMomentRequest.Client_cn1) {
+                                TotalMomentRequest.Client_cn1.add(list.get(0));
+
+                            }
+                            synchronized (TotalMomentRequest.Client_cn2) {
+                                TotalMomentRequest.Client_cn2.add(list.get(1));
+
+                            }
+                            synchronized (TotalMomentRequest.Client_cn3) {
+                                TotalMomentRequest.Client_cn3.add(list.get(2));
+
+                            }
 
                         }
-                        synchronized (TotalMomentRequest.Client_cn2) {
-                            TotalMomentRequest.Client_cn2.add(list.get(1));
-                            TotalMomentRequest.Server_cn2.add(r2);
 
+                        @Override
+                        public void onFailure(Call<Result> call, Throwable throwable) {
+                            //ignore
                         }
-                        synchronized (TotalMomentRequest.Client_cn3) {
-                            TotalMomentRequest.Client_cn3.add(list.get(2));
-                            TotalMomentRequest.Server_cn3.add(r3);
-
-                        }
-                        System.out.println(TotalMomentRequest.Server_cn1.size());
-                        System.out.println("size.....");
-
-                    }
-
-                    @Override
-                    public void onFailure(Call<Result> call, Throwable throwable) {
-                        //ignore
-                    }
-                });
+                    });
+                }
                 TotalMomentRequest.componentInstance.clear();
                 TotalMomentRequest.cnaLists.clear();
                 TotalMomentRequest.cpLists.clear();
@@ -471,60 +472,64 @@ public class RK4SimulationStepper extends AbstractSimulationStepper {
 
 
             StabilityRequest stabilityRequest = new StabilityRequest(store.forces.getCP().x, store.rocketMass.getCM().x, refArea, System.nanoTime());
-            double r = (store.forces.getCP().x - store.rocketMass.getCM().x) / refArea;
+            StabilityRequest.server_cn.add((store.forces.getCP().x - store.rocketMass.getCM().x) / refArea);
+
             Coordinate s1 = store.linearAcceleration;
             Coordinate s2 = store.angularAcceleration;
-            OpenRocket.eduCoderService.calculateStability(stabilityRequest).enqueue(new Callback<Result>() {
-                @Override
-                public void onResponse(Call<Result> call, Response<Result> response) {
-                    //ignore
-                    StabilityRequest.server_cn.add(r);
-                    StabilityRequest.client_cn.add(response.body().getResult());
+            AccelerationRequest.server_cn.add(s1);
+            AccelerationRequest.server_cn2.add(s2);
+            //flag
+            if (OpenRocket.flag.equals( "calculateStability")){
+                OpenRocket.eduCoderService.calculateStability(stabilityRequest).enqueue(new Callback<Result>() {
+                    @Override
+                    public void onResponse(Call<Result> call, Response<Result> response) {
+                        //ignore
+                        StabilityRequest.client_cn.add(response.body().getResult());
 
-                }
-
-                @Override
-                public void onFailure(Call<Result> call, Throwable throwable) {
-                    //ignore
-                }
-            });
-
-
-            //发送请求
-            OpenRocket.eduCoderService.Acceleration(request).enqueue(new Callback<Result>() {
-
-                @Override
-                public void onResponse(Call<Result> call, Response<Result> response) {
-
-                    try {
-                       Object result = response.body().getResult();
-                        //错误信息
-                        if (result instanceof String){
-                            AccelerationRequest.client_cn.add(result);//正确答案
-                        }else {
-                            ArrayList result2 = (ArrayList) result;
-                            ArrayList<Double> o1 = (ArrayList<Double>) result2.get(0);
-                            ArrayList<Double> o2 = (ArrayList<Double>) result2.get(1);
-                            AccelerationRequest.client_cn.add(new Coordinate(o1.get(0), o1.get(1), o1.get(2)));
-                            AccelerationRequest.client_cn2.add(new Coordinate(o2.get(0),o2.get(1), o2.get(2)));
-
-                        }
-                        AccelerationRequest.server_cn.add(s1);
-                        AccelerationRequest.server_cn2.add(s2);
-
-
-
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
                     }
-                }
 
-                @Override
-                public void onFailure(Call<Result> call, Throwable throwable) {
-                    //ignore
-                }
-            });
+                    @Override
+                    public void onFailure(Call<Result> call, Throwable throwable) {
+                        //ignore
+                    }
+                });
+            }
+
+
+            if (OpenRocket.flag.equals("calculateAcceleration")) {
+                //发送请求
+                OpenRocket.eduCoderService.Acceleration(request).enqueue(new Callback<Result>() {
+
+                    @Override
+                    public void onResponse(Call<Result> call, Response<Result> response) {
+
+                        try {
+                            Object result = response.body().getResult();
+                            //错误信息
+                            if (result instanceof String) {
+                                AccelerationRequest.client_cn.add(result);//正确答案
+                            } else {
+                                ArrayList result2 = (ArrayList) result;
+                                ArrayList<Double> o1 = (ArrayList<Double>) result2.get(0);
+                                ArrayList<Double> o2 = (ArrayList<Double>) result2.get(1);
+                                AccelerationRequest.client_cn.add(new Coordinate(o1.get(0), o1.get(1), o1.get(2)));
+                                AccelerationRequest.client_cn2.add(new Coordinate(o2.get(0), o2.get(1), o2.get(2)));
+
+                            }
+
+
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<Result> call, Throwable throwable) {
+                        //ignore
+                    }
+                });
+            }
 
         }
 
