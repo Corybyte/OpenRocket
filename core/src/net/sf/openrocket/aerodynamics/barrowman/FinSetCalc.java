@@ -256,7 +256,7 @@ public class FinSetCalc extends RocketComponentCalc {
 		}
 
 		double finalCna = cna;
-		if (OpenRocket.flag.equals("windDemo")) {
+		if (OpenRocket.flag.equals("windDemo")||OpenRocket.flag.equals("")) {
 			OpenRocket.eduCoderService.Wing_calculateCN(request).enqueue(new Callback<Result>() {
 				@Override
 				public void onResponse(Call<Result> call, Response<Result> response) {
@@ -752,7 +752,7 @@ public class FinSetCalc extends RocketComponentCalc {
 			FinsetPressureCDRequest.server_cn.add(cd);
 
 			//发送请求
-			if (OpenRocket.flag.equals("calculateFinsetPCD")) {
+			if (OpenRocket.flag.equals("calculateFinsetPCD")||OpenRocket.flag.equals("")) {
 				OpenRocket.eduCoderService.calculateFinsetPressureCD(request).enqueue(new Callback<Result>() {
 
 					@Override

@@ -175,7 +175,7 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 		hullCNRequest.timestap=System.nanoTime();
 
 		if (forces.getCNa() * conditions.getAOA() != 0) {
-			if (OpenRocket.flag.equals("calculateTubeFinSetHullCG")) {
+			if (OpenRocket.flag.equals("calculateTubeFinSetHullCG")||OpenRocket.flag.equals("")) {
 				OpenRocket.eduCoderService.calculateCN(hullCNRequest).enqueue(new Callback<Result>() {
 
 					@Override
@@ -276,7 +276,7 @@ public class SymmetricComponentCalc extends RocketComponentCalc {
 
 			request.setInterpolatorValue(interpolator.getValue(conditions.getMach()));
 			//发送请求
-			if (OpenRocket.flag.equals("calculateSymComponentPCD")) {
+			if (OpenRocket.flag.equals("calculateSymComponentPCD")||OpenRocket.flag.equals("")) {
 				OpenRocket.eduCoderService.calculatePressureCD(request).enqueue(new Callback<Result>() {
 
 					@Override

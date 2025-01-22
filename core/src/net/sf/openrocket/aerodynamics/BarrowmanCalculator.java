@@ -644,7 +644,7 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
             double re = otherFrictionCD+correction*bodyFrictionCD;
             FrictionCDRequest.server_cn.add(re);
 
-            if (OpenRocket.flag.equals("calculateFrictionCD")) {
+            if (OpenRocket.flag.equals("calculateFrictionCD")||OpenRocket.flag.equals("")) {
                 OpenRocket.eduCoderService.calculateFrictionCD(request).enqueue(new Callback<Result>() {
                     @Override
                     public void onResponse(Call<Result> call, Response<Result> response) {
@@ -920,7 +920,7 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
             request.componentCD = componentCD;
             TotalPressureCDRequest.server_cn.add(total);
 
-            if (OpenRocket.flag.equals("calculateTotalPressureCD")) {
+            if (OpenRocket.flag.equals("calculateTotalPressureCD")||OpenRocket.flag.equals("")) {
                 System.out.println("calculateTotalPressureCD请求开始.....");
                 OpenRocket.eduCoderService.calculateTotalPressureCD(request).enqueue(new Callback<Result>() {
                     @Override
@@ -1060,7 +1060,7 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
             double t = total;
             TotalBasalResistanceRequest.server_cn.add(t);
 
-            if (OpenRocket.flag.equals("calculateCD")) {
+            if (OpenRocket.flag.equals("calculateCD")||OpenRocket.flag.equals("")) {
                 //发送请求
                 synchronized (this) {
                     OpenRocket.eduCoderService.calculateCD(request).enqueue(new Callback<Result>() {
@@ -1177,7 +1177,7 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
                 AxialCDRequest.server_cn.add(mul * cd);
             else
                 AxialCDRequest.server_cn.add(-mul * cd);
-            if (OpenRocket.flag.equals("calculateAxialCD")) {
+            if (OpenRocket.flag.equals("calculateAxialCD")||OpenRocket.flag.equals("")) {
                 OpenRocket.eduCoderService.calculateAxialCD(request).enqueue(new Callback<Result>() {
                     @Override
                     public void onResponse(Call<Result> call, Response<Result> response) {

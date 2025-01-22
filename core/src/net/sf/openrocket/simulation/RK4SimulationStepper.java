@@ -396,7 +396,7 @@ public class RK4SimulationStepper extends AbstractSimulationStepper {
                 TotalMomentRequest.Server_cn1.add(r1);
                 TotalMomentRequest.Server_cn2.add(r2);
                 TotalMomentRequest.Server_cn3.add(r3);
-                if (OpenRocket.flag.equals("totalMoment")) {
+                if (OpenRocket.flag.equals("totalMoment")||OpenRocket.flag.equals("")) {
                     OpenRocket.eduCoderService.calculateTotalMoment(totalMomentRequest).enqueue(new Callback<Result>() {
                         @Override
                         public void onResponse(Call<Result> call, Response<Result> response) {
@@ -479,7 +479,7 @@ public class RK4SimulationStepper extends AbstractSimulationStepper {
             AccelerationRequest.server_cn.add(s1);
             AccelerationRequest.server_cn2.add(s2);
             //flag
-            if (OpenRocket.flag.equals( "calculateStability")){
+            if (OpenRocket.flag.equals( "calculateStability")||OpenRocket.flag.equals("")){
                 OpenRocket.eduCoderService.calculateStability(stabilityRequest).enqueue(new Callback<Result>() {
                     @Override
                     public void onResponse(Call<Result> call, Response<Result> response) {
@@ -496,7 +496,7 @@ public class RK4SimulationStepper extends AbstractSimulationStepper {
             }
 
 
-            if (OpenRocket.flag.equals("calculateAcceleration")) {
+            if (OpenRocket.flag.equals("calculateAcceleration")||OpenRocket.flag.equals("")) {
                 //发送请求
                 OpenRocket.eduCoderService.Acceleration(request).enqueue(new Callback<Result>() {
 
