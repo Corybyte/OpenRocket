@@ -757,8 +757,8 @@ public class FinSetCalc extends RocketComponentCalc {
 
 					@Override
 					public void onResponse(Call<Result> call, Response<Result> response) {
-						Object result = response.body().getResult();
 						synchronized (FinsetPressureCDRequest.client_cn) {
+							Object result = response.body().getResult();
 							FinsetPressureCDRequest.client_cn.add(result);
 						}
 

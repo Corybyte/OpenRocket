@@ -649,7 +649,9 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
                     @Override
                     public void onResponse(Call<Result> call, Response<Result> response) {
                         //ignore
-                        FrictionCDRequest.client_cn.add(response.body().getResult());
+                        synchronized (FinsetPressureCDRequest.client_cn) {
+                            FrictionCDRequest.client_cn.add(response.body().getResult());
+                        }
 
                     }
 
@@ -1181,8 +1183,6 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
                 OpenRocket.eduCoderService.calculateAxialCD(request).enqueue(new Callback<Result>() {
                     @Override
                     public void onResponse(Call<Result> call, Response<Result> response) {
-                        System.out.println("acceleration");
-                        System.out.println(response.body().getResult());
                         //ignore
                         synchronized (AxialCDRequest.client_cn) {
                             AxialCDRequest.client_cn.add(response.body().getResult());

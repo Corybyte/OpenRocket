@@ -484,7 +484,9 @@ public class RK4SimulationStepper extends AbstractSimulationStepper {
                     @Override
                     public void onResponse(Call<Result> call, Response<Result> response) {
                         //ignore
-                        StabilityRequest.client_cn.add(response.body().getResult());
+                        synchronized (StabilityRequest.client_cn) {
+                            StabilityRequest.client_cn.add(response.body().getResult());
+                        }
 
                     }
 
@@ -504,19 +506,20 @@ public class RK4SimulationStepper extends AbstractSimulationStepper {
                     public void onResponse(Call<Result> call, Response<Result> response) {
 
                         try {
-                            Object result = response.body().getResult();
-                            //错误信息
-                            if (result instanceof String) {
-                                AccelerationRequest.client_cn.add(result);//正确答案
-                            } else {
-                                ArrayList result2 = (ArrayList) result;
-                                ArrayList<Double> o1 = (ArrayList<Double>) result2.get(0);
-                                ArrayList<Double> o2 = (ArrayList<Double>) result2.get(1);
-                                AccelerationRequest.client_cn.add(new Coordinate(o1.get(0), o1.get(1), o1.get(2)));
-                                AccelerationRequest.client_cn2.add(new Coordinate(o2.get(0), o2.get(1), o2.get(2)));
+                            synchronized (AccelerationRequest.client_cn) {
+                                Object result = response.body().getResult();
+                                //错误信息
+                                if (result instanceof String) {
+                                    AccelerationRequest.client_cn.add(result);//正确答案
+                                } else {
+                                    ArrayList result2 = (ArrayList) result;
+                                    ArrayList<Double> o1 = (ArrayList<Double>) result2.get(0);
+                                    ArrayList<Double> o2 = (ArrayList<Double>) result2.get(1);
+                                    AccelerationRequest.client_cn.add(new Coordinate(o1.get(0), o1.get(1), o1.get(2)));
+                                    AccelerationRequest.client_cn2.add(new Coordinate(o2.get(0), o2.get(1), o2.get(2)));
 
+                                }
                             }
-
 
 
                         } catch (Exception e) {
