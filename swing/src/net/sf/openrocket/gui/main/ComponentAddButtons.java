@@ -8,6 +8,7 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -28,9 +29,11 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
+import net.sf.openrocket.database.Databases;
 import net.sf.openrocket.document.OpenRocketDocumentFactory;
+import net.sf.openrocket.material.Material;
 import net.sf.openrocket.rocketcomponent.*;
-import net.sf.openrocket.util.ArrayList;
+import net.sf.openrocket.util.Coordinate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -838,18 +841,50 @@ public class ComponentAddButtons extends JPanel implements Scrollable {
             Constructor<NoseCone> coneConstructor = NoseCone.class.getConstructor();
             //头锥
             NoseCone noseCone = coneConstructor.newInstance();
+            noseCone.setShapeType(Transition.Shape.ELLIPSOID);
+            noseCone.setShapeParameter(0);
+            noseCone.setBaseRadius(0.0175);
+            noseCone.setMaterial(Databases.BULK_MATERIAL.get(20));
+
             //箭体
             Constructor<BodyTube> bodyTubeConstructor = BodyTube.class.getConstructor();
             BodyTube bodyTube = bodyTubeConstructor.newInstance();
+            bodyTube.setLength(0.1);
             //箭体2
             Constructor<BodyTube> bodyTubeConstructor2 = BodyTube.class.getConstructor();
             BodyTube bodyTube2 = bodyTubeConstructor2.newInstance();
+            bodyTube2.setLength(0.1);
             //自由曲面稳定
             Constructor<FreeformFinSet> freeformFinSetConstructor = FreeformFinSet.class.getConstructor();
             FreeformFinSet freeformFinSet = freeformFinSetConstructor.newInstance();
+            freeformFinSet.setFinCount(2);
+            freeformFinSet.setCrossSection(FinSet.CrossSection.AIRFOIL);
+            freeformFinSet.setMaterial(Databases.BULK_MATERIAL.get(20));
+            freeformFinSet.setFilletMaterial(Databases.BULK_MATERIAL.get(20));
+            ArrayList<Coordinate> coordinates = new ArrayList<>();
+            coordinates.add(new Coordinate(0, 0));
+            coordinates.add(new Coordinate(0.00791, 0.0348));
+            coordinates.add(new Coordinate(0.0145, 0.0595));
+            coordinates.add(new Coordinate(0.0211, 0.0688));
+            coordinates.add(new Coordinate(0.0318, 0.0715));
+            coordinates.add(new Coordinate(0.0398, 0.0693));
+            coordinates.add(new Coordinate(0.0478, 0.0649));
+            coordinates.add(new Coordinate(0.0516, 0.0526));
+            coordinates.add(new Coordinate(0.0516, 0.042));
+            coordinates.add(new Coordinate(0.0508, 0.0204));
+            coordinates.add(new Coordinate(0.05, 0));
+            freeformFinSet.setPoints(coordinates);
             //椭圆
             Constructor<EllipticalFinSet> ellipticalFinSetConstructor = EllipticalFinSet.class.getConstructor();
             EllipticalFinSet ellipticalFinSet = ellipticalFinSetConstructor.newInstance();
+            ellipticalFinSet.setFinCount(2);
+            ellipticalFinSet.setLength(0.07);
+            ellipticalFinSet.setHeight(0.2);
+            ellipticalFinSet.setAxialOffset(-0.03);
+//            ellipticalFinSet.setMaterial(Material.Typ);
+            ellipticalFinSet.setMaterial(Databases.BULK_MATERIAL.get(21));
+            ellipticalFinSet.setFilletMaterial(Databases.BULK_MATERIAL.get(20));
+            ellipticalFinSet.setCrossSection(FinSet.CrossSection.AIRFOIL);
             bodyTube.addChild(ellipticalFinSet);
             bodyTube2.addChild(freeformFinSet);
             stage.addChild(noseCone,flag);
