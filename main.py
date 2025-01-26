@@ -1077,17 +1077,14 @@ def calculateglideDistance():
         c_l = request.json['c_l']
         c_d = request.json['c_d']
 
-        if c_l == 0 or c_d == 0:
+        answer = height / (1 / (c_l / c_d))
+        # check
+        if result == answer:
+            print("success")
             text = "头歌实践教学平台欢迎你\n请认真作答\n比对成功"
         else:
-            answer = height / (1 / (c_l / c_d))
-        # check
-            if result == answer:
-                print("success")
-                text = "头歌实践教学平台欢迎你\n请认真作答\n比对成功"
-            else:
-                print("fail")
-                text = "头歌实践教学平台欢迎你\n请认真作答\n比对失败"
+            print("fail")
+            text = "头歌实践教学平台欢迎你\n请认真作答\n比对失败"
         with open(os.path.join("calculateGlideDistance", "result.txt"), 'w') as f:
             print(text)
             f.write(text)
@@ -1155,4 +1152,4 @@ def calculateComponentNonAxialForces_api():
 
 
 if __name__ == '__main__':
-    app.run(host="127.0.0.1", port=8080, debug=True)
+    app.run(host="127.0.0.1", port=8080,debug=True, threaded=True)
