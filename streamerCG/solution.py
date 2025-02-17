@@ -1,4 +1,4 @@
 def calculateCG(length: float) -> float:
     ############### Begin ###############
-    pass
+    return length / 2
     ############### End #################

@@ -1,4 +1,4 @@
 def calculateCG(length):
     ############### Begin ###############
-    pass
+    return length / 2
     ############### End ###############

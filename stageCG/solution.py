@@ -1,4 +1,4 @@
 def calculateCG() -> float:
     ############### Begin ###############
-    pass
+    return 0
     ############### End #################

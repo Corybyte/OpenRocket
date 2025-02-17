@@ -13,6 +13,13 @@ def calculateCG(l, r1, r2) :
         tuple[float, float]: A tuple containing the volume (as mass) and the CG of the frustum. (cg, volume)
     """
     eps = 0.00000001
-    ############### Begin #############
-    pass
+    ############### Begin ###############
+    volume = l * (math.pow(r1, 2) + r1 * r2 + math.pow(r2, 2))
+    volume *= math.pi / 3.0
+    cg = 0
+    if volume < eps:
+        cg = l / 2.0
+    else:
+        cg = l * (math.pow(r1, 2) + 2.0 * r1 * r2 + 3 * math.pow(r2, 2)) / (4.0 * (math.pow(r1, 2) + r1 * r2 + math.pow(r2, 2)))
+    return (cg, volume)
     ############### End ###############

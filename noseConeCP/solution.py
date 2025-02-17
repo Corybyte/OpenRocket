@@ -24,6 +24,21 @@ def average(a, b):
 def calculateCP(foreRadius, aftRadius, length, fullVolume,
                 mach, AOA, planformCenter, planformArea,
                 refArea, sinAOA, sincAOA):
-    ############### Begin #############
-    pass
+    ############### Begin ###############
+    # 计算前端和后端的截面积
+    A0 = math.pi * math.pow(foreRadius, 2)
+    A1 = math.pi * math.pow(aftRadius, 2)
+    # 计算法向力系数增量（cnaCache）和压力中心位置（cpCache）
+    cnaCache = 2 * (A1 - A0)
+    cpCache = (length * A1 - fullVolume) / (A1 - A0)
+    # 创建包含压力中心和力矩的四元组 a
+    a = (cpCache, 0, 0, cnaCache * sincAOA / refArea)
+    # 根据速度和攻角调整影响系数 mul
+    mul = 1
+    if mach < 0.05 and AOA > math.pi / 4:
+        mul = math.pow(mach / 0.05, 2)
+    # 创建包含平面贡献的四元组 b
+    b = (planformCenter, 0, 0, mul * 1.1 * planformArea / refArea * sinAOA * sincAOA)
+    cp = average(a, b)
+    return cp
     ############### End ###############

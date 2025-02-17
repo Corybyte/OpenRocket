@@ -1,7 +1,5 @@
 import math
 import numpy as np
-
-
 class ForceCalculate1:
     def __init__(self):
         # 损失系数sigma
@@ -34,7 +32,6 @@ class ForceCalculate1:
         self.t_max = 9000
         # 时间步长
         self.dt = 1e-5
-
     def calculate_onestep(self, t, V, dV):
         # 取回数值
         P1 = self.P1
@@ -57,26 +54,20 @@ class ForceCalculate1:
         ddV = (-gamma * C0 * V ** (-gamma - 1) - k) / (2 * C1)
         ##########################################################
         return dV, ddV
-
     def RK4(self, t, Vt, dVt):
         # RK4积分单步
         dt = self.dt
         dV1, ddV0 = self.calculate_onestep(t, Vt, dVt)
         dV1, ddV1 = self.calculate_onestep(t, Vt, dV1)
-
         dV2, ddV0 = self.calculate_onestep(t + dt / 2, Vt + dV1 / 2 * dt, dVt + ddV1 / 2 * dt)
         dV2, ddV2 = self.calculate_onestep(t + dt / 2, Vt + dV1 / 2 * dt, dV2 + ddV1 / 2 * dt)
-
         dV3, ddV0 = self.calculate_onestep(t + dt / 2, Vt + dV2 / 2 * dt, dVt + ddV2 / 2 * dt)
         dV3, ddV3 = self.calculate_onestep(t + dt / 2, Vt + dV2 / 2 * dt, dV3 + ddV2 / 2 * dt)
-
         dV4, ddV0 = self.calculate_onestep(t + dt, Vt + dV3 * dt, dVt + ddV3 * dt)
         dV4, ddV4 = self.calculate_onestep(t + dt, Vt + dV3 * dt, dV4 + ddV3 * dt)
-
         dV_all = (dV1 + 2 * dV2 + 2 * dV3 + dV4) / 6
         ddV_all = (ddV1 + 2 * ddV2 + 2 * ddV3 + ddV4) / 6
         return dV_all, ddV_all
-
     def calculate(self):
         #
         # 定义待循环变量
@@ -104,38 +95,33 @@ class ForceCalculate1:
             # RK4积分
             Vt = V
             dVt = dV
-
             dV_all, ddV_all = self.RK4(t, Vt, dVt)
-
             # 数据迭代
             V = V + dV_all * dt
             dV = dV_all
             t = t + dt
             ############### Begin ###############
             # 推力数据，直接带公式
-
-
-
-
+            v_up = 1 / self.S0 * dV
+            v_out = v_up * self.S0 / self.S1
+            dv_up = 1 / self.S0 * ddV_all
+            dv_out = dv_up * self.S0 / self.S1
+            dm = self.rho * dV
+            F = dm * (v_out - v_up) + self.rho * (self.V0 - V) * dv_up
             ############### End #################
             # 数据存储
             Vs.append(V)
             ts.append(t)
             Fs.append(F)
         return ts, Vs, Fs
-
-
 def sample_list(lst, target_length=10000):
     # 计算采样间隔
     interval = len(lst) // target_length
-
     # 每隔interval个元素取一个，直到取到target_length个
     sampled_list = lst[::interval]
-
     # 如果取样后列表长度超过了目标长度，截取前target_length个
     if len(sampled_list) > target_length:
         sampled_list = sampled_list[:target_length]
-
     return sampled_list
 def functions():
     M = ForceCalculate1()
@@ -144,11 +130,11 @@ def functions():
     ts = np.array(ts)
     ############### Begin ###############
     # 质量、直径、长度、设计者姓名、发动机名称
-
-
-
-
-
+    weight = 0
+    diameter = 0
+    length = 0
+    designName = 'myName'
+    commonName = 'myMotor'
     ############### End #################
     print(len(sample_list(ts[1:].tolist())))
     return sample_list(ts[1:].tolist()), sample_list(Fs.tolist()), [weight], [diameter], [length], [designName], [commonName]

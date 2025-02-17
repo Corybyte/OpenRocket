@@ -1,10 +1,8 @@
 def calculate_unit_rot_moi():
     ############### Begin #############
-    pass
+    return 0
     ############### End ###############
-
-
 def calculate_Long_moi():
     ############### Begin #############
-    pass
+    return 0
     ############### End ###############
