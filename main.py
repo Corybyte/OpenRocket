@@ -798,7 +798,7 @@ def calculatePoint():
     try:
         result = myPoint.point()
         with open(os.path.join("motorPoint", "result.txt"), 'w') as f:
-            f.write("发动机数据点加载成功")
+            f.write("发动机推力曲线加载成功")
         return {"code": 200, "msg": "ok", "result": result}
     except Exception:
         with open(os.path.join("motorPoint", "error.txt"), 'w') as f:
@@ -812,7 +812,7 @@ def calculateFunction():
     try:
         result = myFunction.functions()
         with open(os.path.join("motorFunction", "result.txt"), 'w') as f:
-            f.write("发动机数据点加载成功")
+            f.write("发动机推力曲线加载成功")
         return {"code": 200, "msg": "ok", "result": result}
     except Exception:
         with open(os.path.join("motorFunction", "error.txt"), 'w') as f:
@@ -1136,6 +1136,7 @@ def calculateglideCharacter():
             f.write(text)
         return {"code": 200, "msg": "ok", "result": 0}
     except Exception as e:
+        print("写入错误文档2....")
         with open(os.path.join("calculateGlideCharacter", "error.txt"), 'w') as f:
             f.write(traceback.format_exc())
         return jsonify({"code": 200, "msg": "error", "result": 0})
@@ -1152,4 +1153,4 @@ def calculateComponentNonAxialForces_api():
 
 
 if __name__ == '__main__':
-    app.run(host="127.0.0.1", port=8080,debug=False, threaded=True)
+    app.run(host="127.0.0.1", port=8080,debug=True, threaded=True)
