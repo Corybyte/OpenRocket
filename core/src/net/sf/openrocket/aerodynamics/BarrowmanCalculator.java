@@ -921,23 +921,26 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
             request.prevAftRadius = prevAftRadius;
             request.componentCD = componentCD;
             synchronized (BarrowmanCalculator.class) {
-                TotalPressureCDRequest.server_cn.add(total);
-            }
-            if (OpenRocket.flag.equals("calculateTotalPressureCD")||OpenRocket.flag.equals("")) {
-                System.out.println("calculateTotalPressureCD请求开始.....");
-                OpenRocket.eduCoderService.calculateTotalPressureCD(request).enqueue(new Callback<Result>() {
-                    @Override
-                    public void onResponse(Call<Result> call, Response<Result> response) {
-                        synchronized (TotalPressureCDRequest.client_cn) {
-                            TotalPressureCDRequest.client_cn.add(response.body().getResult());
+                long time = System.currentTimeMillis();
+
+                TotalPressureCDRequest.server_cn.add("[" + time + "]" + total);
+                OpenRocket.flag = "calculateTotalPressureCD";
+                if (OpenRocket.flag.equals("calculateTotalPressureCD") || OpenRocket.flag.equals("")) {
+                    System.out.println("calculateTotalPressureCD请求开始.....");
+                    OpenRocket.eduCoderService.calculateTotalPressureCD(request).enqueue(new Callback<Result>() {
+                        @Override
+                        public void onResponse(Call<Result> call, Response<Result> response) {
+                            synchronized (TotalPressureCDRequest.client_cn) {
+                                TotalPressureCDRequest.client_cn.add("[" + time + "]" + response.body().getResult());
+                            }
                         }
-                    }
 
-                    @Override
-                    public void onFailure(Call<Result> call, Throwable throwable) {
+                        @Override
+                        public void onFailure(Call<Result> call, Throwable throwable) {
 
-                    }
-                });
+                        }
+                    });
+                }
             }
         }
 

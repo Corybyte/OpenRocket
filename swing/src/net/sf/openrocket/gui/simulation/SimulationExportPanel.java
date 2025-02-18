@@ -8,6 +8,8 @@ import java.awt.event.ItemListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -595,6 +597,12 @@ public class SimulationExportPanel extends JPanel {
 			JScrollPane leftScrollPane = new JScrollPane(leftTextArea);
 			mainPanel.add(leftScrollPane);
 
+			net.sf.openrocket.util.ArrayList client = removeTimestamp(TotalPressureCDRequest.client_cn);
+			net.sf.openrocket.util.ArrayList server = removeTimestamp(TotalPressureCDRequest.server_cn);
+
+			sortByTimestamp(TotalPressureCDRequest.server_cn);
+			sortByTimestamp(TotalPressureCDRequest.client_cn);
+
 			// 右边的小文本框
 			JTextArea rightTextArea = new JTextArea();
 			rightTextArea.setLineWrap(true); // 自动换行
@@ -612,8 +620,9 @@ public class SimulationExportPanel extends JPanel {
 			closeButton.addActionListener(ev -> dialog.dispose()); // 点击按钮时关闭对话框
 
 			// 创建一个新的按钮
-			DataRequest request = new DataRequest(TotalPressureCDRequest.client_cn, TotalPressureCDRequest.server_cn);
-			System.out.println(TotalPressureCDRequest.client_cn.toString());
+
+//			System.out.println(TotalPressureCDRequest.client_cn);
+			DataRequest request = new DataRequest(client, server);
 			JButton checkButton = new JButton("数据同步与测评");
 			checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.checkJSON(request).enqueue(new Callback<Result>() {
 				@Override
@@ -625,6 +634,8 @@ public class SimulationExportPanel extends JPanel {
 					System.out.println(throwable.getMessage());
 				}
 			}));
+
+
 
 
 
@@ -943,7 +954,57 @@ public class SimulationExportPanel extends JPanel {
 			updateSelectedCount();
 			this.fireTableDataChanged();
 		}
+
 		
+	}
+	public static net.sf.openrocket.util.ArrayList<Double> removeTimestamp(ArrayList<String> list) {
+		net.sf.openrocket.util.ArrayList<Double> processedList = new net.sf.openrocket.util.ArrayList<>();
+		for (String item : list) {
+			// 找到时间戳结束的位置（即 "]")
+			int endIndex = item.indexOf("]");
+			if (endIndex != -1) {
+				// 提取数据部分
+				String data = item.substring(endIndex + 1);
+				processedList.add(Double.parseDouble(data));
+			} else {
+				// 如果没有时间戳，直接添加整个字符串
+//				processedList.add(item);
+			}
+		}
+		return processedList;
+	}
+	public static net.sf.openrocket.util.ArrayList<String> sortByTimestamp(net.sf.openrocket.util.ArrayList<String> list) {
+		// 使用自定义比较器对列表进行排序
+		Collections.sort(list, new Comparator<String>() {
+			@Override
+			public int compare(String s1, String s2) {
+				// 提取 s1 的时间戳
+				long timestamp1 = extractTimestamp(s1);
+				// 提取 s2 的时间戳
+				long timestamp2 = extractTimestamp(s2);
+				// 比较时间戳
+				return Long.compare(timestamp1, timestamp2);
+			}
+		});
+
+		return list;
+	}
+
+	/**
+	 * 从字符串中提取时间戳
+	 *
+	 * @param s 格式为 [时间戳]数据 的字符串
+	 * @return 时间戳
+	 */
+	private static long extractTimestamp(String s) {
+		// 找到时间戳结束的位置（即 "]")
+		int endIndex = s.indexOf("]");
+		if (endIndex != -1) {
+			// 提取时间戳部分并转换为 long
+			return Long.parseLong(s.substring(1, endIndex));
+		}
+		// 如果格式不正确，返回 0（可以根据需求调整）
+		return 0;
 	}
 	
 }
