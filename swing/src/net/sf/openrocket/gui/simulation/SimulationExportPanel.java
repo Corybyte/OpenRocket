@@ -198,7 +198,7 @@ public class SimulationExportPanel extends JPanel {
 
 					// 创建一个新的按钮
 					DataRequest request = new DataRequest(HullCNRequest.Client_cn,HullCNRequest.Server_cn);
-					JButton checkButton = new JButton("评测");
+					JButton checkButton = new JButton("数据同步与测评");
 					checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.checkJSON(request).enqueue(new Callback<Result>() {
 						@Override
 						public void onResponse(Call<Result> call, Response<Result> response) {
@@ -261,7 +261,7 @@ public class SimulationExportPanel extends JPanel {
 
 			// 创建一个新的按钮
 			DataRequest request = new DataRequest(WingCNRequest.Server_CN,WingCNRequest.Client_CN);
-			JButton checkButton = new JButton("评测");
+			JButton checkButton = new JButton("数据同步与测评");
 			checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.checkJSON(request).enqueue(new Callback<Result>() {
 				@Override
 				public void onResponse(Call<Result> call, Response<Result> response) {
@@ -325,7 +325,7 @@ public class SimulationExportPanel extends JPanel {
 
 			// 创建一个新的按钮
 			DataRequest request = new DataRequest(componentForcesRequest.Server_CN,componentForcesRequest.Server_CN);
-			JButton checkButton = new JButton("评测");
+			JButton checkButton = new JButton("数据同步与测评");
 			checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.checkJSON(request).enqueue(new Callback<Result>() {
 				@Override
 				public void onResponse(Call<Result> call, Response<Result> response) {
@@ -391,7 +391,7 @@ public class SimulationExportPanel extends JPanel {
 			closeButton.addActionListener(ev -> dialog.dispose()); // 点击按钮时关闭对话框
 
 			DataRequest2 request = new DataRequest2(AccelerationRequest.client_cn,AccelerationRequest.client_cn2,AccelerationRequest.server_cn,AccelerationRequest.server_cn2);
-			JButton checkButton = new JButton("评测");;
+			JButton checkButton = new JButton("数据同步与测评");;
 			checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.checkJSON2(request).enqueue(new Callback<Result>() {
 				@Override
 				public void onResponse(Call<Result> call, Response<Result> response) {
@@ -467,7 +467,7 @@ public class SimulationExportPanel extends JPanel {
 			closeButton.addActionListener(ev -> dialog.dispose()); // 点击按钮时关闭对话框
 
 			// 创建一个新的按钮
-			JButton checkButton = new JButton("评测");
+			JButton checkButton = new JButton("数据同步与测评");
 			DataRequest dataRequest = new DataRequest(StabilityRequest.client_cn,StabilityRequest.server_cn);
 
 
@@ -545,7 +545,7 @@ public class SimulationExportPanel extends JPanel {
 			// 创建一个新的按钮
 			DataRequest4 request = new DataRequest4(TotalMomentRequest.Client_cn1,TotalMomentRequest.Client_cn2,TotalMomentRequest.Client_cn3,
 					TotalMomentRequest.Server_cn1,TotalMomentRequest.Server_cn2,TotalMomentRequest.Server_cn3);
-			JButton checkButton = new JButton("评测");
+			JButton checkButton = new JButton("数据同步与测评");
 			checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.checkJSON4(request).enqueue(new Callback<Result>() {
 				@Override
 				public void onResponse(Call<Result> call, Response<Result> response) {
@@ -613,7 +613,8 @@ public class SimulationExportPanel extends JPanel {
 
 			// 创建一个新的按钮
 			DataRequest request = new DataRequest(TotalPressureCDRequest.client_cn, TotalPressureCDRequest.server_cn);
-			JButton checkButton = new JButton("评测");
+			System.out.println(TotalPressureCDRequest.client_cn.toString());
+			JButton checkButton = new JButton("数据同步与测评");
 			checkButton.addActionListener(e1 -> OpenRocket.eduCoderService.checkJSON(request).enqueue(new Callback<Result>() {
 				@Override
 				public void onResponse(Call<Result> call, Response<Result> response) {

@@ -516,7 +516,7 @@ public class SimulationPlotPanel extends JPanel {
             closeButton.addActionListener(ev -> dialog.dispose()); // 点击按钮时关闭对话框
 
             // 创建一个新的按钮
-            JButton checkButton = new JButton("评测");
+            JButton checkButton = new JButton("数据同步与测评");
 
             // 创建按钮面板
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0)); // 水平间距 10
@@ -580,7 +580,7 @@ public class SimulationPlotPanel extends JPanel {
             closeButton.addActionListener(ev -> dialog.dispose()); // 点击按钮时关闭对话框
 
             // 创建一个新的按钮
-            JButton checkButton = new JButton("评测");
+            JButton checkButton = new JButton("数据同步与测评");
 
             // 创建按钮面板
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0)); // 水平间距 10
@@ -647,7 +647,7 @@ public class SimulationPlotPanel extends JPanel {
             closeButton.addActionListener(ev -> dialog.dispose()); // 点击按钮时关闭对话框
 
             // 创建一个新的按钮
-            JButton checkButton = new JButton("评测");
+            JButton checkButton = new JButton("数据同步与测评");
 
             // 创建按钮面板
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0)); // 水平间距 10
@@ -719,7 +719,7 @@ public class SimulationPlotPanel extends JPanel {
             closeButton.addActionListener(ev -> dialog.dispose()); // 点击按钮时关闭对话框
 
             // 创建一个新的按钮
-            JButton newButton = new JButton("评测");
+            JButton newButton = new JButton("数据同步与测评");
 
             // 创建按钮面板
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0)); // 水平间距 10
@@ -786,7 +786,7 @@ public class SimulationPlotPanel extends JPanel {
             closeButton.addActionListener(ev -> dialog.dispose()); // 点击按钮时关闭对话框
 
             // 创建一个新的按钮
-            JButton newButton = new JButton("评测");
+            JButton newButton = new JButton("数据同步与测评");
 
             // 创建按钮面板
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0)); // 水平间距 10

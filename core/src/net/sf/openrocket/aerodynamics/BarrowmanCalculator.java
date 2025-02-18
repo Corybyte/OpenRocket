@@ -895,9 +895,9 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
                 }
                 double radius = 0;
                 final SymmetricComponent prevComponent = s.getPreviousSymmetricComponent();
-                if (prevComponent != null && configuration.isComponentActive(prevComponent))
-                    radius = prevComponent.getAftRadius();
-
+//                if (prevComponent != null && configuration.isComponentActive(prevComponent)) {
+//                    radius = prevComponent.getAftRadius();
+//                }
                 if (radius < foreRadius) {
                     double area = Math.PI * (pow2(foreRadius) - pow2(radius));
                     cd = stagnation * area / conditions.getRefArea();
@@ -920,8 +920,9 @@ public class BarrowmanCalculator extends AbstractAerodynamicCalculator {
             request.isComponentActives = isComponentActives;
             request.prevAftRadius = prevAftRadius;
             request.componentCD = componentCD;
-            TotalPressureCDRequest.server_cn.add(total);
-
+            synchronized (BarrowmanCalculator.class) {
+                TotalPressureCDRequest.server_cn.add(total);
+            }
             if (OpenRocket.flag.equals("calculateTotalPressureCD")||OpenRocket.flag.equals("")) {
                 System.out.println("calculateTotalPressureCD请求开始.....");
                 OpenRocket.eduCoderService.calculateTotalPressureCD(request).enqueue(new Callback<Result>() {
