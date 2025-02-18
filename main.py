@@ -112,10 +112,18 @@ def check(result, answer, dir):
             with open(os.path.join(dir, "result.txt"), 'w') as f:
                 f.write("头歌实践教学平台欢迎你\n请认真作答\nYes")
         else:
+            scale_factor = 0.2  # 误差缩放参数，可调
+            relative_error = compute_error(answer, result, scale_factor)
+            print(relative_error)
             with open(os.path.join(dir, "result.txt"), 'w') as f:
-                f.write("头歌实践教学平台欢迎你\n请认真作答\nNo")
+                f.write("头歌实践教学平台欢迎你\n请认真作答\n")
+                f.write(f"答案错误\n（相对误差：{relative_error:.2f}%）\n")
 
-
+def compute_error(answer, result, scale_factor=0.1):
+    """计算误差，避免除零错误"""
+    abs_error = abs(answer - result) * scale_factor  # 绝对误差
+    relative_error = (abs_error / abs(answer)) * 100 if answer != 0 else 0  # 相对误差（防止除 0）
+    return relative_error
 # NoseCone
 @app.route('/NoseCone/calculateCG', methods=['POST'])
 def calculateNoseConeCG():
@@ -959,6 +967,11 @@ def check_json_api():
     data = request.json
     json_a = data.get('Client_List', {})
     json_b = data.get('Server_List', {})
+    print(type(json_a[0]))
+    print(json_a)
+    print(json_b)
+
+
     # 原json比较
     # ret = check_json(json_a, json_b)
     # 新无序列表比较
@@ -1061,6 +1074,7 @@ def calculateTotalCD():
         result = calculatePressureCDHelper(request.json)
         return {"code": 200, "msg": "ok", "result": result}
     except Exception as e:
+        print(Exception)
         return jsonify({"code": 200, "msg": "error", "result": str(e)})
 
 
