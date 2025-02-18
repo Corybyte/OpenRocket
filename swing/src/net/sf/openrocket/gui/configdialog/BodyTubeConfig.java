@@ -31,6 +31,8 @@ import retrofit2.Response;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
+import static net.sf.openrocket.gui.configdialog.NoseConeConfig.roundToFiveDecimals;
+
 @SuppressWarnings("serial")
 public class BodyTubeConfig extends RocketComponentConfig {
 
@@ -150,7 +152,19 @@ public class BodyTubeConfig extends RocketComponentConfig {
                         if (code == 200) {
                             SwingUtilities.invokeLater(() -> {
                                 checkResult.setText(trans.get("BodyTube.lbl.checkResult") + ": " + result.getResult());
-                                answerLabel.setText(trans.get("BodyTube.lbl.answer") + ": " + component.getComponentCG().x);
+
+                                String msg = "";
+                                double answer = component.getComponentCG().x;
+                                double resultResult = (double) result.getResult();
+                                if (roundToFiveDecimals(answer)==roundToFiveDecimals(resultResult)){
+                                    msg = "答案:"+String.valueOf(answer);
+                                }else {
+                                    double abs_error = Math.abs(component.getComponentCG().x-(double)result.getResult())*0.1;
+                                    double absError = Math.abs(resultResult - answer) * 0.1;
+                                    double relativeError = (answer != 0) ? (absError / Math.abs(answer)) * 100 : 0;
+                                    msg = "误差："+String.valueOf(relativeError)+"%";
+                                }
+                                answerLabel.setText(msg);
                             });
                         } else {
                             SwingUtilities.invokeLater(() ->

@@ -259,9 +259,22 @@ public class NoseConeConfig extends RocketComponentConfig {
                             if (result == null) return;
                             Integer code = response.body().getCode();
                             if (code == 200) {
+
                                 SwingUtilities.invokeLater(() -> {
                                     checkResult.setText(trans.get("NoseConeCfg.lbl.checkResult") + ": " + result.getResult());
-                                    answerLabel.setText(trans.get("NoseConeCfg.lbl.answer") + ": " + component.getComponentCG().x);
+
+                                    String msg = "";
+                                    double answer = component.getComponentCG().x;
+                                    double resultResult = (double) result.getResult();
+                                    if (roundToFiveDecimals(answer)==roundToFiveDecimals(resultResult)){
+                                        msg = "答案:"+String.valueOf(answer);
+                                    }else {
+                                        double abs_error = Math.abs(component.getComponentCG().x-(double)result.getResult())*0.1;
+                                        double absError = Math.abs(resultResult - answer) * 0.1;
+                                        double relativeError = (answer != 0) ? (absError / Math.abs(answer)) * 100 : 0;
+                                        msg = "误差："+String.valueOf(relativeError)+"%";
+                                    }
+                                    answerLabel.setText(msg);
                                 });
                             } else {
                                 SwingUtilities.invokeLater(() ->
@@ -916,5 +929,9 @@ public class NoseConeConfig extends RocketComponentConfig {
 
         return rangeArray;
     }
+    public static double roundToFiveDecimals(double value) {
+        return Math.round(value * 100000.0) / 100000.0;
+    }
+
 
 }
