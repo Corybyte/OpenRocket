@@ -13,12 +13,10 @@ def calculatePressureCDHelper(param):
     componentInstanceCount = param['componentInstanceCount']
     refArea = param['refArea']
     isSymmetricComponent = param['isSymmetricComponent']
-    prevAftRadius = param['prevAftRadius']
-    hasPreviousSymmetricComponent = param['hasPreviousSymmetricComponent']
-    isComponentActives = param['isComponentActives']
+    #  prevAftRadius = param['prevAftRadius']
+    #   hasPreviousSymmetricComponent = param['hasPreviousSymmetricComponent']
+    #   isComponentActives = param['isComponentActives']
     componentCD = param['componentCD']
 
     return calculatetoalCD(mach, componentInstanceCount, componentCD, isSymmetricComponent,
-                           foreRadiuss, aftRadiuss, length, prevAftRadius, hasPreviousSymmetricComponent, refArea,
-                           isComponentActives)
-
+                           foreRadiuss, aftRadiuss, length, refArea)
