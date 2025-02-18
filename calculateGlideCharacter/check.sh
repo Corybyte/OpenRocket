@@ -1,2 +1,14 @@
 #!/bin/bash
-  cat /data/workspace/myshixun/calculateGlideCharacter/result.txt
+
+ERROR_FILE="/data/workspace/myshixun/calculateGlideCharacter/error.txt"
+RESULT_FILE="/data/workspace/myshixun/calculateGlideCharacter/result.txt"
+
+if [ -e "$ERROR_FILE" ]; then
+    cat "$ERROR_FILE"
+    rm "$ERROR_FILE"
+elif [ -e "$RESULT_FILE" ]; then
+    cat "$RESULT_FILE"
+    rm "$RESULT_FILE"
+else
+    echo "计算中，请稍后再试"
+fi
